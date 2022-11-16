@@ -1,6 +1,7 @@
 import {Injectable, OnInit} from '@angular/core';
 import {HttpClient, HttpHeaders} from '@angular/common/http';
 import { User } from 'src/app/models/user.model';
+import { Router } from '@angular/router';
 
 @Injectable({providedIn: 'root'})
 export class AuthService {
@@ -10,7 +11,7 @@ export class AuthService {
     activeUser? : User;
     errorMessage = "";
 
-    constructor(private http : HttpClient) {
+    constructor(private http : HttpClient, private router:Router) {
         this.checkForStoredToken();
     }
 
@@ -55,6 +56,7 @@ export class AuthService {
         this.http.get('/api/users/userinfo', opts).subscribe({
             next: (responseData:any) => {
                 this.activeUser = new User(responseData.name, responseData.email);
+                this.router.navigate(["/dashboard"]);
                 this.isLoading = false;
                 console.log(this.activeUser);
             },
@@ -80,6 +82,7 @@ export class AuthService {
 
     logout() {
         this.clearUserData();
+        this.router.navigate(["/login"]);
     }
 
     clearUserData() {
