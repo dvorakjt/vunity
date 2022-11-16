@@ -5,6 +5,13 @@
     justify-content: center;
     align-items: center;
 
+    form {
+        width: 220px;
+        height: 280px;
+        margin-top: 60px;
+        margin-left: 60px;
+    }
+
     h3, label {
         color: white;
     }
@@ -30,4 +37,9 @@ button:active {
     background-color: #eb816e;
     box-shadow: none;
     transform: translate(1px, 1px);
+}
+
+.error {
+    color: #eb816e;
+    font-style: italic;
 }

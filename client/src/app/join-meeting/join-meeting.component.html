@@ -1,16 +1,24 @@
 <div class="screen">
     <form class="form">
         <h3>Join a Meeting</h3>
-        <label for="email">Meeting ID</label>
+        <label for="meetingId">Meeting ID</label>
         <br />
-        <input type="email" name="email" id="email" />
+        <input type="meetingId" name="meetingId" id="meetingId" [(ngModel)]="meetingId"
+            (input)="this.meetingIdErrorMessage = '' " />
+        <br />
+        <small class="error">{{meetingIdErrorMessage}}</small>
         <br />
         <br />
         <label for="password">Password</label>
         <br />
-        <input type="password" name="password" id="password" />
+        <input type="password" name="password" id="password" [(ngModel)]="password"
+            (input)="this.passwordErrorMessage = '' " />
+        <br />
+        <small class="error">{{passwordErrorMessage}}</small>
         <br />
         <br />
-        <button class="button">Join Now!</button>
+        <button class="button" (click)="onJoinMeeting()">Join Now!</button>
+        <br />
+        <small class="error">{{serverErrorMessage}}</small>
     </form>
 </div>

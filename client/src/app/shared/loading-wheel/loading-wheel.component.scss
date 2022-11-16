@@ -1,0 +1,22 @@
+.loading-wheel {
+    min-height: 75px;
+    min-width: 75px;
+    max-width: 75px;
+    max-height: 75px;
+    border-radius: 50%;
+    box-sizing: border-box;
+    border: 10px solid;
+    border-top-color: lightgray;
+    border-right-color: lightgray;
+    border-bottom-color: lightgray;
+    border-left-color: transparent;
+    animation: rotateBorder 750ms linear infinite;
+}
+
+@keyframes rotateBorder {
+    from {
+        transform: rotate(0deg);
+    } to {
+        transform: rotate(360deg);
+    }
+}

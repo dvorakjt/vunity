@@ -3,14 +3,21 @@
         <h3>Login</h3>
         <label for="email">Email Address</label>
         <br />
-        <input type="email" name="email" id="email" />
+        <input type="email" name="email" id="email" [(ngModel)]="email" (input)="this.emailErrorMessage = '' " />
+        <br />
+        <small class="error">{{emailErrorMessage}}</small>
         <br />
         <br />
         <label for="password">Password</label>
         <br />
-        <input type="password" name="password" id="password" />
+        <input type="password" name="password" id="password" [(ngModel)]="password"
+            (input)="this.passwordErrorMessage = '' " />
+        <br />
+        <small class="error">{{passwordErrorMessage}}</small>
         <br />
         <br />
-        <button class="button">Login</button>
+        <button class="button" (click)="onLogin()">Login</button>
+        <br />
+        <small class="error">{{serverErrorMessage}}</small>
     </form>
 </div>

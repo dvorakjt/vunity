@@ -6,4 +6,5 @@
   </ul>
 </nav>
 <!-- The routed views render in the <router-outlet>-->
+<app-loading-wheel-overlay *ngIf="authService.isLoading"></app-loading-wheel-overlay>
 <router-outlet></router-outlet>
