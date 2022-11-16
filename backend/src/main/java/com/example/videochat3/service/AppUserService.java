@@ -4,4 +4,5 @@ import com.example.videochat3.domain.AppUser;
 
 public interface AppUserService {
     AppUser saveUser(AppUser user);
+    AppUser findAppUserByEmail(String email);
 }

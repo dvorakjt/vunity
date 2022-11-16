@@ -43,7 +43,12 @@ public class SecurityConfig {
         protected void configure(HttpSecurity http) throws Exception {
             AppUserAuthNFilter appUserAuthNFilter = new AppUserAuthNFilter(authenticationManagerBean());
             appUserAuthNFilter.setFilterProcessesUrl("/api/users/login");
+
+            
+
             http.antMatcher("/api/users/**").csrf().disable().authorizeRequests().antMatchers("/login").permitAll().anyRequest().authenticated();
+            
+            
             http.addFilter(appUserAuthNFilter); //could set the login route to /api so that the frontend can make a post request
             http.addFilterBefore(new AppAuthZFilter(), UsernamePasswordAuthenticationFilter.class);
         }
@@ -74,7 +79,8 @@ public class SecurityConfig {
             log.info("configuring guest user security config.");
             GuestUserAuthNFilter guestUserAuthNFilter = new GuestUserAuthNFilter(guestAuthManagerBean());
             guestUserAuthNFilter.setFilterProcessesUrl("/api/meeting/join");
-            http.antMatcher("/**").csrf().disable().authorizeRequests().antMatchers("/api/meeting/login", "/meetings").permitAll().anyRequest().authenticated();
+            http.antMatcher("/**").csrf().disable().authorizeRequests()
+            .antMatchers("/api/meeting/login", "/test").permitAll().anyRequest().authenticated();
             http.addFilter(guestUserAuthNFilter); //could set the login route to /api so that the frontend can make a post request
             http.addFilterBefore(new AppAuthZFilter(), UsernamePasswordAuthenticationFilter.class);
         }

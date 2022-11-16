@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { AuthService } from '../services/auth/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -10,15 +11,13 @@ export class LoginComponent implements OnInit {
   password = '';
   emailErrorMessage = '';
   passwordErrorMessage = '';
-  serverErrorMessage = '';
 
-  constructor() { }
+  constructor(public authService:AuthService) { }
 
   ngOnInit(): void {
   }
 
   onLogin() {
-    this.serverErrorMessage = '';
     let failed = false;
     if(!this.email.length) {
       this.emailErrorMessage = 'Please enter your email address.';
@@ -35,8 +34,7 @@ export class LoginComponent implements OnInit {
       failed = true;
     }
     if(failed) return;
-    const serverError = Math.random() >= 0.5;
-    if(serverError) this.serverErrorMessage = 'There was a problem with the server. Please try again later.';
+    this.authService.login(this.email, this.password);
   }
 
 }

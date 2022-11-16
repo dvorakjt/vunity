@@ -1,6 +1,8 @@
 package com.example.videochat3.api;
 
 import com.example.videochat3.domain.Meeting;
+import com.example.videochat3.domain.AppUser;
+import com.example.videochat3.service.AppUserService;
 import com.example.videochat3.service.GuestUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -9,6 +11,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.security.Principal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +20,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class ApiController {
 
+    private final AppUserService appUserService;
     private final GuestUserService guestUserService;
 
     @GetMapping("/login")
@@ -29,11 +33,14 @@ public class ApiController {
         return ResponseEntity.ok().body(guestUserService.getMeetings());
     }
 
-    @GetMapping("/hidden")
-    public ResponseEntity hidden() {
-        Map<String, String> body = new HashMap<>();
-        body.put("accessLevel", "user");
-        return ResponseEntity.ok().body(body);
+    @GetMapping("/api/users/userinfo")
+    public ResponseEntity userInfo(Principal principal) {
+        String email = principal.getName();
+        AppUser user = appUserService.findAppUserByEmail(email);
+        Map<String, String> publicUserInfo = new HashMap<>();
+        publicUserInfo.put("email", user.getEmail());
+        publicUserInfo.put("name", user.getName());
+        return ResponseEntity.ok().body(publicUserInfo);
     }
 
     @GetMapping("/guesthidden")

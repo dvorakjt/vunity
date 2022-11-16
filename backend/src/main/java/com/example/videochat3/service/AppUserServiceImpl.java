@@ -46,4 +46,8 @@ public class AppUserServiceImpl implements AppUserService, UserDetailsService {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         return appUserRepo.save(user);
     }
+    @Override
+    public AppUser findAppUserByEmail(String email) {
+        return appUserRepo.findAppUserByEmail(email);
+    }
 }
