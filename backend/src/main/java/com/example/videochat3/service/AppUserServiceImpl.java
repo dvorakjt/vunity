@@ -27,7 +27,7 @@ public class AppUserServiceImpl implements AppUserService, UserDetailsService {
     private final PasswordEncoder passwordEncoder;
 
     @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+    public User loadUserByUsername(String email) throws UsernameNotFoundException {
         AppUser user = appUserRepo.findAppUserByEmail(email);
         if(user == null) {
             log.error("User not found");

@@ -10,6 +10,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
+import com.example.videochat3.service.AppUserService;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -31,7 +32,7 @@ public class UserTokenManager {
     }
 
     public static Map<String, String > userToTokenMap(User user) {
-        String access_token = userToToken(user, 10);
+        String access_token = userToToken(user, 1);
         String refresh_token = userToToken(user, 30);
         Map<String,String> tokens = new HashMap<>();
         tokens.put("access_token", access_token);
@@ -39,12 +40,22 @@ public class UserTokenManager {
         return tokens;
     }
 
-    public static Map<String, String> refreshAccessToken(User user, String refreshToken) {
-        String access_token = userToToken(user, 10);
+    public static Map<String, String> refreshAccessToken(String refresh_token, AppUserService appUserService) {
+        User user = decodeRefreshToken(refresh_token, appUserService);
+        String new_access_token = userToToken(user, 10);
         Map<String, String> tokens = new HashMap<>();
-        tokens.put("access_token", access_token);
-        tokens.put("refresh_token", refreshToken);
+        tokens.put("access_token", new_access_token);
+        tokens.put("refresh_token", refresh_token);
         return tokens;
+    }
+
+    private static User decodeRefreshToken(String refresh_token, AppUserService appUserService) {
+        Algorithm algorithm = Algorithm.HMAC256("secret".getBytes());
+        JWTVerifier verifier = JWT.require(algorithm).build();
+        DecodedJWT decodedJWT = verifier.verify(refresh_token);
+        String username = decodedJWT.getSubject();
+        User user = appUserService.loadUserByUsername(username);
+        return user;
     }
 
     public static void decodeTokenAndGrantAuthority(String authHeader) throws Exception {

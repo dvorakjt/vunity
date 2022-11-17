@@ -80,7 +80,7 @@ public class SecurityConfig {
             GuestUserAuthNFilter guestUserAuthNFilter = new GuestUserAuthNFilter(guestAuthManagerBean());
             guestUserAuthNFilter.setFilterProcessesUrl("/api/meeting/join");
             http.antMatcher("/**").csrf().disable().authorizeRequests()
-            .antMatchers("/api/meeting/login", "/test").permitAll().anyRequest().authenticated();
+            .antMatchers("/api/meeting/login", "/api/token/refresh").permitAll().anyRequest().authenticated();
             http.addFilter(guestUserAuthNFilter); //could set the login route to /api so that the frontend can make a post request
             http.addFilterBefore(new AppAuthZFilter(), UsernamePasswordAuthenticationFilter.class);
         }

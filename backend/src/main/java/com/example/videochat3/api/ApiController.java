@@ -10,11 +10,20 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+import com.example.videochat3.tokens.UserTokenManager;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.security.Principal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.io.IOException;
+
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 @Controller
 @RequiredArgsConstructor
@@ -43,10 +52,26 @@ public class ApiController {
         return ResponseEntity.ok().body(publicUserInfo);
     }
 
-    @GetMapping("/guesthidden")
-    public ResponseEntity guestHidden() {
-        Map<String, String> body = new HashMap<>();
-        body.put("accessLevel", "guest");
-        return ResponseEntity.ok().body(body);
+    @GetMapping("/api/token/refresh")
+    public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String authorizationHeader = request.getHeader(AUTHORIZATION);
+        if(authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            try {
+                String refresh_token = authorizationHeader.substring("Bearer ".length());
+                Map<String, String> tokens = UserTokenManager.refreshAccessToken(refresh_token, appUserService);
+                response.setContentType(APPLICATION_JSON_VALUE);
+                new ObjectMapper().writeValue(response.getOutputStream(), tokens);
+            } catch (Exception e) {
+                response.setHeader("error", e.getMessage());
+                response.setStatus(403);
+                Map<String, String> error = new HashMap<>();
+                error.put("error_message", e.getMessage());
+                response.setContentType(APPLICATION_JSON_VALUE);
+                new ObjectMapper().writeValue(response.getOutputStream(), error);
+            }
+        } else {
+            throw new RuntimeException("Refresh token is missing.");
+        }
     }
+
 }
