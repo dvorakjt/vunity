@@ -4,4 +4,90 @@
     margin-top: 20px;
     margin-right: 20px;
     padding: 18px;
+    width: 286px;
+    box-sizing: border-box;
+    
+    input {
+        margin-right: 4px;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    small {
+        margin-right: 4px;
+    }
+
+    .error-container {
+        margin-top: 0;
+        padding-top: 0;
+        display: flex;
+        height: 22px;
+    }
+
+    .error {
+        color: red;
+        font-style: italic;
+        font-size: 11px;
+        height: 11px;
+        margin-top: 0;
+        padding-top: 0;
+    }
+
+    .hide-by-default {
+        display: none;
+    }
+
+    .required-field {
+        label {
+            color: red;
+        }
+        input {
+            background-color: #ff9999;
+        }
+        .hide-by-default {
+            display: inline;
+        }
+    }
+
+    .guests-container {
+        width: 264px;
+        max-width: 264px;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, 60px);
+        column-gap: 2px;
+        row-gap: 2px;
+        margin-top: 8px;
+
+        small {
+            width: 60px;
+            max-width: 60px;
+            height: 16px;
+            overflow: hidden;
+            box-sizing: border-box;
+            padding-right: 16px;
+            text-overflow: ellipsis;
+            background-color: lightgray;
+            position: relative;
+
+            button {
+                position: absolute;
+                right: 0;
+                top: 0;
+                background-color: red;
+                border: none;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                padding: 0;
+                margin: 0;
+                color: white;
+                height: 16px;
+                width: 16px;
+            }
+
+            button:hover {
+                cursor: pointer;
+            }
+        }
+    }
 }

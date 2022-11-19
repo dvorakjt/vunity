@@ -1,0 +1,11 @@
+<div [ngClass]="{
+    modalContainer : true,
+    open : display,
+    closed : !display
+}">
+    <div class="modal">
+        <h2>{{modalTitle}}</h2>
+        <p>{{modalBody}}</p>
+        <button class="btn btn-primary" (click)="display = false">Ok!</button>
+    </div>
+</div>

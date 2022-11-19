@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
+import { ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 
 import { AppRoutingModule } from './app-routing.module';
@@ -14,6 +15,7 @@ import { DashboardComponent } from './dashboard/dashboard.component';
 import { CreateMeetingComponent } from './dashboard/create-meeting/create-meeting.component';
 import { MeetingsListComponent } from './dashboard/meetings-list/meetings-list.component';
 import { MeetingDetailComponent } from './dashboard/meeting-detail/meeting-detail.component';
+import { ModalComponent } from './shared/modal/modal.component';
 
 @NgModule({
   declarations: [
@@ -26,12 +28,14 @@ import { MeetingDetailComponent } from './dashboard/meeting-detail/meeting-detai
     DashboardComponent,
     CreateMeetingComponent,
     MeetingsListComponent,
-    MeetingDetailComponent
+    MeetingDetailComponent,
+    ModalComponent,
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     FormsModule,
+    ReactiveFormsModule,
     HttpClientModule
   ],
   providers: [],

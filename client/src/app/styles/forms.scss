@@ -17,28 +17,6 @@
     }
 }
 
-.button {
-    background-color: #d4624d;
-    font-size: 16px;
-    padding: 10px;
-    border: none;
-    border-radius: 0;
-    box-shadow: 2px 2px 4px #121922;
-    font-weight: bold;
-    transition: all ease-in-out 50ms;
-}
-
-button:hover {
-    cursor: pointer;
-    background-color: #eb816e;
-}
-
-button:active {
-    background-color: #eb816e;
-    box-shadow: none;
-    transform: translate(1px, 1px);
-}
-
 .error {
     color: #eb816e;
     font-style: italic;
