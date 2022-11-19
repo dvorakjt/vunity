@@ -11,6 +11,9 @@ import { JoinMeetingComponent } from './join-meeting/join-meeting.component';
 import { LoadingWheelComponent } from './shared/loading-wheel/loading-wheel.component';
 import { LoadingWheelOverlayComponent } from './shared/loading-wheel-overlay/loading-wheel-overlay.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
+import { CreateMeetingComponent } from './dashboard/create-meeting/create-meeting.component';
+import { MeetingsListComponent } from './dashboard/meetings-list/meetings-list.component';
+import { MeetingDetailComponent } from './dashboard/meeting-detail/meeting-detail.component';
 
 @NgModule({
   declarations: [
@@ -20,7 +23,10 @@ import { DashboardComponent } from './dashboard/dashboard.component';
     JoinMeetingComponent,
     LoadingWheelComponent,
     LoadingWheelOverlayComponent,
-    DashboardComponent
+    DashboardComponent,
+    CreateMeetingComponent,
+    MeetingsListComponent,
+    MeetingDetailComponent
   ],
   imports: [
     BrowserModule,

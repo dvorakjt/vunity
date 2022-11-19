@@ -1,4 +1,4 @@
-package com.example.videochat3.api;
+package com.example.videochat3.controllers;
 
 import com.example.videochat3.domain.Meeting;
 import com.example.videochat3.DTO.MeetingDTO;

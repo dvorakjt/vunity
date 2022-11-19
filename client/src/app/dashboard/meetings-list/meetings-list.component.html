@@ -1,0 +1,13 @@
+<div class="meetings-list-container">
+    <h2>Upcoming Meetings</h2>
+    <ul class="meetings-list">
+        <li *ngFor="let meeting of meetings" class="meeting-list-item">
+            <h4>{{meeting.title}}</h4>
+            <small>meeting date</small>
+            <p>{{meeting.dateTime}}</p>
+            <small>meeting length</small>
+            <p>{{meeting.duration}} minutes</p>
+            <a>View</a> | <a>Edit</a> | <a>Delete</a> | <a>Start</a>
+        </li>
+    </ul>
+</div>
