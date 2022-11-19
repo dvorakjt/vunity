@@ -19,5 +19,9 @@ public class Meeting {
     @GenericGenerator(name="system-uuid", strategy = "uuid")
     @Column(name="id", columnDefinition = "VARCHAR(255)", insertable = false, updatable = false, nullable = false)
     private String id;
+    private String title;
     private String password;
+    private int duration;
+    private String dateTime;
+    private String ownerId;
 }

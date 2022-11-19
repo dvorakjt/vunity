@@ -32,7 +32,7 @@ public class UserTokenManager {
     }
 
     public static Map<String, String > userToTokenMap(User user) {
-        String access_token = userToToken(user, 1);
+        String access_token = userToToken(user, 10);
         String refresh_token = userToToken(user, 30);
         Map<String,String> tokens = new HashMap<>();
         tokens.put("access_token", access_token);

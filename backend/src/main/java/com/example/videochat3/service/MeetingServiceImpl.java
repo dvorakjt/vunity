@@ -1,8 +1,6 @@
 package com.example.videochat3.service;
 
-import com.example.videochat3.domain.AppUser;
 import com.example.videochat3.domain.Meeting;
-import com.example.videochat3.repo.AppUserRepo;
 import com.example.videochat3.repo.MeetingRepo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +25,7 @@ import java.util.UUID;
 @Transactional
 @RequiredArgsConstructor
 @Qualifier("GuestUserDetailsService")
-public class GuestUserServiceImpl implements GuestUserService , UserDetailsService {
+public class MeetingServiceImpl implements MeetingService, UserDetailsService {
 
     private final MeetingRepo meetingRepo;
 
@@ -56,8 +54,8 @@ public class GuestUserServiceImpl implements GuestUserService , UserDetailsServi
     }
 
     @Override
-    public List<Meeting> getMeetings() {
-        log.info("Fetching all meetings.");
-        return meetingRepo.findAll();
+    public List<Meeting> getMeetings(String ownerId) {
+        log.info("Fetching all your meetings.");
+        return meetingRepo.findAllByOwnerId(ownerId);
     }
 }
