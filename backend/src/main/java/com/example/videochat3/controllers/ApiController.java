@@ -6,6 +6,8 @@ import com.example.videochat3.domain.AppUser;
 import com.example.videochat3.service.AppUserService;
 import com.example.videochat3.service.MeetingService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -79,7 +82,16 @@ public class ApiController {
         }
         String email = principal.getName();
         AppUser user = appUserService.findAppUserByEmail(email);
-        Meeting meeting = new Meeting(null, meetingDTO.getTitle(), meetingDTO.getPassword(), meetingDTO.getDuration(), meetingDTO.getDateTime(), user.getId().toString());
+
+        Meeting meeting = 
+            new Meeting(
+                null, 
+                meetingDTO.getTitle(), 
+                meetingDTO.getPassword(), 
+                meetingDTO.getDuration(), 
+                meetingDTO.getDateTime(), 
+                new ArrayList<String>(meetingDTO.getGuests()),
+                user.getId().toString());
         meeting = meetingService.saveMeeting(meeting);
         return ResponseEntity.ok().body(meeting);
     }

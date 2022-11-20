@@ -8,6 +8,7 @@ import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 import java.util.UUID;
+import java.util.ArrayList;
 
 @Entity @Data
 @NoArgsConstructor
@@ -23,5 +24,6 @@ public class Meeting {
     private String password;
     private int duration;
     private String dateTime;
+    private ArrayList<String> guests;
     private String ownerId;
 }

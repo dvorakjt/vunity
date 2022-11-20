@@ -2,6 +2,7 @@ import { Component, EventEmitter, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import {MeetingDTO} from '../../models/meeting-dto.model';
 import * as password from 'secure-random-password';
+import { MeetingsService } from 'src/app/services/meetings/meetings.service';
 
 @Component({
   selector: 'app-create-meeting',
@@ -21,7 +22,10 @@ export class CreateMeetingComponent implements OnInit {
   guests:Set<string> = new Set<string>();
   guestError = '';
   creationError = '';
+  isLoading = false;
   showModal = new EventEmitter<boolean>();
+
+  constructor(private meetingsService:MeetingsService) {}
 
   getRandomPassword() {
     return password.randomPassword({
@@ -60,14 +64,19 @@ export class CreateMeetingComponent implements OnInit {
 
   onSubmit() {
     if(this.newMeetingForm.valid) {
-    const meetingDTO = new MeetingDTO(this.newMeetingForm.value, Array.from(this.guests));
-    console.log(meetingDTO);
+      this.isLoading = true;
+      const meetingDTO = new MeetingDTO(this.newMeetingForm.value, Array.from(this.guests));
+      this.meetingsService.apiCall.subscribe({
+        next: () => {
+          this.isLoading = false;
+          this.showModal.emit(true);
+        },
+        error: () => {
+          this.isLoading = false;
+        }
+      })
+      this.meetingsService.createMeeting(meetingDTO);
     }
-  }
-
-  openModal(event:Event) {
-    event.preventDefault();
-    this.showModal.emit(true);
   }
 
 }
