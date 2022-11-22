@@ -19,4 +19,8 @@ export class MeetingsListComponent implements OnInit {
     });
   }
 
+  onOpen(meeting:Meeting) {
+    this.meetingsService.openMeeting(meeting.id);
+  }
+
 }

@@ -58,6 +58,16 @@ public class UserTokenManager {
         return user;
     }
 
+    public static DecodedToken decodeToken(String token) {
+        JWTVerifier verifier = JWT.require(algorithm).build();
+        DecodedJWT decodedJWT = verifier.verify(token);
+        String username = decodedJWT.getSubject();
+        String[] roles = decodedJWT.getClaim("roles").asArray(String.class);
+        Date expiration = decodedJWT.getExpiresAt();
+        DecodedToken dToken = new DecodedToken(username, roles, expiration);
+        return dToken;
+    }
+
     public static void decodeTokenAndGrantAuthority(String authHeader) throws Exception {
         String token = authHeader.substring("Bearer ".length());
         JWTVerifier verifier = JWT.require(algorithm).build();

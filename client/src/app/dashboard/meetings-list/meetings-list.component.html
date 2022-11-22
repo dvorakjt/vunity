@@ -7,7 +7,7 @@
             <p>{{meeting.dateTime}}</p>
             <small>meeting length</small>
             <p>{{meeting.duration}} minutes</p>
-            <a>View</a> | <a>Edit</a> | <a>Delete</a> | <a>Start</a>
+            <a>View</a> | <a>Edit</a> | <a>Delete</a> | <a (click)="onOpen(meeting)" style="cursor: pointer;">Start</a>
         </li>
     </ul>
 </div>

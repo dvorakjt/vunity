@@ -5,9 +5,15 @@ import { Meeting } from 'src/app/models/meeting.model';
 import { MeetingDTO } from 'src/app/models/meeting-dto.model';
 import { ReplaySubject } from 'rxjs';
 
+// Declare SockJS and Stomp
+declare var SockJS:any;
+declare var Stomp:any;
+
 @Injectable()
 export class MeetingsService {
     private meetings:Meeting[] = [];
+    private currentMeetingToken:string = '';
+    private websocketConnection?:WebSocket;
     
     meetingsModified = new EventEmitter<Meeting[]>();
 
@@ -38,6 +44,7 @@ export class MeetingsService {
     createMeeting(newMeeting:MeetingDTO) {
         this.http.post('/api/users/new_meeting', newMeeting).subscribe({
             next: (responseData) => {
+                console.log(responseData);
                 this.meetings.push(responseData as Meeting);
                 this.meetingsModified.emit(this.getMeetings());
                 this.apiCall.emit({success:true, message:"succeeded"});
@@ -46,5 +53,47 @@ export class MeetingsService {
                 this.apiCall.emit({success:false, message:error.message});
             }
         });
+    }
+
+    joinMeeting(meetingId:string, password:string) {
+        this.http.post(`/api/meeting/join?meetingId=${meetingId}&password=${password}`, {}).subscribe({
+            next: (responseData:any) => { 
+                this.websocketConnection = new WebSocket('ws://localhost:8080/socket');
+                this.currentMeetingToken = responseData.access_token;
+                this.websocketConnection.addEventListener('open', (event) => {
+                    const joinData = {
+                        isHost: false,
+                        intent: "join",
+                        meetingAccessToken:responseData.access_token //will send meetingId + userAccessToken for opening a meeting
+                    }
+                    this.websocketConnection?.send(JSON.stringify(joinData));
+                });
+                this.websocketConnection.addEventListener('message', (message:any) => {
+                    console.log(message);
+                });
+            }
+        })
+    }
+
+    openMeeting(meetingId:string) {
+        this.authService.isAuthenticated.subscribe({
+            next: (isAuthenticated) => {
+                if(isAuthenticated) {
+                    this.websocketConnection = new WebSocket('ws://localhost:8080/socket');
+                    this.websocketConnection.addEventListener('open', (event) => {
+                        const openData = {
+                            isHost: true,
+                            intent: "open",
+                            userAccessToken: this.authService.access_token,
+                            meetingId //will send meetingId + userAccessToken for opening a meeting
+                        }
+                        this.websocketConnection?.send(JSON.stringify(openData));
+                    });
+                    this.websocketConnection.addEventListener('message', (message:any) => {
+                        console.log(message);
+                    });
+                }
+            }
+        })
     }
 }

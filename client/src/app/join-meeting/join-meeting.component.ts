@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { MeetingsService } from '../services/meetings/meetings.service';
 
 @Component({
   selector: 'app-join-meeting',
@@ -12,25 +13,13 @@ export class JoinMeetingComponent implements OnInit {
   passwordErrorMessage = '';
   serverErrorMessage = '';
 
-  constructor() { }
+  constructor(private meetingsService:MeetingsService) { }
 
   ngOnInit(): void {
   }
 
   onJoinMeeting() {
-    this.serverErrorMessage = '';
-    let failed = false;
-    if(!this.meetingId.length) {
-      this.meetingIdErrorMessage = 'Please enter your email address.';
-      failed = true;
-    }
-    if(!this.password.length) {
-      this.passwordErrorMessage = 'Please enter your password.';
-      failed = true;
-    }
-    if(failed) return;
-    const serverError = Math.random() >= 0.5;
-    if(serverError) this.serverErrorMessage = 'There was a problem with the server. Please try again later.';
+    this.meetingsService.joinMeeting(this.meetingId, this.password);
   }
 
 }

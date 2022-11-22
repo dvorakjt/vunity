@@ -11,6 +11,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import com.example.videochat3.controllers.LiveMeeting;
+
+import java.util.concurrent.ConcurrentHashMap;
+
 @SpringBootApplication
 public class Videochat3Application {
 
@@ -21,6 +25,11 @@ public class Videochat3Application {
 	@Bean
 	PasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();
+	}
+
+	@Bean
+	ConcurrentHashMap<String, LiveMeeting> liveMeetings() {
+		return new ConcurrentHashMap<String, LiveMeeting>();
 	}
 
 	@Bean
