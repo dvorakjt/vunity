@@ -1,13 +1,15 @@
-import org.springframework.boot.autoconfigure.graphql.GraphQlProperties.Websocket;
+package com.example.videochat3.controllers;
+
 import org.springframework.web.socket.WebSocketSession;
 
 public class Participant {
     WebSocketSession session;
     String offer;
-    String candidate;
+    String ICECandidate;
 
-    public Participant (WebSocketSession session, String offer) {
+    public Participant (WebSocketSession session, String offer, String ICECandidate) {
         this.session = session;
         this.offer = offer;
+        this.ICECandidate = ICECandidate;
     }
 }

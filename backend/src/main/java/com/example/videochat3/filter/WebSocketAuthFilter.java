@@ -16,7 +16,7 @@ import java.util.Date;
 @Data
 @RequiredArgsConstructor
 @Component
-public class SocketFilter {
+public class WebSocketAuthFilter {
 
     private final AppUserRepo appUserRepo;
     private final MeetingRepo meetingRepo;

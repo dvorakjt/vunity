@@ -5,6 +5,8 @@ import { Meeting } from 'src/app/models/meeting.model';
 import { MeetingDTO } from 'src/app/models/meeting-dto.model';
 import { ReplaySubject } from 'rxjs';
 
+//probably need ws to trigger some sort of observable
+
 // Declare SockJS and Stomp
 declare var SockJS:any;
 declare var Stomp:any;
@@ -64,22 +66,30 @@ export class MeetingsService {
 
         this.http.post(`/api/meeting/join?meetingId=${meetingId}&password=${password}`, {}).subscribe({
             next: (responseData:any) => {
-                this.currentMeetingToken = responseData.access_token;
                 this.websocketConnection = new WebSocket('ws://localhost:8080/socket');
                 this.peerConnection?.createOffer((offer) => {
-                    this.websocketConnection?.addEventListener('open', (_event) => {
-                        const joinData = {
-                            isHost: false,
-                            intent: "offer",
-                            meetingAccessToken:responseData.access_token, //will send meetingId + userAccessToken for opening a meeting
-                            offer
-                        }
-                        this.websocketConnection?.send(JSON.stringify(joinData));
-                    });
-                    this.websocketConnection?.addEventListener('message', (message:any) => {
-                        console.log(message);
-                    });
                     this.peerConnection?.setLocalDescription(offer);
+                    if(this.peerConnection) {
+                        this.peerConnection.onicecandidate = (event) => {
+                            if (event.candidate) {
+                                console.log("here")
+                                this.currentMeetingToken = responseData.access_token;
+                                if(this.websocketConnection) {
+                                    this.websocketConnection.onopen = (_event) => {
+                                        console.log("OPEN");
+                                        const joinData = {
+                                            isHost: false,
+                                            intent: "offerAndICECandidate",
+                                            meetingAccessToken:responseData.access_token, //will send meetingId + userAccessToken for opening a meeting
+                                            offer,
+                                            ICECandidate: event.candidate
+                                        }
+                                        this.websocketConnection?.send(JSON.stringify(joinData));
+                                    };
+                                }
+                            }
+                        };
+                    }
                 }, (error) => {
                     console.log(error);
                 });
