@@ -5,8 +5,7 @@ import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
 
-import com.example.videochat3.repo.AppUserRepo;
-import com.example.videochat3.repo.MeetingRepo;
+import com.example.videochat3.filter.SocketFilter;
 
 import lombok.RequiredArgsConstructor;
 
@@ -15,12 +14,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class WebSocketConfiguration implements WebSocketConfigurer {
 
-    private final MeetingRepo meetingRepo;
-    private final AppUserRepo appUserRepo;
+    private final SocketFilter socketFilter;
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        registry.addHandler(new SocketHandler(appUserRepo, meetingRepo), "/socket")
+        registry.addHandler(new SocketHandler(socketFilter), "/socket")
           .setAllowedOriginPatterns("*");
     }
 }

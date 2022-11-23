@@ -7,7 +7,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class LiveMeeting {
     String meetingId;
     boolean isOpen = false;
-    List<WebSocketSession> participants = new CopyOnWriteArrayList<>();
+    List<Participant> participants = new CopyOnWriteArrayList<>();
 
     public LiveMeeting(String meetingId) {
         this.meetingId = meetingId;
