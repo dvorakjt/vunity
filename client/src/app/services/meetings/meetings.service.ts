@@ -14,6 +14,8 @@ export class MeetingsService {
     private meetings:Meeting[] = [];
     private currentMeetingToken:string = '';
     private websocketConnection?:WebSocket;
+    private peerConnection?:RTCPeerConnection;
+    private dataChannel?:RTCDataChannel;
     
     meetingsModified = new EventEmitter<Meeting[]>();
 
@@ -56,24 +58,36 @@ export class MeetingsService {
     }
 
     joinMeeting(meetingId:string, password:string) {
+        const peerConnectionConfig = undefined;
+        this.peerConnection = new RTCPeerConnection(peerConnectionConfig);
+        this.dataChannel = this.peerConnection.createDataChannel("dataChannel");
+
         this.http.post(`/api/meeting/join?meetingId=${meetingId}&password=${password}`, {}).subscribe({
-            next: (responseData:any) => { 
-                this.websocketConnection = new WebSocket('ws://localhost:8080/socket');
+            next: (responseData:any) => {
                 this.currentMeetingToken = responseData.access_token;
-                this.websocketConnection.addEventListener('open', (event) => {
-                    const joinData = {
-                        isHost: false,
-                        intent: "join",
-                        meetingAccessToken:responseData.access_token //will send meetingId + userAccessToken for opening a meeting
-                    }
-                    this.websocketConnection?.send(JSON.stringify(joinData));
-                });
-                this.websocketConnection.addEventListener('message', (message:any) => {
-                    console.log(message);
+                this.websocketConnection = new WebSocket('ws://localhost:8080/socket');
+                this.peerConnection?.createOffer((offer) => {
+                    this.websocketConnection?.addEventListener('open', (_event) => {
+                        const joinData = {
+                            isHost: false,
+                            intent: "offer",
+                            meetingAccessToken:responseData.access_token, //will send meetingId + userAccessToken for opening a meeting
+                            offer
+                        }
+                        this.websocketConnection?.send(JSON.stringify(joinData));
+                    });
+                    this.websocketConnection?.addEventListener('message', (message:any) => {
+                        console.log(message);
+                    });
+                    this.peerConnection?.setLocalDescription(offer);
+                }, (error) => {
+                    console.log(error);
                 });
             }
         })
     }
+
+    /////
 
     openMeeting(meetingId:string) {
         this.authService.isAuthenticated.subscribe({

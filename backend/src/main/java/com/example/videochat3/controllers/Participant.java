@@ -3,10 +3,10 @@ import org.springframework.web.socket.WebSocketSession;
 
 public class Participant {
     WebSocketSession session;
-    Object offer;
-    Object candidate;
+    String offer;
+    String candidate;
 
-    public Participant (WebSocketSession session, Object offer) {
+    public Participant (WebSocketSession session, String offer) {
         this.session = session;
         this.offer = offer;
     }

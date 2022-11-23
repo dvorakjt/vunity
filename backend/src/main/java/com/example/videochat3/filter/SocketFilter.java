@@ -11,6 +11,7 @@ import com.example.videochat3.repo.MeetingRepo;
 import com.example.videochat3.tokens.*;
 
 import java.util.Map;
+import java.util.Date;
 
 @Data
 @RequiredArgsConstructor
@@ -39,5 +40,22 @@ public class SocketFilter {
             }
         }
         return false;
-    }    
+    }
+
+    public boolean isAuthorizedGuest(Map<String, Object> payload) {
+        String meetingAccessToken = payload.get("meetingAccessToken").toString();
+        DecodedToken dToken = UserTokenManager.decodeToken(meetingAccessToken);
+        String meetingId = dToken.getUsernameOrMeetingId();
+        Date expiration = dToken.getExpiration();
+        Date now = new Date();
+        boolean tokenExpired = now.compareTo(expiration) > 0;
+        return meetingId != null && !tokenExpired;
+    }
+
+    public String getMeetingIdFromToken(Map<String, Object> payload) {
+        String meetingAccessToken = payload.get("meetingAccessToken").toString();
+        DecodedToken dToken = UserTokenManager.decodeToken(meetingAccessToken);
+        String meetingId = dToken.getUsernameOrMeetingId();
+        return meetingId;
+    }
 }
