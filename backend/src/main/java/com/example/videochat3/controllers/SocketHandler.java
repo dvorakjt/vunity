@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.springframework.boot.autoconfigure.couchbase.CouchbaseProperties.Io;
 import org.springframework.boot.json.JsonParser;
 import org.springframework.boot.json.JsonParserFactory;
 import org.springframework.stereotype.Component;
@@ -23,7 +24,7 @@ public class SocketHandler extends TextWebSocketHandler {
 
     ConcurrentHashMap<String, LiveMeeting> liveMeetings = new ConcurrentHashMap<String, LiveMeeting>();
 
-    private void storeOfferAndICECandidate(WebSocketSession session, String meetingId, String offer, String ICECandidate) {
+    private Participant storeOfferAndICECandidate(WebSocketSession session, String meetingId, String offer, String ICECandidate) {
         LiveMeeting joinedMeeting;
         if(liveMeetings.keySet().contains(meetingId)) {
             joinedMeeting = liveMeetings.get(meetingId);
@@ -32,18 +33,33 @@ public class SocketHandler extends TextWebSocketHandler {
             liveMeetings.put(meetingId, joinedMeeting);
         }
         Participant p = new Participant(session, offer, ICECandidate);
-        System.out.println("created participant");
         joinedMeeting.participants.add(p);
-        for(String key : liveMeetings.keySet()) {
-            LiveMeeting lm = liveMeetings.get(key);
-            for(Participant part : lm.participants) {
-                System.out.println(part.ICECandidate);
+        return p;
+    }
+
+    private void sendOfferAndCandidateDataToPeers(LiveMeeting meeting, Participant initiatingPeer) {
+        int initiatingPeerIndex = meeting.participants.indexOf(initiatingPeer);
+        if(initiatingPeerIndex == 0 || initiatingPeerIndex == -1) return;
+        for(int i = 0; i < initiatingPeerIndex; i++) {
+            Participant peer = meeting.participants.get(i);
+            WebSocketSession peerSession = peer.session;
+            TextMessage signalingMessaage = new TextMessage("{offer:" + initiatingPeer.offer + ", candidate:" + initiatingPeer.ICECandidate + "}");
+            try {
+                if(peerSession.isOpen()) {
+                    peerSession.sendMessage(signalingMessaage);
+                }
+            } catch (IOException e) {
+                System.out.println(e);
             }
         }
-        System.out.println();
-        System.out.println("Meetings in progress: " + liveMeetings.size());
-        System.out.println();
-        System.out.println();
+    }
+
+    private void openMeeting(LiveMeeting meeting) {
+        meeting.isOpen = true;
+        for(int i = 1; i < meeting.participants.size(); i++) {
+            Participant initiatingPeer = meeting.participants.get(i);
+            sendOfferAndCandidateDataToPeers(meeting, initiatingPeer);
+        }
     }
 
     @Override
@@ -52,8 +68,6 @@ public class SocketHandler extends TextWebSocketHandler {
 
         JsonParser springParser = JsonParserFactory.getJsonParser();
         Map < String, Object > payload = springParser.parseMap(message.getPayload());
-
-        System.out.println("Received message");
 
         for(String key : payload.keySet()) System.out.println(key);
 
@@ -65,22 +79,25 @@ public class SocketHandler extends TextWebSocketHandler {
                     //handle host authentication with their user token
                     if(socketFilter.isAuthorizedHost(payload)) {
                         String meetingId = payload.get("meetingId").toString();
-                        if(intent.equals("offerAndICECandidate") && payload.keySet().contains("offer") && payload.keySet().contains("ICECandidate")) {
+                        if(intent.equals("open") && payload.keySet().contains("offer") && payload.keySet().contains("ICECandidate")) {
                             String offer = payload.get("offer").toString();
                             String ICECandidate = payload.get("ICECandidate").toString();
                             storeOfferAndICECandidate(session, meetingId, offer, ICECandidate);
+                            openMeeting(liveMeetings.get(meetingId));
                         }
                     }
                 } else if(payload.keySet().contains("meetingAccessToken")) {
-                    System.out.println("guest auth check running");
                     if(socketFilter.isAuthorizedGuest(payload)) {
-                        System.out.println("is authorized guest");
                         String meetingId = socketFilter.getMeetingIdFromToken(payload);
-                        if(intent.equals("offerAndICECandidate") && payload.keySet().contains("offer") && payload.keySet().contains("ICECandidate")) {
+                        if(intent.equals("join") && payload.keySet().contains("offer") && payload.keySet().contains("ICECandidate")) {
                             String offer = payload.get("offer").toString();
                             String ICECandidate = payload.get("ICECandidate").toString();
                             System.out.println("Attempting to store candidate information.");
-                            storeOfferAndICECandidate(session, meetingId, offer, ICECandidate);
+                            Participant guest = storeOfferAndICECandidate(session, meetingId, offer, ICECandidate);
+                            LiveMeeting m = liveMeetings.get(meetingId);
+                            if(m.isOpen) {
+                                sendOfferAndCandidateDataToPeers(m, guest);
+                            }
                         }
                     }
                 }

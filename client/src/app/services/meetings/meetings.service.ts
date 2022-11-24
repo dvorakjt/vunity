@@ -59,6 +59,8 @@ export class MeetingsService {
         });
     }
 
+    //not totally crazy about the way this is structured
+
     joinMeeting(meetingId:string, password:string) {
         const peerConnectionConfig = undefined;
         this.peerConnection = new RTCPeerConnection(peerConnectionConfig);
@@ -79,7 +81,7 @@ export class MeetingsService {
                                         console.log("OPEN");
                                         const joinData = {
                                             isHost: false,
-                                            intent: "offerAndICECandidate",
+                                            intent: "join",
                                             meetingAccessToken:responseData.access_token, //will send meetingId + userAccessToken for opening a meeting
                                             offer,
                                             ICECandidate: event.candidate
