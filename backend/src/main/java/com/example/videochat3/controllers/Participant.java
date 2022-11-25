@@ -5,11 +5,11 @@ import org.springframework.web.socket.WebSocketSession;
 public class Participant {
     WebSocketSession session;
     String offer;
-    String ICECandidate;
+    String ICECandidates;
 
-    public Participant (WebSocketSession session, String offer, String ICECandidate) {
+    public Participant (WebSocketSession session, String offer, String ICECandidates) {
         this.session = session;
         this.offer = offer;
-        this.ICECandidate = ICECandidate;
+        this.ICECandidates = ICECandidates;
     }
 }
