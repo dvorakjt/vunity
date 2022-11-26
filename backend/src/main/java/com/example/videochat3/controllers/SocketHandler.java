@@ -79,11 +79,24 @@ public class SocketHandler extends TextWebSocketHandler {
                             JSONObject jsonData = new JSONObject();
                             String offer = payload.get("offer").toString();
                             jsonData.put("event", "offer");
-                            jsonData.put("from", payload.get("offer").toString());
+                            jsonData.put("from", session.getId());
                             jsonData.put("offer", offer);
                             String dataString = jsonData.toString();
                             forwardToSession.sendMessage(new TextMessage(dataString));
 
+                        }
+                    } else if(intent.equals("answer")) {
+                        String forwardToId = payload.get("to").toString();
+                        LiveMeeting joinedMeeting = liveMeetings.get(meetingId);
+                        WebSocketSession forwardToSession = joinedMeeting.sessionsById.get(forwardToId);
+                        if(forwardToSession.isOpen()) {
+                            JSONObject jsonData = new JSONObject();
+                            String answer = payload.get("answer").toString();
+                            jsonData.put("event", "answer");
+                            jsonData.put("from", session.getId());
+                            jsonData.put("answer", answer);
+                            String dataString = jsonData.toString();
+                            forwardToSession.sendMessage(new TextMessage(dataString));
                         }
                     }
                 } else { //not an authorized user
@@ -123,8 +136,21 @@ public class SocketHandler extends TextWebSocketHandler {
                         JSONObject jsonData = new JSONObject();
                         String offer = payload.get("offer").toString();
                         jsonData.put("event", "offer");
-                        jsonData.put("from", payload.get("offer").toString());
+                        jsonData.put("from", session.getId());
                         jsonData.put("offer", offer);
+                        String dataString = jsonData.toString();
+                        forwardToSession.sendMessage(new TextMessage(dataString));
+                    }
+                } else if(intent.equals("answer")) {
+                    String forwardToId = payload.get("to").toString();
+                    LiveMeeting joinedMeeting = liveMeetings.get(meetingId);
+                    WebSocketSession forwardToSession = joinedMeeting.sessionsById.get(forwardToId);
+                    if(forwardToSession.isOpen()) {
+                        JSONObject jsonData = new JSONObject();
+                        String answer = payload.get("answer").toString();
+                        jsonData.put("event", "answer");
+                        jsonData.put("from", session.getId());
+                        jsonData.put("answer", answer);
                         String dataString = jsonData.toString();
                         forwardToSession.sendMessage(new TextMessage(dataString));
                     }

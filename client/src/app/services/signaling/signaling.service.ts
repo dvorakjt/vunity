@@ -62,6 +62,49 @@ export class SignalingService {
                     }
                 } else if(data.event === 'opened') {
                     this.openConnections();
+                } else if(data.event === 'offer') {
+                    const connection = new RTCPeerConnection(peerConnectionConfig);
+                    const offer = new RTCSessionDescription(JSON.parse(data.offer));
+                    const initiatingPeerId = data.from;
+                    //need to set data channel?
+                    connection.setRemoteDescription(offer);
+                    const newEstablishedConnection = {
+                        [initiatingPeerId] : {
+                            connection,
+                            dataChannel: undefined
+                        }
+                    }
+                    Object.assign(this.establisehdRTCPeerConnections, newEstablishedConnection);
+                    connection.createAnswer().then(answer => {
+                        this.websocketStatus.subscribe({
+                            next: (status) => {
+                                if(status === 'open') {
+                                    if(this.isHost && this.authService.access_token) {
+                                        const dto = {
+                                            intent : 'answer',
+                                            to : initiatingPeerId,
+                                            isHost : true,
+                                            userAccessToken : this.authService.access_token,
+                                            meetingId : this.currentMeetingId,
+                                            answer : JSON.stringify(new RTCSessionDescription(answer).toJSON())
+                                        }
+                                        this.websocketConnection?.send(JSON.stringify(dto));     
+                                    } else {
+                                        const dto = {
+                                            intent : 'answer',
+                                            to : initiatingPeerId,
+                                            isHost : false,
+                                            meetingAccessToken : this.currentMeetingToken,
+                                            answer : JSON.stringify(new RTCSessionDescription(answer).toJSON())
+                                        }
+                                        this.websocketConnection?.send(JSON.stringify(dto));
+                                    }
+                                }
+                            }
+                        })
+                    }).catch(e => {
+                        console.log(e);
+                    })
                 }
             });
         }
@@ -79,6 +122,7 @@ export class SignalingService {
             }
             Object.assign(this.establisehdRTCPeerConnections, newEstablishedConnection);
             connection.createOffer().then((offer) => {
+                connection.setLocalDescription(offer);
                 this.websocketStatus.subscribe({
                     next: (status) => {
                         if(status === 'open') {
