@@ -9,8 +9,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class LiveMeeting {
     String meetingId;
     boolean isOpen = false;
-    List<Participant> participants = new CopyOnWriteArrayList<>();
-    Map<String, Participant> participantsBySessionId = new HashMap<String, Participant>();
+    List<WebSocketSession> sessions = new CopyOnWriteArrayList<>();
+    Map<String, WebSocketSession> sessionsById = new HashMap<String, WebSocketSession>();
 
     public LiveMeeting(String meetingId) {
         this.meetingId = meetingId;

@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { MeetingsService } from 'src/app/services/meetings/meetings.service';
 import { Meeting } from 'src/app/models/meeting.model';
+import { SignalingService } from 'src/app/services/signaling/signaling.service';
 
 @Component({
   selector: 'app-meetings-list',
@@ -10,7 +11,7 @@ import { Meeting } from 'src/app/models/meeting.model';
 export class MeetingsListComponent implements OnInit {
   meetings:Meeting[] = [];
 
-  constructor(private meetingsService:MeetingsService) { }
+  constructor(private meetingsService:MeetingsService, private signalingService:SignalingService) { }
 
   ngOnInit(): void {
     this.meetings = this.meetingsService.getMeetings();
@@ -20,7 +21,7 @@ export class MeetingsListComponent implements OnInit {
   }
 
   onOpen(meeting:Meeting) {
-    this.meetingsService.openMeeting(meeting.id);
+    this.signalingService.openMeeting(meeting.id);
   }
 
 }
