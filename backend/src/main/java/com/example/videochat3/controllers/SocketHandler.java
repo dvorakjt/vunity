@@ -98,6 +98,19 @@ public class SocketHandler extends TextWebSocketHandler {
                             String dataString = jsonData.toString();
                             forwardToSession.sendMessage(new TextMessage(dataString));
                         }
+                    } else if(intent.equals("candidate")) {
+                        String forwardToId = payload.get("to").toString();
+                        LiveMeeting joinedMeeting = liveMeetings.get(meetingId);
+                        WebSocketSession forwardToSession = joinedMeeting.sessionsById.get(forwardToId);
+                        if(forwardToSession.isOpen()) {
+                            JSONObject jsonData = new JSONObject();
+                            String candidate = payload.get("candidate").toString();
+                            jsonData.put("event", "candidate");
+                            jsonData.put("from", session.getId());
+                            jsonData.put("candidate", candidate);
+                            String dataString = jsonData.toString();
+                            forwardToSession.sendMessage(new TextMessage(dataString));
+                        }
                     }
                 } else { //not an authorized user
                     session.close(CloseStatus.POLICY_VIOLATION);
@@ -151,6 +164,19 @@ public class SocketHandler extends TextWebSocketHandler {
                         jsonData.put("event", "answer");
                         jsonData.put("from", session.getId());
                         jsonData.put("answer", answer);
+                        String dataString = jsonData.toString();
+                        forwardToSession.sendMessage(new TextMessage(dataString));
+                    }
+                } else if(intent.equals("candidate")) {
+                    String forwardToId = payload.get("to").toString();
+                    LiveMeeting joinedMeeting = liveMeetings.get(meetingId);
+                    WebSocketSession forwardToSession = joinedMeeting.sessionsById.get(forwardToId);
+                    if(forwardToSession.isOpen()) {
+                        JSONObject jsonData = new JSONObject();
+                        String candidate = payload.get("candidate").toString();
+                        jsonData.put("event", "candidate");
+                        jsonData.put("from", session.getId());
+                        jsonData.put("candidate", candidate);
                         String dataString = jsonData.toString();
                         forwardToSession.sendMessage(new TextMessage(dataString));
                     }

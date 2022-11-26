@@ -11,7 +11,11 @@ import {connect, ReplaySubject} from 'rxjs';
 declare var SockJS:any;
 declare var Stomp:any;
 
-const peerConnectionConfig = undefined;
+const peerConnectionConfig:RTCConfiguration = {
+    iceServers : [ {
+        urls : "stun:stun2.1.google.com:19302"
+    } ]
+};
 
 @Injectable()
 export class SignalingService {
@@ -22,7 +26,7 @@ export class SignalingService {
     private currentMeetingId = '';
     private currentMeetingToken = '';
     private initiatedRTCPeerConnections = {};
-    private establisehdRTCPeerConnections = [];
+    private establishedRTCPeerConnections = [];
 
     apiCall = new EventEmitter<{success:boolean, message:string}>();
 
@@ -55,6 +59,9 @@ export class SignalingService {
                         const newPeerConnection = {
                             [sessionId] : new RTCPeerConnection(peerConnectionConfig)
                         }
+                        newPeerConnection[sessionId].onconnectionstatechange = (event) => {
+                            console.log(event);
+                        }
                         Object.assign(this.initiatedRTCPeerConnections, newPeerConnection);
                     }
                     if(data.isOpen) {
@@ -64,9 +71,47 @@ export class SignalingService {
                     this.openConnections();
                 } else if(data.event === 'offer') {
                     const connection = new RTCPeerConnection(peerConnectionConfig);
+                    connection.onconnectionstatechange = (event) => {
+                        console.log(event);
+                    }
                     const offer = new RTCSessionDescription(JSON.parse(data.offer));
                     const initiatingPeerId = data.from;
                     //need to set data channel?
+                    connection.onicecandidate = (event) => {
+                        if (event.candidate) {
+                            console.log("remote peer candidate");
+                            const candidate = JSON.stringify(new RTCIceCandidate(event.candidate as RTCIceCandidateInit).toJSON());
+                            this.websocketStatus.subscribe({
+                                next: (status) => {
+                                    if(status === 'open') {
+                                        if(this.isHost && this.authService.access_token) {
+                                            const dto = {
+                                                intent : 'candidate',
+                                                to : initiatingPeerId,
+                                                isHost : true,
+                                                userAccessToken : this.authService.access_token,
+                                                meetingId : this.currentMeetingId,
+                                                candidate
+                                            }
+                                            this.websocketConnection?.send(JSON.stringify(dto));     
+                                        } else {
+                                            const dto = {
+                                                intent : 'candidate',
+                                                to : initiatingPeerId,
+                                                isHost : false,
+                                                meetingAccessToken : this.currentMeetingToken,
+                                                candidate
+                                            }
+                                            this.websocketConnection?.send(JSON.stringify(dto));
+                                        }
+                                    }
+                                }
+                            })
+                        } else {
+                            
+                        }
+                    };
+                    
                     connection.setRemoteDescription(offer);
                     const newEstablishedConnection = {
                         [initiatingPeerId] : {
@@ -74,8 +119,17 @@ export class SignalingService {
                             dataChannel: undefined
                         }
                     }
-                    Object.assign(this.establisehdRTCPeerConnections, newEstablishedConnection);
+                    connection.ondatachannel = (event) => {
+                        console.log("data channel established");
+                        const peer:any = this.establishedRTCPeerConnections[initiatingPeerId];
+                        if(peer) {
+                            peer['dataChannel'] = event.channel;
+                            (peer['dataChannel'] as RTCDataChannel).send("Hi! You've connected with me.");
+                        }
+                    }
+                    Object.assign(this.establishedRTCPeerConnections, newEstablishedConnection);
                     connection.createAnswer().then(answer => {
+                        connection.setLocalDescription(answer);
                         this.websocketStatus.subscribe({
                             next: (status) => {
                                 if(status === 'open') {
@@ -102,8 +156,26 @@ export class SignalingService {
                                 }
                             }
                         })
+                        console.log(connection.connectionState);
                     }).catch(e => {
                         console.log(e);
+                    })
+                } else if(data.event === 'answer') {
+                    const answer = new RTCSessionDescription(JSON.parse(data.answer));
+                    const initiatingPeerId = data.from;
+                    const connection:RTCPeerConnection = this.establishedRTCPeerConnections[initiatingPeerId]['connection'];
+                    connection.setRemoteDescription(answer);
+                    console.log(connection.connectionState);
+                } else if(data.event === 'candidate') {
+                    const candidate = new RTCIceCandidate(JSON.parse(data.candidate));
+                    const initiatingPeerId = data.from;
+                    const connection:RTCPeerConnection = this.establishedRTCPeerConnections[initiatingPeerId]['connection'];
+                    connection.addIceCandidate(candidate);
+                    connection.addEventListener('icegatheringstatechange', (state) => {
+                        console.log(state);
+                    })
+                    connection.addEventListener('iceconnectionstatechange', (state) => {
+                        console.log(state);
                     })
                 }
             });
@@ -114,13 +186,16 @@ export class SignalingService {
         for(const sessionId in this.initiatedRTCPeerConnections) {
             const connection:RTCPeerConnection = this.initiatedRTCPeerConnections[sessionId as keyof typeof this.initiatedRTCPeerConnections];
             const dataChannel = connection.createDataChannel('dataChannel-' + sessionId);
+            dataChannel.onmessage = (message) => {
+                console.log(message);
+            }
             const newEstablishedConnection = {
                 [sessionId] : {
                     dataChannel,
                     connection
                 }
             }
-            Object.assign(this.establisehdRTCPeerConnections, newEstablishedConnection);
+            Object.assign(this.establishedRTCPeerConnections, newEstablishedConnection);
             connection.createOffer().then((offer) => {
                 connection.setLocalDescription(offer);
                 this.websocketStatus.subscribe({
@@ -152,6 +227,39 @@ export class SignalingService {
             }).catch((e) => {
                 console.log(e);
             });
+            connection.onicecandidate = (event) => {
+                if (event.candidate) {
+                    const candidate = JSON.stringify(new RTCIceCandidate(event.candidate as RTCIceCandidateInit).toJSON());
+                    this.websocketStatus.subscribe({
+                        next: (status) => {
+                            if(status === 'open') {
+                                if(this.isHost && this.authService.access_token) {
+                                    const dto = {
+                                        intent : 'candidate',
+                                        to : sessionId,
+                                        isHost : true,
+                                        userAccessToken : this.authService.access_token,
+                                        meetingId : this.currentMeetingId,
+                                        candidate
+                                    }
+                                    this.websocketConnection?.send(JSON.stringify(dto));     
+                                } else {
+                                    const dto = {
+                                        intent : 'candidate',
+                                        to : sessionId,
+                                        isHost : false,
+                                        meetingAccessToken : this.currentMeetingToken,
+                                        candidate
+                                    }
+                                    this.websocketConnection?.send(JSON.stringify(dto));
+                                }
+                            }
+                        }
+                    })
+                } else {
+
+                }
+            };
         }
         this.initiatedRTCPeerConnections = {};
     }
