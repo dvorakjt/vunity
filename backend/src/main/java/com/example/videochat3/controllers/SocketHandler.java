@@ -45,72 +45,19 @@ public class SocketHandler extends TextWebSocketHandler {
             if(claimsToBeHost) {
                 //handle host authentication with their user token
                 if(socketFilter.isAuthorizedHost(payload)) {
-                    System.out.println("is authorized user");
                     String meetingId = payload.get("meetingId").toString();
                     if(intent.equals("open")) {
-                        LiveMeeting joinedMeeting;
-                        if(liveMeetings.keySet().contains(meetingId)) {
-                            joinedMeeting = liveMeetings.get(meetingId);
-                        } else {
-                            joinedMeeting = new LiveMeeting(meetingId);
-                            liveMeetings.put(meetingId, joinedMeeting);
-                        }
-                        joinedMeeting.sessions.add(session);
-                        joinedMeeting.sessionsById.put(session.getId(), session);
-                        joinedMeeting.isOpen = true;
-
-                        //send the list of participants and the meeting status
-                        JSONObject jsonData = new JSONObject();
-                        int sessionIndex = joinedMeeting.sessions.indexOf(session);
-                        List<String> preexistingSessions = joinedMeeting.sessions.subList(0, sessionIndex).stream().map(s -> s.getId()).collect(Collectors.toList());
-                        jsonData.put("event", "openedAsHost");
-                        jsonData.put("preexistingSessions", preexistingSessions);
-                        jsonData.put("isOpen", joinedMeeting.isOpen);
-                        String dataString = jsonData.toString();
-                        if(session.isOpen()) session.sendMessage(new TextMessage(dataString)); 
-                        for(WebSocketSession s : joinedMeeting.sessions) {
-                            if(s.isOpen() && !s.getId().equals(session.getId())) s.sendMessage(new TextMessage("{\"event\" : \"opened\"}"));
-                        }
+                        handleOpen(session, payload, meetingId);
                     } else if(intent.equals("offer")) {
-                        String forwardToId = payload.get("to").toString();
-                        LiveMeeting joinedMeeting = liveMeetings.get(meetingId);
-                        WebSocketSession forwardToSession = joinedMeeting.sessionsById.get(forwardToId);
-                        if(forwardToSession.isOpen()) {
-                            JSONObject jsonData = new JSONObject();
-                            String offer = payload.get("offer").toString();
-                            jsonData.put("event", "offer");
-                            jsonData.put("from", session.getId());
-                            jsonData.put("offer", offer);
-                            String dataString = jsonData.toString();
-                            forwardToSession.sendMessage(new TextMessage(dataString));
-
-                        }
+                        handleOffer(session, payload, meetingId);
                     } else if(intent.equals("answer")) {
-                        String forwardToId = payload.get("to").toString();
-                        LiveMeeting joinedMeeting = liveMeetings.get(meetingId);
-                        WebSocketSession forwardToSession = joinedMeeting.sessionsById.get(forwardToId);
-                        if(forwardToSession.isOpen()) {
-                            JSONObject jsonData = new JSONObject();
-                            String answer = payload.get("answer").toString();
-                            jsonData.put("event", "answer");
-                            jsonData.put("from", session.getId());
-                            jsonData.put("answer", answer);
-                            String dataString = jsonData.toString();
-                            forwardToSession.sendMessage(new TextMessage(dataString));
-                        }
+                        handleAnswer(session, payload, meetingId);
                     } else if(intent.equals("candidate")) {
-                        String forwardToId = payload.get("to").toString();
-                        LiveMeeting joinedMeeting = liveMeetings.get(meetingId);
-                        WebSocketSession forwardToSession = joinedMeeting.sessionsById.get(forwardToId);
-                        if(forwardToSession.isOpen()) {
-                            JSONObject jsonData = new JSONObject();
-                            String candidate = payload.get("candidate").toString();
-                            jsonData.put("event", "candidate");
-                            jsonData.put("from", session.getId());
-                            jsonData.put("candidate", candidate);
-                            String dataString = jsonData.toString();
-                            forwardToSession.sendMessage(new TextMessage(dataString));
-                        }
+                        handleCandidate(session, payload, meetingId);
+                    } //other actions
+                    else {
+                        //unauthorized action
+                        session.close(CloseStatus.POLICY_VIOLATION);
                     }
                 } else { //not an authorized user
                     session.close(CloseStatus.POLICY_VIOLATION);
@@ -121,71 +68,107 @@ public class SocketHandler extends TextWebSocketHandler {
             ) {
                 String meetingId = socketFilter.getMeetingIdFromToken(payload);
                 if(intent.equals("join")) {
-                    //add the session to the list of sessions               
-                    LiveMeeting joinedMeeting;
-                    if(liveMeetings.keySet().contains(meetingId)) {
-                        joinedMeeting = liveMeetings.get(meetingId);
-                    } else {
-                        joinedMeeting = new LiveMeeting(meetingId);
-                        liveMeetings.put(meetingId, joinedMeeting);
-                    }
-                    joinedMeeting.sessions.add(session);
-                    joinedMeeting.sessionsById.put(session.getId(), session);
-                    //send the list of participants and the meeting status
-                    JSONObject jsonData = new JSONObject();
-                    int sessionIndex = joinedMeeting.sessions.indexOf(session);
-                    List<String> preexistingSessions = joinedMeeting.sessions.subList(0, sessionIndex).stream().map(s -> s.getId()).collect(Collectors.toList());
-                    jsonData.put("event", "joined");
-                    jsonData.put("preexistingSessions", preexistingSessions);
-                    jsonData.put("isOpen", joinedMeeting.isOpen);
-                    String dataString = jsonData.toString();
-                    if(session.isOpen()) session.sendMessage(new TextMessage(dataString));
-                    return;
+                    handleJoin(session, payload, meetingId);
                 } else if(intent.equals("offer")) {
-                    String forwardToId = payload.get("to").toString();
-                    LiveMeeting joinedMeeting = liveMeetings.get(meetingId);
-                    WebSocketSession forwardToSession = joinedMeeting.sessionsById.get(forwardToId);
-                    if(forwardToSession.isOpen()) {
-                        JSONObject jsonData = new JSONObject();
-                        String offer = payload.get("offer").toString();
-                        jsonData.put("event", "offer");
-                        jsonData.put("from", session.getId());
-                        jsonData.put("offer", offer);
-                        String dataString = jsonData.toString();
-                        forwardToSession.sendMessage(new TextMessage(dataString));
-                    }
+                    handleOffer(session, payload, meetingId);
                 } else if(intent.equals("answer")) {
-                    String forwardToId = payload.get("to").toString();
-                    LiveMeeting joinedMeeting = liveMeetings.get(meetingId);
-                    WebSocketSession forwardToSession = joinedMeeting.sessionsById.get(forwardToId);
-                    if(forwardToSession.isOpen()) {
-                        JSONObject jsonData = new JSONObject();
-                        String answer = payload.get("answer").toString();
-                        jsonData.put("event", "answer");
-                        jsonData.put("from", session.getId());
-                        jsonData.put("answer", answer);
-                        String dataString = jsonData.toString();
-                        forwardToSession.sendMessage(new TextMessage(dataString));
-                    }
+                    handleAnswer(session, payload, meetingId);
                 } else if(intent.equals("candidate")) {
-                    String forwardToId = payload.get("to").toString();
-                    LiveMeeting joinedMeeting = liveMeetings.get(meetingId);
-                    WebSocketSession forwardToSession = joinedMeeting.sessionsById.get(forwardToId);
-                    if(forwardToSession.isOpen()) {
-                        JSONObject jsonData = new JSONObject();
-                        String candidate = payload.get("candidate").toString();
-                        jsonData.put("event", "candidate");
-                        jsonData.put("from", session.getId());
-                        jsonData.put("candidate", candidate);
-                        String dataString = jsonData.toString();
-                        forwardToSession.sendMessage(new TextMessage(dataString));
-                    }
+                    handleCandidate(session, payload, meetingId);
+                } //other actions
+                else {
+                    //unauthorized action
+                    session.close(CloseStatus.POLICY_VIOLATION);
                 }
             } else { //not an authorized guest
                 session.close(CloseStatus.POLICY_VIOLATION);
             }
         } else {
             session.close(CloseStatus.BAD_DATA);
+        }
+    }
+
+    private void handleJoin(WebSocketSession session, Map<String, Object> payload, String meetingId) throws InterruptedException, IOException {
+        LiveMeeting joinedMeeting = saveSessionAndGetMeeting(session, meetingId);
+        sendPreexistingSessions(session, joinedMeeting, false);
+    }
+
+    private void handleOpen(WebSocketSession session, Map<String, Object> payload, String meetingId) throws InterruptedException, IOException {
+        LiveMeeting joinedMeeting = saveSessionAndGetMeeting(session, meetingId);
+        joinedMeeting.isOpen = true;
+        sendPreexistingSessions(session, joinedMeeting, false);
+        for(WebSocketSession s : joinedMeeting.sessions) {
+            if(s.isOpen() && !s.getId().equals(session.getId())) s.sendMessage(new TextMessage("{\"event\" : \"opened\"}"));
+        }
+    }
+
+    private LiveMeeting saveSessionAndGetMeeting(WebSocketSession session, String meetingId) {
+        LiveMeeting joinedMeeting;
+        if(liveMeetings.keySet().contains(meetingId)) {
+            joinedMeeting = liveMeetings.get(meetingId);
+        } else {
+            joinedMeeting = new LiveMeeting(meetingId);
+            liveMeetings.put(meetingId, joinedMeeting);
+        }
+        joinedMeeting.sessions.add(session);
+        joinedMeeting.sessionsById.put(session.getId(), session);
+        return joinedMeeting;
+    }
+
+    private void sendPreexistingSessions(WebSocketSession session, LiveMeeting joinedMeeting, boolean openedAsHost) throws InterruptedException, IOException {
+        JSONObject jsonData = new JSONObject();
+        int sessionIndex = joinedMeeting.sessions.indexOf(session);
+        List<String> preexistingSessions = joinedMeeting.sessions.subList(0, sessionIndex).stream().map(s -> s.getId()).collect(Collectors.toList());
+        jsonData.put("event", openedAsHost ? "openedAsHost" : "joined");
+        jsonData.put("preexistingSessions", preexistingSessions);
+        jsonData.put("isOpen", joinedMeeting.isOpen);
+        String dataString = jsonData.toString();
+        if(session.isOpen()) session.sendMessage(new TextMessage(dataString));
+    }
+
+
+    private void handleOffer(WebSocketSession session, Map<String,Object> payload, String meetingId) throws InterruptedException, IOException {
+        String forwardToId = payload.get("to").toString();
+        LiveMeeting joinedMeeting = liveMeetings.get(meetingId);
+        WebSocketSession forwardToSession = joinedMeeting.sessionsById.get(forwardToId);
+        if(forwardToSession.isOpen()) {
+            JSONObject jsonData = new JSONObject();
+            String offer = payload.get("offer").toString();
+            jsonData.put("event", "offer");
+            jsonData.put("from", session.getId());
+            jsonData.put("offer", offer);
+            String dataString = jsonData.toString();
+            forwardToSession.sendMessage(new TextMessage(dataString));
+        }
+    }
+
+    private void handleAnswer(WebSocketSession session, Map<String,Object> payload, String meetingId) throws InterruptedException, IOException {
+        String forwardToId = payload.get("to").toString();
+        LiveMeeting joinedMeeting = liveMeetings.get(meetingId);
+        WebSocketSession forwardToSession = joinedMeeting.sessionsById.get(forwardToId);
+        if(forwardToSession.isOpen()) {
+            JSONObject jsonData = new JSONObject();
+            String answer = payload.get("answer").toString();
+            jsonData.put("event", "answer");
+            jsonData.put("from", session.getId());
+            jsonData.put("answer", answer);
+            String dataString = jsonData.toString();
+            forwardToSession.sendMessage(new TextMessage(dataString));
+        }
+    }
+
+    private void handleCandidate(WebSocketSession session, Map<String,Object> payload, String meetingId) throws InterruptedException, IOException {
+        String forwardToId = payload.get("to").toString();
+        LiveMeeting joinedMeeting = liveMeetings.get(meetingId);
+        WebSocketSession forwardToSession = joinedMeeting.sessionsById.get(forwardToId);
+        if(forwardToSession.isOpen()) {
+            JSONObject jsonData = new JSONObject();
+            String candidate = payload.get("candidate").toString();
+            jsonData.put("event", "candidate");
+            jsonData.put("from", session.getId());
+            jsonData.put("candidate", candidate);
+            String dataString = jsonData.toString();
+            forwardToSession.sendMessage(new TextMessage(dataString));
         }
     }
 
