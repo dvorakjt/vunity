@@ -1,0 +1,9 @@
+<div class="messagesContainer">
+    <div *ngFor="let message of messages" class="message" [ngClass]="{
+        ownMessage : message.from == 'me'
+    }">{{message.text}}</div>
+</div>
+<div class="new-message-input-container">
+    <input type="text" [(ngModel)]="newMessage" class="new-message-input" />
+    <button (click)="onSendMessage()" class="btn btn-primary new-message-button">Send To All</button>
+</div>

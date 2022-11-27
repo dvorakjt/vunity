@@ -16,6 +16,7 @@ import { CreateMeetingComponent } from './dashboard/create-meeting/create-meetin
 import { MeetingsListComponent } from './dashboard/meetings-list/meetings-list.component';
 import { MeetingDetailComponent } from './dashboard/meeting-detail/meeting-detail.component';
 import { ModalComponent } from './shared/modal/modal.component';
+import { ActiveMeetingComponent } from './active-meeting/active-meeting.component';
 
 @NgModule({
   declarations: [
@@ -30,6 +31,7 @@ import { ModalComponent } from './shared/modal/modal.component';
     MeetingsListComponent,
     MeetingDetailComponent,
     ModalComponent,
+    ActiveMeetingComponent,
   ],
   imports: [
     BrowserModule,

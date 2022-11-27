@@ -1,4 +1,4 @@
-<nav class="navbar">
+<nav class="navbar" *ngIf="signalingService.meetingStatus != meetingStatuses.InMeeting">
   <ul>
     <li><a routerLink="/" routerLinkActive="active" ariaCurrentWhenActive="page">Home</a></li>
     <li *ngIf="!authService.activeUser"><a routerLink="/login" routerLinkActive="active"
@@ -14,4 +14,7 @@
 </nav>
 <!-- The routed views render in the <router-outlet>-->
 <app-loading-wheel-overlay *ngIf="authService.isLoading"></app-loading-wheel-overlay>
-<router-outlet></router-outlet>
+<router-outlet *ngIf="signalingService.meetingStatus != meetingStatuses.InMeeting; else activeMeeting"></router-outlet>
+<ng-template #activeMeeting>
+  <app-active-meeting></app-active-meeting>
+</ng-template>

@@ -1,0 +1,61 @@
+.messagesContainer {
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: calc(100vh - 50px);
+    width: 320px;
+    box-sizing: border-box;
+    background-color: white;
+    overflow-y: scroll;
+}
+
+.message {
+    opacity: 0;
+    background-color: blue;
+    border-radius: 5px;
+    color: white;
+    width: 225px;
+    margin-left: 5px;
+    margin-right: 70px;
+    margin-top: 8px;
+    margin-bottom: 8px;
+    padding: 10px;
+    box-sizing: border-box;
+    animation: message 250ms ease-in-out 1 forwards;
+}
+
+.ownMessage {
+    background-color: green;
+    margin-left: 70px;
+    margin-right: 5px;
+    margin-top: 8px;
+    margin-bottom: 8px;
+    padding: 10px;
+}
+
+.new-message-input-container {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 320px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: lightgray;
+}
+
+.new-message-input {
+    height: 36px;
+    margin-right: 8px;
+}
+
+@keyframes message {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    } to {
+        opacity: 1;
+        transform: translateY(0px);
+    }
+}

@@ -6,6 +6,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Map.Entry;
 
 import org.springframework.boot.json.JsonParser;
 import org.springframework.boot.json.JsonParserFactory;
@@ -90,6 +91,7 @@ public class SocketHandler extends TextWebSocketHandler {
 
     private void handleJoin(WebSocketSession session, Map<String, Object> payload, String meetingId) throws InterruptedException, IOException {
         LiveMeeting joinedMeeting = saveSessionAndGetMeeting(session, meetingId);
+        
         sendPreexistingSessions(session, joinedMeeting, false);
     }
 
@@ -172,8 +174,20 @@ public class SocketHandler extends TextWebSocketHandler {
         }
     }
 
+    //remove closed session from livemeetings
     @Override
-    public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-        System.out.println("connection to websocket established");
+    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
+        String sessionId = session.getId();
+        for(Entry<String, LiveMeeting> entry : this.liveMeetings.entrySet()) {
+            LiveMeeting meeting = entry.getValue();
+            if(meeting.sessionsById.containsKey(sessionId)) {
+                meeting.sessionsById.remove(sessionId);
+                meeting.sessions.removeIf(s -> s.getId() == sessionId);
+                if(meeting.sessions.size() == 0) {
+                    this.liveMeetings.remove(meeting.meetingId);
+                }
+                break;
+            }
+        }
     }
 }
