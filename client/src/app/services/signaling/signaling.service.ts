@@ -53,132 +53,54 @@ export class SignalingService {
             this.websocketStatus.next('open');
             this.websocketConnection?.addEventListener('message', (message) => {
                 const data = JSON.parse(message.data);
-                console.log(data);
                 if(data.event === 'joined' || data.event === 'openedAsHost') {
-                    for(const sessionId of data.preexistingSessions) {
-                        const newPeerConnection = {
-                            [sessionId] : new RTCPeerConnection(peerConnectionConfig)
-                        }
-                        newPeerConnection[sessionId].onconnectionstatechange = (event) => {
-                            console.log(event);
-                        }
-                        Object.assign(this.initiatedRTCPeerConnections, newPeerConnection);
-                    }
-                    if(data.isOpen) {
-                        this.openConnections();
-                    }
+                    this.handleJoinOrOpenAsHost(data);
                 } else if(data.event === 'opened') {
                     this.openConnections();
                 } else if(data.event === 'offer') {
-                    const connection = new RTCPeerConnection(peerConnectionConfig);
-                    connection.onconnectionstatechange = (event) => {
-                        console.log(event);
-                    }
-                    const offer = new RTCSessionDescription(JSON.parse(data.offer));
-                    const initiatingPeerId = data.from;
-                    //need to set data channel?
-                    connection.onicecandidate = (event) => {
-                        if (event.candidate) {
-                            console.log("remote peer candidate");
-                            const candidate = JSON.stringify(new RTCIceCandidate(event.candidate as RTCIceCandidateInit).toJSON());
-                            this.websocketStatus.subscribe({
-                                next: (status) => {
-                                    if(status === 'open') {
-                                        if(this.isHost && this.authService.access_token) {
-                                            const dto = {
-                                                intent : 'candidate',
-                                                to : initiatingPeerId,
-                                                isHost : true,
-                                                userAccessToken : this.authService.access_token,
-                                                meetingId : this.currentMeetingId,
-                                                candidate
-                                            }
-                                            this.websocketConnection?.send(JSON.stringify(dto));     
-                                        } else {
-                                            const dto = {
-                                                intent : 'candidate',
-                                                to : initiatingPeerId,
-                                                isHost : false,
-                                                meetingAccessToken : this.currentMeetingToken,
-                                                candidate
-                                            }
-                                            this.websocketConnection?.send(JSON.stringify(dto));
-                                        }
-                                    }
-                                }
-                            })
-                        } else {
-                            
-                        }
-                    };
-                    
-                    connection.setRemoteDescription(offer);
-                    const newEstablishedConnection = {
-                        [initiatingPeerId] : {
-                            connection,
-                            dataChannel: undefined
-                        }
-                    }
-                    connection.ondatachannel = (event) => {
-                        console.log("data channel established");
-                        const peer:any = this.establishedRTCPeerConnections[initiatingPeerId];
-                        if(peer) {
-                            peer['dataChannel'] = event.channel;
-                            (peer['dataChannel'] as RTCDataChannel).send("Hi! You've connected with me.");
-                        }
-                    }
-                    Object.assign(this.establishedRTCPeerConnections, newEstablishedConnection);
-                    connection.createAnswer().then(answer => {
-                        connection.setLocalDescription(answer);
-                        this.websocketStatus.subscribe({
-                            next: (status) => {
-                                if(status === 'open') {
-                                    if(this.isHost && this.authService.access_token) {
-                                        const dto = {
-                                            intent : 'answer',
-                                            to : initiatingPeerId,
-                                            isHost : true,
-                                            userAccessToken : this.authService.access_token,
-                                            meetingId : this.currentMeetingId,
-                                            answer : JSON.stringify(new RTCSessionDescription(answer).toJSON())
-                                        }
-                                        this.websocketConnection?.send(JSON.stringify(dto));     
-                                    } else {
-                                        const dto = {
-                                            intent : 'answer',
-                                            to : initiatingPeerId,
-                                            isHost : false,
-                                            meetingAccessToken : this.currentMeetingToken,
-                                            answer : JSON.stringify(new RTCSessionDescription(answer).toJSON())
-                                        }
-                                        this.websocketConnection?.send(JSON.stringify(dto));
-                                    }
-                                }
-                            }
-                        })
-                        console.log(connection.connectionState);
-                    }).catch(e => {
-                        console.log(e);
-                    })
+                    this.handleOffer(data);
                 } else if(data.event === 'answer') {
-                    const answer = new RTCSessionDescription(JSON.parse(data.answer));
-                    const initiatingPeerId = data.from;
-                    const connection:RTCPeerConnection = this.establishedRTCPeerConnections[initiatingPeerId]['connection'];
-                    connection.setRemoteDescription(answer);
-                    console.log(connection.connectionState);
+                    this.handleAnswer(data);
                 } else if(data.event === 'candidate') {
-                    const candidate = new RTCIceCandidate(JSON.parse(data.candidate));
-                    const initiatingPeerId = data.from;
-                    const connection:RTCPeerConnection = this.establishedRTCPeerConnections[initiatingPeerId]['connection'];
-                    connection.addIceCandidate(candidate);
-                    connection.addEventListener('icegatheringstatechange', (state) => {
-                        console.log(state);
-                    })
-                    connection.addEventListener('iceconnectionstatechange', (state) => {
-                        console.log(state);
-                    })
+                    this.handleCandidate(data);
                 }
             });
+        }
+    }
+
+    private sendOverWebSocket(dto:any) {
+        this.websocketStatus.subscribe({
+            next: (status) => {
+                if(status === 'open') {
+                    let authData;
+                    if(this.isHost && this.authService.access_token) {
+                        authData = {
+                            isHost: true,
+                            userAccessToken : this.authService.access_token,
+                            meetingId : this.currentMeetingId,
+                        }
+                    } else {
+                        authData = {
+                            isHost: false,
+                            meetingAccessToken : this.currentMeetingToken
+                        }
+                    }
+                    Object.assign(dto, authData);
+                    this.websocketConnection?.send(JSON.stringify(dto));  
+                }
+            }
+        })
+    }
+
+    private handleJoinOrOpenAsHost(data:any) { //data is going to become a specific type in future version
+        for(const sessionId of data.preexistingSessions) {
+            const newPeerConnection = {
+                [sessionId] : new RTCPeerConnection(peerConnectionConfig)
+            }
+            Object.assign(this.initiatedRTCPeerConnections, newPeerConnection);
+        }
+        if(data.isOpen) {
+            this.openConnections();
         }
     }
 
@@ -227,42 +149,92 @@ export class SignalingService {
             }).catch((e) => {
                 console.log(e);
             });
-            connection.onicecandidate = (event) => {
-                if (event.candidate) {
-                    const candidate = JSON.stringify(new RTCIceCandidate(event.candidate as RTCIceCandidateInit).toJSON());
-                    this.websocketStatus.subscribe({
-                        next: (status) => {
-                            if(status === 'open') {
-                                if(this.isHost && this.authService.access_token) {
-                                    const dto = {
-                                        intent : 'candidate',
-                                        to : sessionId,
-                                        isHost : true,
-                                        userAccessToken : this.authService.access_token,
-                                        meetingId : this.currentMeetingId,
-                                        candidate
-                                    }
-                                    this.websocketConnection?.send(JSON.stringify(dto));     
-                                } else {
-                                    const dto = {
-                                        intent : 'candidate',
-                                        to : sessionId,
-                                        isHost : false,
-                                        meetingAccessToken : this.currentMeetingToken,
-                                        candidate
-                                    }
-                                    this.websocketConnection?.send(JSON.stringify(dto));
-                                }
-                            }
-                        }
-                    })
-                } else {
-
-                }
-            };
+            connection.onicecandidate = this.onIceCandidate(sessionId);
         }
         this.initiatedRTCPeerConnections = {};
     }
+
+    private handleOffer(data:any) {
+        const connection = new RTCPeerConnection(peerConnectionConfig);
+        const offer = new RTCSessionDescription(JSON.parse(data.offer));
+        const initiatingPeerId = data.from;
+        connection.onicecandidate = this.onIceCandidate(initiatingPeerId);
+        connection.setRemoteDescription(offer);
+        const newEstablishedConnection = {
+            [initiatingPeerId] : {
+                connection,
+                dataChannel: undefined
+            }
+        }
+        connection.ondatachannel = (event) => {
+            console.log("data channel established");
+            const peer:any = this.establishedRTCPeerConnections[initiatingPeerId];
+            if(peer) {
+                peer['dataChannel'] = event.channel;
+                (peer['dataChannel'] as RTCDataChannel).send("Hi! You've connected with me.");
+            }
+        }
+        Object.assign(this.establishedRTCPeerConnections, newEstablishedConnection);
+        connection.createAnswer().then(answer => {
+            connection.setLocalDescription(answer);   
+            const dto = {
+                intent : 'answer',
+                to : initiatingPeerId,
+                answer : JSON.stringify(new RTCSessionDescription(answer).toJSON())
+            }
+            this.sendOverWebSocket(dto);
+        }).catch(e => {
+            console.log(e);
+        })
+    }
+
+    private onIceCandidate(toSessionId:string) {
+        return (event:RTCPeerConnectionIceEvent) => {
+            if (event.candidate) {
+                const candidate = JSON.stringify(new RTCIceCandidate(event.candidate as RTCIceCandidateInit).toJSON());
+                this.websocketStatus.subscribe({
+                    next: (status) => {
+                        if(status === 'open') {
+                            if(this.isHost && this.authService.access_token) {
+                                const dto = {
+                                    intent : 'candidate',
+                                    to : toSessionId,
+                                    isHost : true,
+                                    userAccessToken : this.authService.access_token,
+                                    meetingId : this.currentMeetingId,
+                                    candidate
+                                }
+                                this.websocketConnection?.send(JSON.stringify(dto));     
+                            } else {
+                                const dto = {
+                                    intent : 'candidate',
+                                    to : toSessionId,
+                                    isHost : false,
+                                    meetingAccessToken : this.currentMeetingToken,
+                                    candidate
+                                }
+                                this.websocketConnection?.send(JSON.stringify(dto));
+                            }
+                        }
+                    }
+                });
+            }
+        }
+    }
+
+    private handleAnswer(data:any) {
+        const answer = new RTCSessionDescription(JSON.parse(data.answer));
+        const initiatingPeerId = data.from;
+        const connection:RTCPeerConnection = this.establishedRTCPeerConnections[initiatingPeerId]['connection'];
+        connection.setRemoteDescription(answer);
+    }
+
+    private handleCandidate(data:any) {
+        const candidate = new RTCIceCandidate(JSON.parse(data.candidate));
+        const initiatingPeerId = data.from;
+        const connection:RTCPeerConnection = this.establishedRTCPeerConnections[initiatingPeerId]['connection'];
+        connection.addIceCandidate(candidate);
+}
 
     public joinMeeting(meetingId:string, password:string) {
         this.http.post(`/api/meeting/join?meetingId=${meetingId}&password=${password}`, {}).subscribe({
