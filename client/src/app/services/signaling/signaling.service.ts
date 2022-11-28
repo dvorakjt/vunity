@@ -19,6 +19,10 @@ const peerConnectionConfig:RTCConfiguration = {
     } ]
 };
 
+const mediaConstraints = {
+    video: true,audio : true
+};
+
 //need onLeave and onClose methods
 
 @Injectable()
@@ -33,12 +37,16 @@ export class SignalingService {
     private initiatedRTCPeerConnections = {};
     private establishedRTCPeerConnections = {};
 
+    public localStream?:MediaStream;
+    public peerStreams:MediaStream[] = [];
+
     public meetingStatus:MeetingStatus = MeetingStatus.NotInMeeting;
 
     public messages:Message[] = []; //this will need to be an array of message objects which includes a from field. meeting participants should have usernames as fields (both in frontend & backend)
 
     apiCall = new EventEmitter<{success:boolean, message:string}>();
     receivedNewMessage = new EventEmitter<void>();
+    receivedNewStream = new EventEmitter<void>();
 
     constructor(private authService:AuthService, private meetingService:MeetingsService, private http:HttpClient) {
         this.checkAndEstablishWebSocketConnection();
@@ -124,19 +132,34 @@ export class SignalingService {
         for(const sessionId in this.initiatedRTCPeerConnections) {
             const connection:RTCPeerConnection = this.initiatedRTCPeerConnections[sessionId as keyof typeof this.initiatedRTCPeerConnections];
             const dataChannel = connection.createDataChannel('dataChannel-' + sessionId);
+
+            this.localStream?.getTracks().forEach(track => {
+                if(this.localStream) connection.addTrack(track, this.localStream);
+            });
+
             dataChannel.onmessage = (messageEvent:MessageEvent) => {
                 console.log(messageEvent.data);
                 const message = new Message(messageEvent.data, "other");
                 this.messages.push(message);
                 this.receivedNewMessage.emit();
             }
+
             const newEstablishedConnection = {
                 [sessionId] : {
                     dataChannel,
-                    connection
+                    connection,
+                    remoteStream : undefined
                 }
             }
+
             Object.assign(this.establishedRTCPeerConnections, newEstablishedConnection);
+
+            connection.addEventListener('track', async (event) => {
+                const [remoteStream] = event.streams;
+                (this.establishedRTCPeerConnections[sessionId as keyof typeof this.establishedRTCPeerConnections]['remoteStream'] as any) = remoteStream;
+                this.receivedNewStream.emit();
+            });
+
             connection.createOffer().then((offer) => {
                 connection.setLocalDescription(offer);
                 this.websocketStatus.subscribe({
@@ -182,7 +205,8 @@ export class SignalingService {
         const newEstablishedConnection = {
             [initiatingPeerId] : {
                 connection,
-                dataChannel: undefined
+                dataChannel: undefined,
+                remoteStream: undefined
             }
         }
         Object.assign(this.establishedRTCPeerConnections, newEstablishedConnection);
@@ -196,6 +220,17 @@ export class SignalingService {
                 this.receivedNewMessage.emit();
             }
         }
+
+        this.localStream?.getTracks().forEach(track => {
+            if(this.localStream) connection.addTrack(track, this.localStream);
+        });
+
+        connection.addEventListener('track', async (event) => {
+            const [remoteStream] = event.streams;
+            (this.establishedRTCPeerConnections[initiatingPeerId as keyof typeof this.establishedRTCPeerConnections]['remoteStream'] as any) = remoteStream;
+            this.receivedNewStream.emit();
+        });
+
         connection.createAnswer().then(answer => {
             connection.setLocalDescription(answer);   
             const dto = {
@@ -261,22 +296,29 @@ export class SignalingService {
         this.meetingStatus = MeetingStatus.Authenticating;
         this.http.post(`/api/meeting/join?meetingId=${meetingId}&password=${password}`, {}).subscribe({
             next: (responseData:any) => {
-                this.meetingStatus = MeetingStatus.ConnectingToSignalingServer;
-                this.currentMeetingToken = responseData.access_token;
-                this.checkAndEstablishWebSocketConnection();
-                this.websocketStatus.subscribe({
-                    next: (wsStatus) => {
-                        if(wsStatus == 'open') {
-                            this.meetingStatus = MeetingStatus.WaitingForHost;
-                            const joinData = {
-                                intent: 'join',
-                                isHost: false,
-                                meetingAccessToken: this.currentMeetingToken
+
+                navigator.mediaDevices.getUserMedia(mediaConstraints)
+                .then((stream:MediaStream) =>  { 
+                    this.localStream = stream;
+                    this.meetingStatus = MeetingStatus.ConnectingToSignalingServer;
+                    this.currentMeetingToken = responseData.access_token;
+                    this.checkAndEstablishWebSocketConnection();
+                    this.websocketStatus.subscribe({
+                        next: (wsStatus) => {
+                            if(wsStatus == 'open') {
+                                this.meetingStatus = MeetingStatus.WaitingForHost;
+                                const joinData = {
+                                    intent: 'join',
+                                    isHost: false,
+                                    meetingAccessToken: this.currentMeetingToken
+                                }
+                                this.websocketConnection?.send(JSON.stringify(joinData));
                             }
-                            this.websocketConnection?.send(JSON.stringify(joinData));
                         }
-                    }
-                });
+                    });
+                })
+                  .catch(function(err) { console.log(err); });
+
             },
             error: (error) => {
                 this.meetingStatus = MeetingStatus.Error;
@@ -287,22 +329,28 @@ export class SignalingService {
     public openMeeting(meetingId:string) {
         this.meetingStatus = MeetingStatus.Authenticating;
         if(this.authService.access_token) {
-            this.meetingStatus = MeetingStatus.ConnectingToSignalingServer;
-            this.websocketStatus.subscribe({
-                next: (wsStatus) => {
-                    if(wsStatus == 'open') {
-                        this.currentMeetingId = meetingId;
-                        this.isHost = true;
-                        const openData = {
-                            intent: 'open',
-                            isHost : true,
-                            userAccessToken : this.authService.access_token,
-                            meetingId
+
+            navigator.mediaDevices.getUserMedia(mediaConstraints)
+                .then((stream:MediaStream) =>  { 
+                    this.localStream = stream;
+                    this.meetingStatus = MeetingStatus.ConnectingToSignalingServer;
+                    this.websocketStatus.subscribe({
+                        next: (wsStatus) => {
+                            if(wsStatus == 'open') {
+                                this.currentMeetingId = meetingId;
+                                this.isHost = true;
+                                const openData = {
+                                    intent: 'open',
+                                    isHost : true,
+                                    userAccessToken : this.authService.access_token,
+                                    meetingId
+                                }
+                                this.websocketConnection?.send(JSON.stringify(openData));
+                            }
                         }
-                        this.websocketConnection?.send(JSON.stringify(openData));
-                    }
-                }
-            })
+                    })
+                }).catch(function(err) { console.log(err); });
+
         } else this.meetingStatus = MeetingStatus.Error; //need to more precisely handle permission-related errors
     }
 
@@ -325,5 +373,14 @@ export class SignalingService {
 
     public getMessages() {
         return this.messages.slice();
+    }
+
+    public getStreams() {
+        const streams:MediaStream[] = [];
+        for(let sessionId in this.establishedRTCPeerConnections) {
+            const peer:any = this.establishedRTCPeerConnections[sessionId as keyof typeof this.establishedRTCPeerConnections];
+            if(peer.remoteStream) streams.push(peer.remoteStream as MediaStream);
+        }
+        return streams;
     }
 }

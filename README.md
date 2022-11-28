@@ -4,3 +4,4 @@ This repository contains code for a video chat application built using Spring Bo
 This app is a work in progress, updated virtually daily. Current state of the app:
 
 ![Login and meeting service](./assets/Client.gif)
+![video chat](./assets/videochat.gif)

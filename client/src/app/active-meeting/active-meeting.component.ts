@@ -9,6 +9,8 @@ import { Message } from '../models/message.model';
 })
 export class ActiveMeetingComponent implements OnInit {
   messages:Message[] = [];
+  localStream?:MediaStream;
+  remoteStreams:MediaStream[] = [];
   newMessage = '';
 
   constructor(public signalingService:SignalingService, private changeDetection:ChangeDetectorRef) { }
@@ -20,6 +22,12 @@ export class ActiveMeetingComponent implements OnInit {
       this.messages = this.signalingService.getMessages();
       this.changeDetection.detectChanges();
     });
+    this.remoteStreams = this.signalingService.getStreams();
+    this.signalingService.receivedNewStream.subscribe(() => {
+      this.remoteStreams = this.signalingService.getStreams();
+      this.changeDetection.detectChanges();
+    })
+    this.localStream = this.signalingService.localStream;
   }
 
   onSendMessage() {

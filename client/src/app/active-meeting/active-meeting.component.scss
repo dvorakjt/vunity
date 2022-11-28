@@ -59,3 +59,14 @@
         transform: translateY(0px);
     }
 }
+
+.video-container {
+    width: calc(100vw - 320px);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, 400px);
+}
+
+video {
+    width: 400px;
+    border: 3px solid black;
+}

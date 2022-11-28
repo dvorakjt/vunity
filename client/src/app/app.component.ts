@@ -16,12 +16,12 @@ export class AppComponent {
   isLoading = true;
   meetingStatuses = MeetingStatus;
 
-  // @HostListener('window:beforeunload', ['$event']) 
-  // private confirmNavigateAwayIfInMeeting($event:any) {
-  //   if(this.signalingService.meetingStatus == this.meetingStatuses.InMeeting) {
-  //     return confirm();
-  //   } else return true;
-  // }
+  @HostListener('window:beforeunload', ['$event']) 
+  private confirmNavigateAwayIfInMeeting($event:any) {
+    if(this.signalingService.meetingStatus == this.meetingStatuses.InMeeting) {
+      return confirm();
+    } else return true;
+  }
 
   constructor(public authService:AuthService, public authInterceptor:AuthInterceptor, public meetingsService:MeetingsService, public signalingService:SignalingService) {}
 

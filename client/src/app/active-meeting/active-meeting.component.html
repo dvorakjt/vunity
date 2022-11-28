@@ -1,3 +1,7 @@
+<div class="video-container">
+    <video [srcObject]="localStream" autoplay="true"></video>
+    <video *ngFor="let remoteStream of remoteStreams" [srcObject]="remoteStream" autoplay="true"></video>
+</div>
 <div class="messagesContainer">
     <div *ngFor="let message of messages" class="message" [ngClass]="{
         ownMessage : message.from == 'me'
