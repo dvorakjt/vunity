@@ -38,54 +38,32 @@ public class SocketHandler extends TextWebSocketHandler {
         JsonParser springParser = JsonParserFactory.getJsonParser();
         Map < String, Object > payload = springParser.parseMap(message.getPayload());
 
-        System.out.println(payload.get("intent").toString());
-
         if(WebSocketDataValidator.isValidatePacket(payload)) {
-            String intent = payload.get("intent").toString();
-            boolean claimsToBeHost = Boolean.parseBoolean(payload.get("isHost").toString());
-            if(claimsToBeHost) {
-                //handle host authentication with their user token
-                if(socketFilter.isAuthorizedHost(payload)) {
-                    String meetingId = payload.get("meetingId").toString();
-                    if(intent.equals("open")) {
-                        handleOpen(session, payload, meetingId);
-                    } else if(intent.equals("offer")) {
-                        handleOffer(session, payload, meetingId);
-                    } else if(intent.equals("answer")) {
-                        handleAnswer(session, payload, meetingId);
-                    } else if(intent.equals("candidate")) {
-                        handleCandidate(session, payload, meetingId);
-                    } //other actions
-                    else {
-                        //unauthorized action
-                        session.close(CloseStatus.POLICY_VIOLATION);
-                    }
-                } else { //not an authorized user
-                    session.close(CloseStatus.POLICY_VIOLATION);
-                }
-            } else if(
-                payload.keySet().contains("meetingAccessToken") &&
-                socketFilter.isAuthorizedGuest(payload)
-            ) {
-                String meetingId = socketFilter.getMeetingIdFromToken(payload);
-                if(intent.equals("join")) {
-                    handleJoin(session, payload, meetingId);
-                } else if(intent.equals("offer")) {
-                    handleOffer(session, payload, meetingId);
-                } else if(intent.equals("answer")) {
-                    handleAnswer(session, payload, meetingId);
-                } else if(intent.equals("candidate")) {
-                    handleCandidate(session, payload, meetingId);
-                } //other actions
-                else {
-                    //unauthorized action
-                    session.close(CloseStatus.POLICY_VIOLATION);
-                }
-            } else { //not an authorized guest
+            if(!socketFilter.isAuthorizedUser(payload)) {
                 session.close(CloseStatus.POLICY_VIOLATION);
+                return;
             }
-        } else {
-            session.close(CloseStatus.BAD_DATA);
+
+            String intent = payload.get("intent").toString();
+            if(intent.equals("open") && !socketFilter.isAuthorizedHost(payload)) {
+                session.close(CloseStatus.POLICY_VIOLATION);
+                return;
+            }
+            
+            String meetingId = socketFilter.getMeetingIdFromToken(payload);
+            if(intent.equals("join")) {
+                handleJoin(session, payload, meetingId);
+            } else if(intent.equals("offer")) {
+                handleOffer(session, payload, meetingId);
+            } else if(intent.equals("answer")) {
+                handleAnswer(session, payload, meetingId);
+            } else if(intent.equals("candidate")) {
+                handleCandidate(session, payload, meetingId);
+            } else if(intent.equals("open")) {
+                handleOpen(session, payload, meetingId);
+            }
+        } else { //not an authorized guest
+            session.close(CloseStatus.POLICY_VIOLATION);
         }
     }
 

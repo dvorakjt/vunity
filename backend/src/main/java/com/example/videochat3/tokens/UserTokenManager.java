@@ -40,6 +40,13 @@ public class UserTokenManager {
         return tokens;
     }
 
+    public static Map<String, String> meetingUserToTokenMap(User user) {
+        String access_token = userToToken(user, 60 * 24);
+        Map<String, String> tokens = new HashMap<>();
+        tokens.put("access_token", access_token);
+        return tokens;
+    }
+
     public static Map<String, String> refreshAccessToken(String refresh_token, AppUserService appUserService) {
         User user = decodeRefreshToken(refresh_token, appUserService);
         String new_access_token = userToToken(user, 10);

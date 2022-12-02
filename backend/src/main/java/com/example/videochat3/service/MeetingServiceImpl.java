@@ -46,6 +46,18 @@ public class MeetingServiceImpl implements MeetingService, UserDetailsService {
         authorities.add(new SimpleGrantedAuthority("ROLE_GUEST"));
         return new User(meeting.getId().toString(), meeting.getPassword(), authorities);
     }
+
+    @Override
+    public User loadHostByMeetingId(String meetingId) throws UsernameNotFoundException {
+        Meeting meeting = meetingRepo.findMeetingById(meetingId);
+        if(meeting == null) {
+            throw new UsernameNotFoundException("Meeting not found.");
+        }
+        Collection<SimpleGrantedAuthority> authorities = new ArrayList<SimpleGrantedAuthority>();
+        authorities.add(new SimpleGrantedAuthority("ROLE_HOST"));
+        return new User(meeting.getId().toString(), meeting.getPassword(), authorities);
+    }
+
     @Override
     public Meeting saveMeeting(Meeting meeting) {
         log.info("Saving new meeting to db.");
@@ -57,5 +69,10 @@ public class MeetingServiceImpl implements MeetingService, UserDetailsService {
     public List<Meeting> getMeetings(String ownerId) {
         log.info("Fetching all your meetings.");
         return meetingRepo.findAllByOwnerId(ownerId);
+    }
+
+    @Override
+    public Meeting getMeeting(String meetingId) {
+        return meetingRepo.findMeetingById(meetingId);
     }
 }

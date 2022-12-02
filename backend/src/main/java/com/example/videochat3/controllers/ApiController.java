@@ -2,6 +2,7 @@ package com.example.videochat3.controllers;
 
 import com.example.videochat3.domain.Meeting;
 import com.example.videochat3.DTO.MeetingDTO;
+import com.example.videochat3.DTO.HostTokenDTO;
 import com.example.videochat3.domain.AppUser;
 import com.example.videochat3.service.AppUserService;
 import com.example.videochat3.service.MeetingService;
@@ -17,7 +18,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import com.example.videochat3.tokens.UserTokenManager;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
+import org.springframework.security.core.userdetails.User;
 
 import java.security.Principal;
 import java.util.HashMap;
@@ -104,7 +105,22 @@ public class ApiController {
         return ResponseEntity.ok().body(meetingService.getMeetings(user.getId().toString()));
     }
 
-    //get one meeting
+    //create host token
+    @PostMapping("/api/users/host_token")
+    public ResponseEntity generateHostToken(Principal principal, @RequestBody HostTokenDTO hostTokenDTO) {
+        String meetingId = hostTokenDTO.getMeetingId();
+        String email = principal.getName();
+        AppUser user = appUserService.findAppUserByEmail(email);
+        Meeting meeting = this.meetingService.getMeeting(meetingId);
+        if(!meeting.getOwnerId().equals(user.getId().toString())) {
+            return new ResponseEntity("Forbidden.", HttpStatus.FORBIDDEN);
+        } else {
+            User host = meetingService.loadHostByMeetingId(meetingId);
+            //tokenize the host and send
+            Map<String,String> meetingToken = UserTokenManager.meetingUserToTokenMap(host);
+            return ResponseEntity.ok().body(meetingToken);
+        }
+    }
 
     //put req to update one meeting
 
