@@ -8,12 +8,14 @@ import { Message } from '../models/message.model';
   styleUrls: ['./active-meeting.component.scss']
 })
 export class ActiveMeetingComponent implements OnInit {
-  messages:Message[] = [];
-  localStream?:MediaStream;
-  remoteStreams:MediaStream[] = [];
+  messages: Message[] = [];
+  localStream?: MediaStream;
+  remoteStreams: MediaStream[] = [];
   newMessage = '';
+  chatIsOpen = false;
+  videos: null[] = [];
 
-  constructor(public signalingService:SignalingService, private changeDetection:ChangeDetectorRef) { }
+  constructor(public signalingService: SignalingService, private changeDetection: ChangeDetectorRef) { }
 
   ngOnInit(): void {
     this.messages = this.signalingService.getMessages();

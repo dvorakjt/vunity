@@ -24,11 +24,12 @@ body {
     box-shadow: 1px 1px 3px #121922;
     transition: all ease-in-out 50ms;
 }
-    
-.btn:hover, .btn-sm:hover {
+
+.btn:hover,
+.btn-sm:hover {
     cursor: pointer;
 }
-    
+
 .btn:active {
     box-shadow: none;
     transform: translate(1px, 1px);
@@ -39,6 +40,27 @@ body {
     background-color: #d4624d;
 }
 
-.btn-primary:hover, .btn-primary:active {
+.btn-primary:hover,
+.btn-primary:active {
     background-color: #eb816e;
+}
+
+/* width */
+::-webkit-scrollbar {
+    width: 14px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+    background: #888;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
 }

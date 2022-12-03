@@ -70,7 +70,7 @@
           "options": {
             "browserTarget": "proxy-for-angular:build",
             "proxyConfig": "proxy.conf.js",
-            "port" : 4200
+            "port": 4200
           },
           "configurations": {
             "production": {
