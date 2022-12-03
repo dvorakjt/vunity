@@ -16,6 +16,7 @@ import { MeetingsListComponent } from './dashboard/meetings-list/meetings-list.c
 import { MeetingDetailComponent } from './dashboard/meeting-detail/meeting-detail.component';
 import { ModalComponent } from './shared/modal/modal.component';
 import { ActiveMeetingComponent } from './active-meeting/active-meeting.component';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 
 @NgModule({
   declarations: [
@@ -37,7 +38,8 @@ import { ActiveMeetingComponent } from './active-meeting/active-meeting.componen
     AppRoutingModule,
     FormsModule,
     ReactiveFormsModule,
-    HttpClientModule
+    HttpClientModule,
+    FontAwesomeModule
   ],
   providers: [],
   bootstrap: [AppComponent]

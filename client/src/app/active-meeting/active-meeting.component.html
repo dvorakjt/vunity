@@ -2,12 +2,23 @@
     <video [srcObject]="localStream" autoplay="true" muted="true" class="speaker-video"></video>
 </div>
 <div class="toolbar">
-    <button class="toolbar-button"></button>
-    <button class="toolbar-button"></button>
-    <button class="toolbar-button"></button>
-    <button class="toolbar-button"></button>
     <button class="toolbar-button">
-        <fa name="cog" animation="spin"></fa>
+        <fa-icon [icon]="faMicrophone"></fa-icon>
+    </button>
+    <button class="toolbar-button">
+        <fa-icon [icon]="faVideo"></fa-icon>
+    </button>
+    <button class="toolbar-button">
+        <fa-icon [icon]="faDesktop"></fa-icon>
+    </button>
+    <button class="toolbar-button">
+        <fa-icon [icon]="faMessage"></fa-icon>
+    </button>
+    <button class="toolbar-button">
+        <fa-icon [icon]="faCog"></fa-icon>
+    </button>
+    <button class="toolbar-button">
+        <fa-icon [icon]="faSignOut"></fa-icon>
     </button>
 </div>
 <div class="thumbnails-container">
@@ -24,4 +35,4 @@
     <input type="text" [(ngModel)]="newMessage" class="new-message-input" />
     <button (click)="onSendMessage()" class="btn btn-primary new-message-button">Send To All</button>
 </div>
-<button style="position: absolute; top: 0; left: 0;" (click)="videos.push(null)">ADD VIDEO</button>
+<!-- <button style="position: absolute; top: 0; left: 0;" (click)="videos.push(null)">ADD VIDEO</button> -->

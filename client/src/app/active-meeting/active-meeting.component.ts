@@ -1,6 +1,14 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { SignalingService } from '../services/signaling/signaling.service';
 import { Message } from '../models/message.model';
+import { faMicrophone } from '@fortawesome/free-solid-svg-icons';
+import { faMicrophoneSlash } from '@fortawesome/free-solid-svg-icons';
+import { faVideo } from '@fortawesome/free-solid-svg-icons';
+import { faVideoSlash } from '@fortawesome/free-solid-svg-icons';
+import { faCog } from '@fortawesome/free-solid-svg-icons';
+import { faMessage } from '@fortawesome/free-solid-svg-icons';
+import { faDesktop } from '@fortawesome/free-solid-svg-icons';
+import { faSignOut } from '@fortawesome/free-solid-svg-icons';
 
 @Component({
   selector: 'app-active-meeting',
@@ -14,6 +22,14 @@ export class ActiveMeetingComponent implements OnInit {
   newMessage = '';
   chatIsOpen = false;
   videos: null[] = [];
+  faMicrophone = faMicrophone;
+  faMicrophoneSlash = faMicrophoneSlash;
+  faVideo = faVideo;
+  faVideoSlash = faVideoSlash;
+  faCog = faCog;
+  faMessage = faMessage;
+  faDesktop = faDesktop;
+  faSignOut = faSignOut;
 
   constructor(public signalingService: SignalingService, private changeDetection: ChangeDetectorRef) { }
 
