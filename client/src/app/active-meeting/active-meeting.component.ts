@@ -21,7 +21,10 @@ export class ActiveMeetingComponent implements OnInit {
   remoteStreams: MediaStream[] = [];
   newMessage = '';
   chatIsOpen = false;
-  videos: null[] = [];
+  muted = false;
+  hideVideo = false;
+
+
   faMicrophone = faMicrophone;
   faMicrophoneSlash = faMicrophoneSlash;
   faVideo = faVideo;
@@ -53,4 +56,13 @@ export class ActiveMeetingComponent implements OnInit {
     this.newMessage = '';
   }
 
+  onToggleMicrophone() {
+    this.muted = !this.muted;
+    this.signalingService.toggleMicrophone();
+  }
+
+  onToggleVideo() {
+    this.hideVideo = !this.hideVideo;
+    this.signalingService.toggleVideo();
+  }
 }

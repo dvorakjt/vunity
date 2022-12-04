@@ -352,4 +352,19 @@ export class SignalingService {
         }
         return streams;
     }
+
+    public toggleMicrophone() {
+        if (this.localStream) {
+            this.localStream.getAudioTracks().forEach(track => track.enabled = !track.enabled);
+        }
+    }
+
+    public toggleVideo() {
+        if (this.localStream) {
+            this.localStream.getVideoTracks().forEach(track => {
+                track.enabled = !track.enabled
+                console.log(track.enabled);
+            });
+        }
+    }
 }

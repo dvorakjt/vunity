@@ -1,12 +1,12 @@
 <div class="speaker-view-container">
-    <video [srcObject]="localStream" autoplay="true" muted="true" class="speaker-video"></video>
+    <video [srcObject]="localStream" autoplay="true" [muted]="'muted'" class="speaker-video"></video>
 </div>
 <div class="toolbar">
-    <button class="toolbar-button">
-        <fa-icon [icon]="faMicrophone"></fa-icon>
+    <button class="toolbar-button" (click)="onToggleMicrophone()">
+        <fa-icon [icon]="!muted ? faMicrophone : faMicrophoneSlash"></fa-icon>
     </button>
-    <button class="toolbar-button">
-        <fa-icon [icon]="faVideo"></fa-icon>
+    <button class="toolbar-button" (click)="onToggleVideo()">
+        <fa-icon [icon]="!hideVideo ? faVideo : faVideoSlash"></fa-icon>
     </button>
     <button class="toolbar-button">
         <fa-icon [icon]="faDesktop"></fa-icon>
@@ -22,9 +22,8 @@
     </button>
 </div>
 <div class="thumbnails-container">
-    <video [srcObject]="localStream" autoplay="true" muted="true" class="video"></video>
-    <video *ngFor="let remoteStream of remoteStreams" [srcObject]="remoteStream" autoplay="true"></video>
-    <video [srcObject]="localStream" autoplay="true" muted="true" class="video" *ngFor="let video of videos"></video>
+    <video [srcObject]="localStream" autoplay="true" [muted]="'muted'" class="video"></video>
+    <video *ngFor="let remoteStream of remoteStreams" [srcObject]="remoteStream" autoplay="true" class="video"></video>
 </div>
 <div class="messagesContainer">
     <div *ngFor="let message of messages" class="message" [ngClass]="{
