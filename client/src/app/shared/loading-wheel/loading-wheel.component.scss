@@ -1,16 +1,48 @@
 .loading-wheel {
-    min-height: 75px;
-    min-width: 75px;
-    max-width: 75px;
-    max-height: 75px;
     border-radius: 50%;
     box-sizing: border-box;
-    border: 10px solid;
+    border: solid;
     border-top-color: lightgray;
     border-right-color: lightgray;
     border-bottom-color: lightgray;
     border-left-color: transparent;
     animation: rotateBorder 750ms linear infinite;
+}
+
+.lg {
+    min-height: 75px;
+    min-width: 75px;
+    max-width: 75px;
+    max-height: 75px;
+    border-width: 10px;
+}
+
+.md {
+    min-height: 50px;
+    min-width: 50px;
+    max-width: 50px;
+    max-height: 50px;
+    border-width: 7px;
+}
+
+.sm {
+    min-height: 25px;
+    min-width: 25px;
+    max-width: 25px;
+    max-height: 25px;
+    border-width: 5px;
+}
+
+.xs {
+    min-height: 12px;
+    min-width: 12px;
+    max-width: 12px;
+    max-height: 12px;
+    border-width: 2px;
+    border-top-color: darkgray;
+    border-right-color: darkgray;
+    border-bottom-color: darkgray;
+    border-left-color: transparent;
 }
 
 @keyframes rotateBorder {

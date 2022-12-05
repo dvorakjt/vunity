@@ -18,10 +18,6 @@ const routes: Routes = [
     canActivate: [NoAuthGuard]
   },
   {
-    path: "meeting/join",
-    component: JoinMeetingComponent
-  },
-  {
     path: "dashboard",
     component: DashboardComponent,
     canActivate: [AuthGuard]

@@ -1,1 +1,6 @@
-<div class="loading-wheel"></div>
+<div class="loading-wheel" [ngClass]="{
+    lg : size==='lg',
+    md : size==='md',
+    sm : size==='sm',
+    xs : size==='xs'
+}"></div>

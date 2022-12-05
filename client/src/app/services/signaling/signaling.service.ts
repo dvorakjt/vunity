@@ -13,6 +13,11 @@ import { ReplaySubject } from 'rxjs';
 declare var SockJS: any;
 declare var Stomp: any;
 
+type peer = {
+    username:string;
+    connection:RTCPeerConnection;
+}
+
 const peerConnectionConfig: RTCConfiguration = {
     iceServers: [{
         urls: "stun:stun2.1.google.com:19302"
@@ -30,7 +35,7 @@ export class SignalingService {
 
     private websocketConnection?: WebSocket;
     private websocketStatus = new ReplaySubject<string>(1);
-
+    private username = '';
     private isHost = false;
     private currentMeetingId = '';
     private currentMeetingToken = '';
@@ -44,7 +49,7 @@ export class SignalingService {
 
     public messages: Message[] = []; //this will need to be an array of message objects which includes a from field. meeting participants should have usernames as fields (both in frontend & backend)
 
-    apiCall = new EventEmitter<{ success: boolean, message: string }>();
+    meetingStatusChanged = new EventEmitter<MeetingStatus>();
     receivedNewMessage = new EventEmitter<void>();
     receivedNewStream = new EventEmitter<void>();
 
@@ -107,9 +112,13 @@ export class SignalingService {
     }
 
     private handleJoinOrOpenAsHost(data: any) { //data is going to become a specific type in future version
-        for (const sessionId of data.preexistingSessions) {
+        for (const participant of data.preexistingParticipants) {
+            const {sessionId, username} = participant;
             const newPeerConnection = {
-                [sessionId]: new RTCPeerConnection(peerConnectionConfig)
+                [sessionId]: {
+                    username,
+                    connection : new RTCPeerConnection(peerConnectionConfig)
+                }
             }
             Object.assign(this.initiatedRTCPeerConnections, newPeerConnection);
         }
@@ -121,25 +130,23 @@ export class SignalingService {
 
     private openConnections() {
         for (const sessionId in this.initiatedRTCPeerConnections) {
-            const connection: RTCPeerConnection = this.initiatedRTCPeerConnections[sessionId as keyof typeof this.initiatedRTCPeerConnections];
+            const {username, connection} = this.initiatedRTCPeerConnections[sessionId as keyof typeof this.initiatedRTCPeerConnections] as peer;
             const dataChannel = connection.createDataChannel('dataChannel-' + sessionId);
-
             this.localStream?.getTracks().forEach(track => {
                 if (this.localStream) connection.addTrack(track, this.localStream);
             });
-
             dataChannel.onmessage = (messageEvent: MessageEvent) => {
                 console.log(messageEvent.data);
                 const message = new Message(messageEvent.data, "other");
                 this.messages.push(message);
                 this.receivedNewMessage.emit();
             }
-
             const newEstablishedConnection = {
                 [sessionId]: {
                     dataChannel,
                     connection,
-                    remoteStream: undefined
+                    remoteStream: undefined,
+                    username
                 }
             }
 
@@ -159,7 +166,8 @@ export class SignalingService {
                             const dto = {
                                 intent: 'offer',
                                 to: sessionId,
-                                offer: JSON.stringify(new RTCSessionDescription(offer).toJSON())
+                                offer: JSON.stringify(new RTCSessionDescription(offer).toJSON()),
+                                username: this.username
                             }
                             this.sendOverWebSocket(dto);
                         }
@@ -177,13 +185,15 @@ export class SignalingService {
         const connection = new RTCPeerConnection(peerConnectionConfig);
         const offer = new RTCSessionDescription(JSON.parse(data.offer));
         const initiatingPeerId = data.from;
+        const initiatingPeerUsername = data.username;
         connection.onicecandidate = this.onIceCandidate(initiatingPeerId);
         connection.setRemoteDescription(offer);
         const newEstablishedConnection = {
             [initiatingPeerId]: {
                 connection,
                 dataChannel: undefined,
-                remoteStream: undefined
+                remoteStream: undefined,
+                username: initiatingPeerUsername
             }
         }
         Object.assign(this.establishedRTCPeerConnections, newEstablishedConnection);
@@ -255,38 +265,42 @@ export class SignalingService {
         connection.addIceCandidate(candidate);
     }
 
-    public joinMeeting(meetingId: string, password: string) {
+    public authenticateToOtherUsersMeeting(meetingId:string, password:string) {
         this.meetingStatus = MeetingStatus.Authenticating;
         this.http.post(`/api/meeting/join?meetingId=${meetingId}&password=${password}`, {}).subscribe({
             next: (responseData: any) => {
-
-                navigator.mediaDevices.getUserMedia(mediaConstraints)
-                    .then((stream: MediaStream) => {
-                        this.localStream = stream;
-                        this.meetingStatus = MeetingStatus.ConnectingToSignalingServer;
-                        this.currentMeetingToken = responseData.access_token;
-                        this.checkAndEstablishWebSocketConnection();
-                        this.websocketStatus.subscribe({
-                            next: (wsStatus) => {
-                                if (wsStatus == 'open') {
-                                    this.meetingStatus = MeetingStatus.WaitingForHost;
-                                    const joinData = {
-                                        intent: 'join',
-                                        isHost: false,
-                                        meetingAccessToken: this.currentMeetingToken
-                                    }
-                                    this.websocketConnection?.send(JSON.stringify(joinData));
-                                }
-                            }
-                        });
-                    })
-                    .catch(function (err) { console.log(err); });
-
+                this.currentMeetingToken = responseData.access_token;
+                this.meetingStatus = MeetingStatus.AwaitingUsernameInput;
+                this.meetingStatusChanged.emit(this.meetingStatus);
             },
-            error: (error) => {
+            error: (_error) => {
                 this.meetingStatus = MeetingStatus.Error;
+                this.meetingStatusChanged.emit(this.meetingStatus);
             }
-        })
+        });
+    }
+
+    public joinMeeting(username:string) {
+        navigator.mediaDevices.getUserMedia(mediaConstraints)
+            .then((stream: MediaStream) => {
+                this.localStream = stream;
+                this.meetingStatus = MeetingStatus.ConnectingToSignalingServer;
+                this.username = username;
+                this.checkAndEstablishWebSocketConnection();
+                this.websocketStatus.subscribe({
+                    next: (wsStatus) => {
+                        if (wsStatus == 'open') {
+                            this.meetingStatus = MeetingStatus.WaitingForHost;
+                            const joinData = {
+                                intent: 'join',
+                                username
+                            }
+                            this.sendOverWebSocket(joinData);
+                        }
+                    }
+                });
+            })
+            .catch(function (err) { console.log(err); });
     }
 
     public openMeeting(meetingId: string) {
@@ -299,6 +313,7 @@ export class SignalingService {
             this.http.post('/api/users/host_token', { meetingId }, opts).subscribe({
                 next: (responseData: any) => {
                     this.currentMeetingToken = responseData.access_token;
+                    if(this.authService.activeUser) this.username = this.authService.activeUser?.name;
                     navigator.mediaDevices.getUserMedia(mediaConstraints)
                         .then((stream: MediaStream) => {
                             this.localStream = stream;
@@ -308,6 +323,7 @@ export class SignalingService {
                                     if (wsStatus == 'open') {
                                         const openData = {
                                             intent: 'open',
+                                            username: this.username
                                         }
                                         this.sendOverWebSocket(openData);
                                     }
@@ -365,6 +381,13 @@ export class SignalingService {
                 track.enabled = !track.enabled
                 console.log(track.enabled);
             });
+        }
+    }
+
+    public logUserNames() {
+        for(let sessionId in this.establishedRTCPeerConnections) {
+            const peer = this.establishedRTCPeerConnections[sessionId as keyof typeof this.establishedRTCPeerConnections] as peer;
+            console.log(peer.username);
         }
     }
 }

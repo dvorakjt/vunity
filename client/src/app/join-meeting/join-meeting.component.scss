@@ -1,0 +1,61 @@
+.modalContainer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(125, 125, 125, 0.5);
+
+    .modal {
+        animation: fadeInAndUp 250ms ease-in-out 1 forwards;
+        background-color: white;
+        padding: 24px;
+        box-shadow: 4px 4px 8px #121922;
+        border-radius: 3px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        width: 200px;
+    }
+}
+
+.loading-wheel-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.loading-text {
+    font-style: italic;
+    color: darkgray;
+    margin-left: 4px;
+}
+
+.btn-container {
+    display: flex;
+    justify-content: space-between;
+    flex: 1;
+
+    button {
+        width: 72px;
+    }
+}
+
+.error {
+    color: #eb816e;
+    font-style: italic;
+}
+
+
+@keyframes fadeInAndUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    } to {
+        opacity: 1;
+        transform: translateY(0px);
+    }
+}

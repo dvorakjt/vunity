@@ -5,7 +5,7 @@
         ariaCurrentWhenActive="page">Login</a></li>
     <li *ngIf="authService.activeUser"><a routerLink="/dashboard" routerLinkActive="active"
         ariaCurrentWhenActive="page">Dashboard</a></li>
-    <li><a routerLink="/meeting/join" routerLinkActive="active" ariaCurrentWhenActive="page">Join a Meeting</a></li>
+    <li><a (click)="joinMeetingModalOpen = true" style="cursor:pointer;">Join a Meeting</a></li>
   </ul>
   <ul *ngIf="authService.activeUser">
     <li><span class="navbar-text">Welcome, {{authService.activeUser.name}}</span></li>
@@ -18,3 +18,4 @@
 <ng-template #activeMeeting>
   <app-active-meeting></app-active-meeting>
 </ng-template>
+<app-join-meeting *ngIf="joinMeetingModalOpen" (closeModal)="joinMeetingModalOpen = false"></app-join-meeting>

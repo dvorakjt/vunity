@@ -1,24 +1,41 @@
-<div class="screen">
-    <form class="form">
+<div class="modalContainer">
+    <div class="modal" *ngIf="modalToShow==='authentication'">
         <h3>Join a Meeting</h3>
         <label for="meetingId">Meeting ID</label>
-        <br />
         <input type="meetingId" name="meetingId" id="meetingId" [(ngModel)]="meetingId"
             (input)="this.meetingIdErrorMessage = '' " />
-        <br />
         <small class="error">{{meetingIdErrorMessage}}</small>
         <br />
-        <br />
         <label for="password">Password</label>
-        <br />
         <input type="password" name="password" id="password" [(ngModel)]="password"
             (input)="this.passwordErrorMessage = '' " />
-        <br />
         <small class="error">{{passwordErrorMessage}}</small>
         <br />
-        <br />
-        <button class="btn btn-primary" (click)="onJoinMeeting()">Join Now!</button>
+        <div class="loading-wheel-container" *ngIf="isLoading">
+            <app-loading-wheel [size]="'xs'"></app-loading-wheel><small class="loading-text">loading...</small>
+        </div>
+        <div class="btn-container">
+            <button class="btn btn-primary" (click)="onCloseSelf()" [disabled]="isLoading">Cancel</button>
+            <button class="btn btn-primary" (click)="onAuthenticateToMeeting()" [disabled]="isLoading">Join</button>
+        </div>
         <br />
         <small class="error">{{serverErrorMessage}}</small>
-    </form>
+    </div>
+    <div class="modal" *ngIf="modalToShow==='username'">
+        <h3>What should we call you?</h3>
+        <label for="username">Name to display</label>
+        <input type="text" name="username" id="username" [(ngModel)]="username" />
+        <small class="error">{{usernameErrorMessage}}</small>
+        <br />
+        <div class="loading-wheel-container" *ngIf="isLoading">
+            <app-loading-wheel [size]="'xs'"></app-loading-wheel><small class="loading-text">loading...</small>
+        </div>
+        <div class="btn-container">
+            <button class="btn btn-primary" (click)="onCloseSelf()" [disabled]="isLoading">Cancel</button>
+            <button class="btn btn-primary" (click)="onEnterUsername()" [disabled]="isLoading">Continue</button>
+        </div>
+    </div>
+    <div class="modal" *ngIf="modalToShow==='allowCameraAndMicrophone'">
+        <h3>Select Your Camera and Microphone Settings</h3>
+    </div>
 </div>

@@ -23,7 +23,8 @@
 </div>
 <div class="thumbnails-container">
     <video [srcObject]="localStream" autoplay="true" [muted]="'muted'" class="video"></video>
-    <video *ngFor="let remoteStream of remoteStreams" [srcObject]="remoteStream" autoplay="true" class="video"></video>
+    <video *ngFor="let remoteStream of remoteStreams" [srcObject]="remoteStream" autoplay="true" class="video">
+    </video>
 </div>
 <div class="messagesContainer">
     <div *ngFor="let message of messages" class="message" [ngClass]="{
@@ -34,4 +35,5 @@
     <input type="text" [(ngModel)]="newMessage" class="new-message-input" />
     <button (click)="onSendMessage()" class="btn btn-primary new-message-button">Send To All</button>
 </div>
+<button (click)="signalingService.logUserNames()" style="position: absolute; top: 0; left: 50%;">Log Usernames</button>
 <!-- <button style="position: absolute; top: 0; left: 0;" (click)="videos.push(null)">ADD VIDEO</button> -->

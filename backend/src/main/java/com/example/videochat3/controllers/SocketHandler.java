@@ -68,21 +68,25 @@ public class SocketHandler extends TextWebSocketHandler {
     }
 
     private void handleJoin(WebSocketSession session, Map<String, Object> payload, String meetingId) throws InterruptedException, IOException {
-        LiveMeeting joinedMeeting = saveSessionAndGetMeeting(session, meetingId);
-        
-        sendPreexistingSessions(session, joinedMeeting, false);
+        String username = payload.get("username").toString();
+        Participant participant = new Participant(username, session);
+        LiveMeeting joinedMeeting = saveSessionAndGetMeeting(participant, meetingId);
+        sendPreexistingSessions(participant, joinedMeeting, false);
     }
 
     private void handleOpen(WebSocketSession session, Map<String, Object> payload, String meetingId) throws InterruptedException, IOException {
-        LiveMeeting joinedMeeting = saveSessionAndGetMeeting(session, meetingId);
+        String username = payload.get("username").toString();
+        Participant participant = new Participant(username, session);
+        LiveMeeting joinedMeeting = saveSessionAndGetMeeting(participant, meetingId);
         joinedMeeting.isOpen = true;
-        sendPreexistingSessions(session, joinedMeeting, false);
-        for(WebSocketSession s : joinedMeeting.sessions) {
+        sendPreexistingSessions(participant, joinedMeeting, true);
+        for(Participant p : joinedMeeting.participants) {
+            WebSocketSession s = p.getSession();
             if(s.isOpen() && !s.getId().equals(session.getId())) s.sendMessage(new TextMessage("{\"event\" : \"opened\"}"));
         }
     }
 
-    private LiveMeeting saveSessionAndGetMeeting(WebSocketSession session, String meetingId) {
+    private LiveMeeting saveSessionAndGetMeeting(Participant participant, String meetingId) {
         LiveMeeting joinedMeeting;
         if(liveMeetings.keySet().contains(meetingId)) {
             joinedMeeting = liveMeetings.get(meetingId);
@@ -90,65 +94,91 @@ public class SocketHandler extends TextWebSocketHandler {
             joinedMeeting = new LiveMeeting(meetingId);
             liveMeetings.put(meetingId, joinedMeeting);
         }
-        joinedMeeting.sessions.add(session);
-        joinedMeeting.sessionsById.put(session.getId(), session);
+        joinedMeeting.participants.add(participant);
+        joinedMeeting.participantsById.put(participant.getSession().getId(), participant);
         return joinedMeeting;
     }
 
-    private void sendPreexistingSessions(WebSocketSession session, LiveMeeting joinedMeeting, boolean openedAsHost) throws InterruptedException, IOException {
+    private void sendPreexistingSessions(Participant participant, LiveMeeting joinedMeeting, boolean openedAsHost) throws InterruptedException, IOException {
         JSONObject jsonData = new JSONObject();
-        int sessionIndex = joinedMeeting.sessions.indexOf(session);
-        List<String> preexistingSessions = joinedMeeting.sessions.subList(0, sessionIndex).stream().map(s -> s.getId()).collect(Collectors.toList());
+        int participantIndex = joinedMeeting.participants.indexOf(participant);
+        List<JSONObject> preexistingParticipants = joinedMeeting.participants.subList(0, participantIndex).stream().map(p -> {
+            JSONObject participantAsJson = new JSONObject();
+            participantAsJson.put("sessionId", p.getSession().getId());
+            participantAsJson.put("username", p.getUsername());
+            return participantAsJson;
+        }).collect(Collectors.toList());
         jsonData.put("event", openedAsHost ? "openedAsHost" : "joined");
-        jsonData.put("preexistingSessions", preexistingSessions);
+        jsonData.put("preexistingParticipants", preexistingParticipants);
         jsonData.put("isOpen", joinedMeeting.isOpen);
         String dataString = jsonData.toString();
-        if(session.isOpen()) session.sendMessage(new TextMessage(dataString));
+        WebSocketSession s = participant.getSession();
+        if(s.isOpen()) s.sendMessage(new TextMessage(dataString)); //usernames will be sent in preexistingParticipants and handleOffer
     }
 
 
     private void handleOffer(WebSocketSession session, Map<String,Object> payload, String meetingId) throws InterruptedException, IOException {
         String forwardToId = payload.get("to").toString();
         LiveMeeting joinedMeeting = liveMeetings.get(meetingId);
-        WebSocketSession forwardToSession = joinedMeeting.sessionsById.get(forwardToId);
-        if(forwardToSession.isOpen()) {
-            JSONObject jsonData = new JSONObject();
-            String offer = payload.get("offer").toString();
-            jsonData.put("event", "offer");
-            jsonData.put("from", session.getId());
-            jsonData.put("offer", offer);
-            String dataString = jsonData.toString();
-            forwardToSession.sendMessage(new TextMessage(dataString));
+        Participant initiatingParticipant = joinedMeeting.participantsById.get(session.getId());
+        if(initiatingParticipant != null) {
+            String username = initiatingParticipant.getUsername();
+            if(joinedMeeting != null) {
+                Participant forwardToParticipant = joinedMeeting.participantsById.get(forwardToId);
+                if(forwardToParticipant != null) {
+                WebSocketSession forwardToSession = forwardToParticipant.getSession();
+                    if(forwardToSession.isOpen()) {
+                        JSONObject jsonData = new JSONObject();
+                        String offer = payload.get("offer").toString();
+                        jsonData.put("event", "offer");
+                        jsonData.put("from", session.getId());
+                        jsonData.put("username", username);
+                        jsonData.put("offer", offer);
+                        String dataString = jsonData.toString();
+                        forwardToSession.sendMessage(new TextMessage(dataString));
+                    }
+                }
+            }
         }
     }
 
     private void handleAnswer(WebSocketSession session, Map<String,Object> payload, String meetingId) throws InterruptedException, IOException {
         String forwardToId = payload.get("to").toString();
         LiveMeeting joinedMeeting = liveMeetings.get(meetingId);
-        WebSocketSession forwardToSession = joinedMeeting.sessionsById.get(forwardToId);
-        if(forwardToSession.isOpen()) {
-            JSONObject jsonData = new JSONObject();
-            String answer = payload.get("answer").toString();
-            jsonData.put("event", "answer");
-            jsonData.put("from", session.getId());
-            jsonData.put("answer", answer);
-            String dataString = jsonData.toString();
-            forwardToSession.sendMessage(new TextMessage(dataString));
+        if(joinedMeeting != null) {
+            Participant forwardToParticipant = joinedMeeting.participantsById.get(forwardToId);
+            if(forwardToParticipant != null) {
+                WebSocketSession forwardToSession = forwardToParticipant.getSession();
+                if(forwardToSession.isOpen()) {
+                    JSONObject jsonData = new JSONObject();
+                    String answer = payload.get("answer").toString();
+                    jsonData.put("event", "answer");
+                    jsonData.put("from", session.getId());
+                    jsonData.put("answer", answer);
+                    String dataString = jsonData.toString();
+                    forwardToSession.sendMessage(new TextMessage(dataString));
+                }
+            }
         }
     }
 
     private void handleCandidate(WebSocketSession session, Map<String,Object> payload, String meetingId) throws InterruptedException, IOException {
         String forwardToId = payload.get("to").toString();
         LiveMeeting joinedMeeting = liveMeetings.get(meetingId);
-        WebSocketSession forwardToSession = joinedMeeting.sessionsById.get(forwardToId);
-        if(forwardToSession.isOpen()) {
-            JSONObject jsonData = new JSONObject();
-            String candidate = payload.get("candidate").toString();
-            jsonData.put("event", "candidate");
-            jsonData.put("from", session.getId());
-            jsonData.put("candidate", candidate);
-            String dataString = jsonData.toString();
-            forwardToSession.sendMessage(new TextMessage(dataString));
+        if(joinedMeeting != null) {
+            Participant forwardToParticipant = joinedMeeting.participantsById.get(forwardToId);
+            if(forwardToParticipant != null) {
+                WebSocketSession forwardToSession = forwardToParticipant.getSession();
+                if(forwardToSession.isOpen()) {
+                    JSONObject jsonData = new JSONObject();
+                    String candidate = payload.get("candidate").toString();
+                    jsonData.put("event", "candidate");
+                    jsonData.put("from", session.getId());
+                    jsonData.put("candidate", candidate);
+                    String dataString = jsonData.toString();
+                    forwardToSession.sendMessage(new TextMessage(dataString));
+                }
+            }
         }
     }
 
@@ -158,10 +188,10 @@ public class SocketHandler extends TextWebSocketHandler {
         String sessionId = session.getId();
         for(Entry<String, LiveMeeting> entry : this.liveMeetings.entrySet()) {
             LiveMeeting meeting = entry.getValue();
-            if(meeting.sessionsById.containsKey(sessionId)) {
-                meeting.sessionsById.remove(sessionId);
-                meeting.sessions.removeIf(s -> s.getId() == sessionId);
-                if(meeting.sessions.size() == 0) {
+            if(meeting.participantsById.containsKey(sessionId)) {
+                meeting.participantsById.remove(sessionId);
+                meeting.participants.removeIf(p -> p.getSession().getId() == sessionId);
+                if(meeting.participants.size() == 0) {
                     this.liveMeetings.remove(meeting.meetingId);
                 }
                 break;

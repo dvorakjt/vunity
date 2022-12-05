@@ -15,6 +15,7 @@ export class AppComponent {
   title = 'client';
   isLoading = true;
   meetingStatuses = MeetingStatus;
+  joinMeetingModalOpen = false;
 
   @HostListener('window:beforeunload', ['$event']) 
   private confirmNavigateAwayIfInMeeting($event:any) {
