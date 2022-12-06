@@ -24,12 +24,12 @@
 <div class="thumbnails-container">
     <video [srcObject]="localStream" autoplay="true" [muted]="'muted'" class="video"></video>
     <app-video *ngFor="let peer of peers" [stream]="peer.stream" [username]="peer.username"
-        [audioEnabled]="peer.audioEnabled" [videoEnabled]="peer.videoEnabled"></app-video>
+        [audioEnabled]="peer.audioEnabled" [videoEnabled]="peer.videoEnabled" [sessionId]="peer.id"></app-video>
 </div>
 <div class="messagesContainer">
     <div *ngFor="let message of messages" class="message" [ngClass]="{
         ownMessage : message.from == 'me'
-    }">{{message.text}}</div>
+    }">{{message.text}}<small class="sender-name-text">{{message.from}}</small></div>
 </div>
 <div class="new-message-input-container">
     <input type="text" [(ngModel)]="newMessage" class="new-message-input" />

@@ -76,21 +76,35 @@
     width: 225px;
     margin-left: 5px;
     margin-right: 70px;
-    margin-top: 8px;
+    margin-top: 24px;
     margin-bottom: 8px;
     padding: 10px;
     box-sizing: border-box;
     animation: message 250ms ease-in-out 1 forwards;
+    position: relative;
+
+    .sender-name-text {
+        position: absolute;
+        color: gray;
+        top: -16px;
+        left: 0px;
+        font-style: italic;
+    }
 }
 
 .ownMessage {
     background-color: green;
     margin-left: 70px;
     margin-right: 5px;
-    margin-top: 8px;
-    margin-bottom: 8px;
     padding: 10px;
+
+    .sender-name-text {
+        left: auto;
+        right: 0px;
+    }
 }
+
+
 
 .new-message-input-container {
     position: absolute;

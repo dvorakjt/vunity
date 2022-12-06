@@ -53,6 +53,8 @@ export class SignalingService {
     meetingStatusChanged = new EventEmitter<MeetingStatus>();
     receivedNewMessage = new EventEmitter<void>();
     receivedNewStream = new EventEmitter<void>();
+    audioToggled = new EventEmitter<{id:string; status:boolean}>();
+    videoToggled = new EventEmitter<{id:string; status:boolean}>();
 
     constructor(private authService: AuthService, private meetingService: MeetingsService, private http: HttpClient) {
         this.checkAndEstablishWebSocketConnection();
@@ -137,10 +139,26 @@ export class SignalingService {
                 if (this.localStream) connection.addTrack(track, this.localStream);
             });
             dataChannel.onmessage = (messageEvent: MessageEvent) => {
-                console.log(messageEvent.data);
-                const message = new Message(messageEvent.data, "other");
-                this.messages.push(message);
-                this.receivedNewMessage.emit();
+                const data = JSON.parse(messageEvent.data);
+                if(data.messageType === 'chat') {
+                    const message = new Message(data.message, username);
+                    this.messages.push(message);
+                    this.receivedNewMessage.emit();
+                } else if(data.messageType === 'microphoneToggle') {
+                    console.log(sessionId);
+                    console.log(data.message);
+                    this.audioToggled.emit({
+                        id: sessionId,
+                        status: data.message === 'true'
+                    });
+                } else if(data.messageType === 'videoToggle') {
+                    console.log(sessionId);
+                    console.log(data.message);
+                    this.videoToggled.emit({
+                        id: sessionId,
+                        status: data.message === 'true'
+                    })
+                }
             }
             const newEstablishedConnection = {
                 [sessionId]: {
@@ -222,10 +240,26 @@ export class SignalingService {
             (this.establishedRTCPeerConnections[initiatingPeerId as keyof typeof this.establishedRTCPeerConnections] as any).dataChannel = event.channel;
             const channel = (this.establishedRTCPeerConnections[initiatingPeerId as keyof typeof this.establishedRTCPeerConnections] as any).dataChannel;
             channel.onmessage = (messageEvent: MessageEvent) => {
-                console.log(messageEvent.data);
-                const message = new Message(messageEvent.data, "other");
-                this.messages.push(message);
-                this.receivedNewMessage.emit();
+                const data = JSON.parse(messageEvent.data);
+                if(data.messageType === 'chat') {
+                    const message = new Message(data.message, initiatingPeerUsername);
+                    this.messages.push(message);
+                    this.receivedNewMessage.emit();
+                } else if(data.messageType === 'microphoneToggle') {
+                    console.log(initiatingPeerId);
+                    console.log(data.message);
+                    this.audioToggled.emit({
+                        id: initiatingPeerId,
+                        status: data.message === 'true'
+                    });
+                } else if(data.messageType === 'videoToggle') {
+                    console.log(initiatingPeerId);
+                    console.log(data.message);
+                    this.videoToggled.emit({
+                        id: initiatingPeerId,
+                        status: data.message === 'true'
+                    })
+                }
             }
         }
 
@@ -252,6 +286,7 @@ export class SignalingService {
                     return;
                 }
             });
+            this.receivedNewStream.emit();
         });
 
         connection.createAnswer().then(answer => {
@@ -369,17 +404,23 @@ export class SignalingService {
         } else this.meetingStatus = MeetingStatus.Error; //need to more precisely handle permission-related errors
     }
 
-    public broadCastMessage(message: string) {
+    public broadCastMessage(messageType:string, message: string) {
         if (this.meetingStatus = MeetingStatus.InMeeting) {
-            const m = new Message(message, "me");
-            this.messages.push(m);
-            this.receivedNewMessage.emit();
+            if(messageType === 'chat') {
+                const m = new Message(message, "me");
+                this.messages.push(m);
+                this.receivedNewMessage.emit();
+            }
             for (let sessionId in this.establishedRTCPeerConnections) {
+                const broadcastData = JSON.stringify({
+                    messageType,
+                    message
+                });
                 const peer: any = this.establishedRTCPeerConnections[sessionId as keyof typeof this.establishedRTCPeerConnections];
                 if (peer.dataChannel) {
                     const dataChannel = peer.dataChannel as RTCDataChannel;
                     if (dataChannel.readyState == 'open') {
-                        dataChannel.send(message);
+                        dataChannel.send(broadcastData);
                     }
                 }
             }
@@ -399,7 +440,8 @@ export class SignalingService {
                     username: peerConnection.username,
                     stream: peerConnection.remoteStream,
                     audioEnabled: peerConnection.audioEnabled,
-                    videoEnabled: peerConnection.videoEnabled
+                    videoEnabled: peerConnection.videoEnabled,
+                    id: sessionId
                 }
                 peers.push(peer);
             }
@@ -409,24 +451,23 @@ export class SignalingService {
 
     public toggleMicrophone() {
         if (this.localStream) {
-            let audioTrackCounter = 0;
+            let status;
             this.localStream.getAudioTracks().forEach(track => {
-            audioTrackCounter++;
                 track.enabled = !track.enabled
+                status = track.enabled;
             });
-            console.log("audio tracks: " + audioTrackCounter);
+            this.broadCastMessage('microphoneToggle', `${status}`);
         }
     }
 
     public toggleVideo() {
         if (this.localStream) {
-            let videoTrackCounter = 0;
+            let status;
             this.localStream.getVideoTracks().forEach(track => {
-                videoTrackCounter++;
                 track.enabled = !track.enabled
-                console.log(track.enabled);
+                status = track.enabled;
             });
-            console.log("video tracks: " + videoTrackCounter);
+            this.broadCastMessage('videoToggle', `${status}`);
         }
     }
 

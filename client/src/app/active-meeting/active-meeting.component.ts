@@ -40,7 +40,6 @@ export class ActiveMeetingComponent implements OnInit {
   ngOnInit(): void {
     this.messages = this.signalingService.getMessages();
     this.signalingService.receivedNewMessage.subscribe(() => {
-      console.log("event fired");
       this.messages = this.signalingService.getMessages();
       this.changeDetection.detectChanges();
     });
@@ -53,7 +52,7 @@ export class ActiveMeetingComponent implements OnInit {
   }
 
   onSendMessage() {
-    this.signalingService.broadCastMessage(this.newMessage);
+    this.signalingService.broadCastMessage('chat', this.newMessage);
     this.newMessage = '';
   }
 

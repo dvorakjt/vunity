@@ -3,5 +3,6 @@ export type peerStreamData = {
     username: string;
     audioEnabled: boolean;
     videoEnabled: boolean;
+    id:string;
 }
   
