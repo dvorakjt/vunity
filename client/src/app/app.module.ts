@@ -17,6 +17,7 @@ import { MeetingDetailComponent } from './dashboard/meeting-detail/meeting-detai
 import { ModalComponent } from './shared/modal/modal.component';
 import { ActiveMeetingComponent } from './active-meeting/active-meeting.component';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { VideoComponent } from './video/video.component';
 
 @NgModule({
   declarations: [
@@ -32,6 +33,7 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
     MeetingDetailComponent,
     ModalComponent,
     ActiveMeetingComponent,
+    VideoComponent,
   ],
   imports: [
     BrowserModule,

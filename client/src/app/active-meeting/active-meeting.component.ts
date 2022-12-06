@@ -9,6 +9,7 @@ import { faCog } from '@fortawesome/free-solid-svg-icons';
 import { faMessage } from '@fortawesome/free-solid-svg-icons';
 import { faDesktop } from '@fortawesome/free-solid-svg-icons';
 import { faSignOut } from '@fortawesome/free-solid-svg-icons';
+import { peerStreamData } from '../models/peer-stream-data';
 
 @Component({
   selector: 'app-active-meeting',
@@ -18,7 +19,7 @@ import { faSignOut } from '@fortawesome/free-solid-svg-icons';
 export class ActiveMeetingComponent implements OnInit {
   messages: Message[] = [];
   localStream?: MediaStream;
-  remoteStreams: MediaStream[] = [];
+  peers:peerStreamData[] = [];
   newMessage = '';
   chatIsOpen = false;
   muted = false;
@@ -43,9 +44,9 @@ export class ActiveMeetingComponent implements OnInit {
       this.messages = this.signalingService.getMessages();
       this.changeDetection.detectChanges();
     });
-    this.remoteStreams = this.signalingService.getStreams();
+    this.peers = this.signalingService.getPeers();
     this.signalingService.receivedNewStream.subscribe(() => {
-      this.remoteStreams = this.signalingService.getStreams();
+      this.peers = this.signalingService.getPeers();
       this.changeDetection.detectChanges();
     })
     this.localStream = this.signalingService.localStream;

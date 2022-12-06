@@ -23,8 +23,8 @@
 </div>
 <div class="thumbnails-container">
     <video [srcObject]="localStream" autoplay="true" [muted]="'muted'" class="video"></video>
-    <video *ngFor="let remoteStream of remoteStreams" [srcObject]="remoteStream" autoplay="true" class="video">
-    </video>
+    <app-video *ngFor="let peer of peers" [stream]="peer.stream" [username]="peer.username"
+        [audioEnabled]="peer.audioEnabled" [videoEnabled]="peer.videoEnabled"></app-video>
 </div>
 <div class="messagesContainer">
     <div *ngFor="let message of messages" class="message" [ngClass]="{

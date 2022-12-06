@@ -5,6 +5,7 @@ import { MeetingsService } from '../meetings/meetings.service';
 import { MeetingStatus } from './meeting-status';
 import { Message } from '../../models/message.model';
 import { ReplaySubject } from 'rxjs';
+import { peerStreamData } from '../../models/peer-stream-data';
 
 //probably need ws to trigger some sort of observable, and to restart when closed
 //this service should probably be split into two separate services
@@ -146,7 +147,9 @@ export class SignalingService {
                     dataChannel,
                     connection,
                     remoteStream: undefined,
-                    username
+                    username,
+                    audioEnabled: false,
+                    videoEnabled:false
                 }
             }
 
@@ -154,7 +157,23 @@ export class SignalingService {
 
             connection.addEventListener('track', async (event) => {
                 const [remoteStream] = event.streams;
-                (this.establishedRTCPeerConnections[sessionId as keyof typeof this.establishedRTCPeerConnections]['remoteStream'] as any) = remoteStream;
+                const connectionData = this.establishedRTCPeerConnections[sessionId as keyof typeof this.establishedRTCPeerConnections];
+                (connectionData['remoteStream'] as any) = remoteStream;
+                //check whether media tracks are enabled
+                const audioTracks = remoteStream.getAudioTracks();
+                audioTracks.forEach(track => {
+                    if(track.enabled) {
+                        (connectionData['audioEnabled'] as boolean) = true;
+                        return;
+                    }
+                });
+                const videoTracks = remoteStream.getVideoTracks();
+                videoTracks.forEach(track => {
+                    if(track.enabled) {
+                        (connectionData['videoEnabled'] as boolean) = true;
+                        return;
+                    }
+                });
                 this.receivedNewStream.emit();
             });
 
@@ -193,7 +212,9 @@ export class SignalingService {
                 connection,
                 dataChannel: undefined,
                 remoteStream: undefined,
-                username: initiatingPeerUsername
+                username: initiatingPeerUsername,
+                audioEnabled: false,
+                videoEnabled: false
             }
         }
         Object.assign(this.establishedRTCPeerConnections, newEstablishedConnection);
@@ -214,8 +235,23 @@ export class SignalingService {
 
         connection.addEventListener('track', async (event) => {
             const [remoteStream] = event.streams;
-            (this.establishedRTCPeerConnections[initiatingPeerId as keyof typeof this.establishedRTCPeerConnections]['remoteStream'] as any) = remoteStream;
-            this.receivedNewStream.emit();
+            const connectionData = this.establishedRTCPeerConnections[initiatingPeerId as keyof typeof this.establishedRTCPeerConnections];
+            (connectionData['remoteStream'] as any) = remoteStream;
+            //check whether media tracks are enabled
+            const audioTracks = remoteStream.getAudioTracks();
+            audioTracks.forEach(track => {
+                if(track.enabled) {
+                    (connectionData['audioEnabled'] as boolean) = true;
+                    return;
+                }
+            });
+            const videoTracks = remoteStream.getVideoTracks();
+            videoTracks.forEach(track => {
+                if(track.enabled) {
+                    (connectionData['videoEnabled'] as boolean) = true;
+                    return;
+                }
+            });
         });
 
         connection.createAnswer().then(answer => {
@@ -235,18 +271,12 @@ export class SignalingService {
         return (event: RTCPeerConnectionIceEvent) => {
             if (event.candidate) {
                 const candidate = JSON.stringify(new RTCIceCandidate(event.candidate as RTCIceCandidateInit).toJSON());
-                this.websocketStatus.subscribe({
-                    next: (status) => {
-                        if (status === 'open') {
-                            const dto = {
-                                intent: 'candidate',
-                                to: toSessionId,
-                                candidate
-                            }
-                            this.sendOverWebSocket(dto);
-                        }
-                    }
-                });
+                const dto = {
+                    intent: 'candidate',
+                    to: toSessionId,
+                    candidate
+                }
+                this.sendOverWebSocket(dto);
             }
         }
     }
@@ -360,27 +390,43 @@ export class SignalingService {
         return this.messages.slice();
     }
 
-    public getStreams() {
-        const streams: MediaStream[] = [];
+    public getPeers() {
+        const peers:peerStreamData[] = [];
         for (let sessionId in this.establishedRTCPeerConnections) {
-            const peer: any = this.establishedRTCPeerConnections[sessionId as keyof typeof this.establishedRTCPeerConnections];
-            if (peer.remoteStream) streams.push(peer.remoteStream as MediaStream);
+            const peerConnection: any = this.establishedRTCPeerConnections[sessionId as keyof typeof this.establishedRTCPeerConnections];
+            if (peerConnection.remoteStream) {
+                const peer:peerStreamData = {
+                    username: peerConnection.username,
+                    stream: peerConnection.remoteStream,
+                    audioEnabled: peerConnection.audioEnabled,
+                    videoEnabled: peerConnection.videoEnabled
+                }
+                peers.push(peer);
+            }
         }
-        return streams;
+        return peers;
     }
 
     public toggleMicrophone() {
         if (this.localStream) {
-            this.localStream.getAudioTracks().forEach(track => track.enabled = !track.enabled);
+            let audioTrackCounter = 0;
+            this.localStream.getAudioTracks().forEach(track => {
+            audioTrackCounter++;
+                track.enabled = !track.enabled
+            });
+            console.log("audio tracks: " + audioTrackCounter);
         }
     }
 
     public toggleVideo() {
         if (this.localStream) {
+            let videoTrackCounter = 0;
             this.localStream.getVideoTracks().forEach(track => {
+                videoTrackCounter++;
                 track.enabled = !track.enabled
                 console.log(track.enabled);
             });
+            console.log("video tracks: " + videoTrackCounter);
         }
     }
 
