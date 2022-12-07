@@ -24,8 +24,6 @@ export class ActiveMeetingComponent implements OnInit {
   peers:peerStreamData[] = [];
   newMessage = '';
   chatIsOpen = false;
-  muted = false;
-  hideVideo = false;
 
   sizes = VideoSize;
   faMicrophone = faMicrophone;
@@ -87,12 +85,12 @@ export class ActiveMeetingComponent implements OnInit {
   }
 
   onToggleMicrophone() {
-    this.muted = !this.muted;
-    this.signalingService.toggleMicrophone();
+    this.signalingService.setMicrophoneEnabled(!this.signalingService.audioEnabled);
+    this.changeDetection.detectChanges();
   }
 
   onToggleVideo() {
-    this.hideVideo = !this.hideVideo;
-    this.signalingService.toggleVideo();
+    this.signalingService.setVideoEnabled(!this.signalingService.videoEnabled);
+    this.changeDetection.detectChanges();
   }
 }

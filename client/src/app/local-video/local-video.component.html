@@ -3,7 +3,7 @@
     videoContainerModal : size === sizes.Modal,
     videoContainerSpeaker : size === sizes.Speaker
 }">
-    <video [srcObject]="signalingService.localStream" autoplay="true" [ngClass]="{
+    <video [srcObject]="signalingService.localStream" autoplay="true" [muted]="'muted'" [ngClass]="{
         videoThumbnail : size === sizes.Thumbnail,
         videoModal : size === sizes.Modal,
         videoSpeaker : size === sizes.Speaker

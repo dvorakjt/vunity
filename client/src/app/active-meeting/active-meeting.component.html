@@ -5,10 +5,10 @@
     [sessionId]="currentSpeakingPeer.id"></app-remote-video>
 <div class="toolbar">
     <button class="toolbar-button" (click)="onToggleMicrophone()">
-        <fa-icon [icon]="!muted ? faMicrophone : faMicrophoneSlash"></fa-icon>
+        <fa-icon [icon]="signalingService.audioEnabled ? faMicrophone : faMicrophoneSlash"></fa-icon>
     </button>
     <button class="toolbar-button" (click)="onToggleVideo()">
-        <fa-icon [icon]="!hideVideo ? faVideo : faVideoSlash"></fa-icon>
+        <fa-icon [icon]="signalingService.videoEnabled ? faVideo : faVideoSlash"></fa-icon>
     </button>
     <button class="toolbar-button">
         <fa-icon [icon]="faDesktop"></fa-icon>

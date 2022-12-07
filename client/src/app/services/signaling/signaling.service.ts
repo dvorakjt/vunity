@@ -19,6 +19,15 @@ type peer = {
     connection:RTCPeerConnection;
 }
 
+type connectionData = {
+    dataChannel:RTCDataChannel;
+    connection:RTCPeerConnection;
+    remoteStream?:MediaStream,
+    username:string;
+    audioEnabled:boolean;
+    videoEnabled:boolean;
+}
+
 const peerConnectionConfig: RTCConfiguration = {
     iceServers: [{
         urls: "stun:stun2.1.google.com:19302"
@@ -160,41 +169,44 @@ export class SignalingService {
                     this.remoteVideoToggled.emit({
                         id: sessionId,
                         status: data.message === 'true'
-                    })
+                    });
+                } else if(data.messageType === 'requestMediaEnabledStatus') {
+                    this.sendMediaEnabledStatus(dataChannel);
+                } else if(data.messageType === 'mediaEnabledStatus') {
+                    const {audioEnabled, videoEnabled} = data.message;
+                    this.remoteAudioToggled.emit({
+                        id: sessionId,
+                        status: audioEnabled
+                    });
+                    this.remoteVideoToggled.emit({
+                        id: sessionId,
+                        status: videoEnabled
+                    });
                 }
             }
+           
             const newEstablishedConnection = {
                 [sessionId]: {
                     dataChannel,
                     connection,
                     remoteStream: undefined,
                     username,
-                    audioEnabled: false,
-                    videoEnabled:false
+                    audioEnabled: true,
+                    videoEnabled: true
                 }
             }
 
             Object.assign(this.establishedRTCPeerConnections, newEstablishedConnection);
+
+            dataChannel.onopen = () => {
+                this.requestMediaEnabledStatus(this.establishedRTCPeerConnections[sessionId as keyof typeof this.establishedRTCPeerConnections]);
+            }
 
             connection.addEventListener('track', async (event) => {
                 const [remoteStream] = event.streams;
                 const connectionData = this.establishedRTCPeerConnections[sessionId as keyof typeof this.establishedRTCPeerConnections];
                 (connectionData['remoteStream'] as any) = remoteStream;
                 //check whether media tracks are enabled
-                const audioTracks = remoteStream.getAudioTracks();
-                audioTracks.forEach(track => {
-                    if(track.enabled) {
-                        (connectionData['audioEnabled'] as boolean) = true;
-                        return;
-                    }
-                });
-                const videoTracks = remoteStream.getVideoTracks();
-                videoTracks.forEach(track => {
-                    if(track.enabled) {
-                        (connectionData['videoEnabled'] as boolean) = true;
-                        return;
-                    }
-                });
                 this.receivedNewStream.emit();
             });
 
@@ -234,13 +246,14 @@ export class SignalingService {
                 dataChannel: undefined,
                 remoteStream: undefined,
                 username: initiatingPeerUsername,
-                audioEnabled: false,
-                videoEnabled: false
+                audioEnabled: true,
+                videoEnabled: true
             }
         }
         Object.assign(this.establishedRTCPeerConnections, newEstablishedConnection);
         connection.ondatachannel = (event: RTCDataChannelEvent) => {
-            (this.establishedRTCPeerConnections[initiatingPeerId as keyof typeof this.establishedRTCPeerConnections] as any).dataChannel = event.channel;
+            const connectionData = this.establishedRTCPeerConnections[initiatingPeerId as keyof typeof this.establishedRTCPeerConnections] as any;
+            connectionData.dataChannel = event.channel;
             const channel = (this.establishedRTCPeerConnections[initiatingPeerId as keyof typeof this.establishedRTCPeerConnections] as any).dataChannel;
             channel.onmessage = (messageEvent: MessageEvent) => {
                 const data = JSON.parse(messageEvent.data);
@@ -258,8 +271,21 @@ export class SignalingService {
                         id: initiatingPeerId,
                         status: data.message === 'true'
                     })
+                } else if(data.messageType === 'requestMediaEnabledStatus') {
+                    this.sendMediaEnabledStatus(channel);
+                } else if(data.messageType === 'mediaEnabledStatus') {
+                    const {audioEnabled, videoEnabled} = data.message;
+                    this.remoteAudioToggled.emit({
+                        id: initiatingPeerId,
+                        status: audioEnabled
+                    });
+                    this.remoteVideoToggled.emit({
+                        id: initiatingPeerId,
+                        status: videoEnabled
+                    });
                 }
             }
+            this.requestMediaEnabledStatus(connectionData);
         }
 
         this.localStream?.getTracks().forEach(track => {
@@ -270,21 +296,6 @@ export class SignalingService {
             const [remoteStream] = event.streams;
             const connectionData = this.establishedRTCPeerConnections[initiatingPeerId as keyof typeof this.establishedRTCPeerConnections];
             (connectionData['remoteStream'] as any) = remoteStream;
-            //check whether media tracks are enabled
-            const audioTracks = remoteStream.getAudioTracks();
-            audioTracks.forEach(track => {
-                if(track.enabled) {
-                    (connectionData['audioEnabled'] as boolean) = true;
-                    return;
-                }
-            });
-            const videoTracks = remoteStream.getVideoTracks();
-            videoTracks.forEach(track => {
-                if(track.enabled) {
-                    (connectionData['videoEnabled'] as boolean) = true;
-                    return;
-                }
-            });
             this.receivedNewStream.emit();
         });
 
@@ -299,6 +310,27 @@ export class SignalingService {
         }).catch(e => {
             console.log(e);
         })
+    }
+
+    private requestMediaEnabledStatus(connectionData:connectionData) {
+        const messageObject = {
+            messageType: 'requestMediaEnabledStatus',
+            message: ''
+        }
+        const messageString = JSON.stringify(messageObject);
+        connectionData.dataChannel.send(messageString);
+    }
+
+    private sendMediaEnabledStatus(dataChannel:RTCDataChannel) {
+        const messageObject = {
+            messageType: 'mediaEnabledStatus',
+            message: {
+                audioEnabled : this.audioEnabled,
+                videoEnabled : this.videoEnabled
+            }
+        }
+        const messageString = JSON.stringify(messageObject);
+        dataChannel.send(messageString);
     }
 
     private onIceCandidate(toSessionId: string) {
@@ -368,18 +400,12 @@ export class SignalingService {
     public joinMeeting() {
         this.updateMeetingStatus(MeetingStatus.ConnectingToSignalingServer);
         this.checkAndEstablishWebSocketConnection();
-        this.websocketStatus.subscribe({
-            next: (wsStatus) => {
-                if (wsStatus == 'open') {
-                    this.updateMeetingStatus(MeetingStatus.WaitingForHost);
-                    const joinData = {
-                        intent: 'join',
-                        username: this.username
-                    }
-                    this.sendOverWebSocket(joinData);
-                }
-            }
-        });
+        this.updateMeetingStatus(MeetingStatus.WaitingForHost);
+        const joinData = {
+            intent: 'join',
+            username: this.username
+        }
+        this.sendOverWebSocket(joinData);
     }
 
     public authenticateAsHost(meetingId:string) {
@@ -406,22 +432,12 @@ export class SignalingService {
     } 
 
     public openMeeting() {
-        navigator.mediaDevices.getUserMedia(mediaConstraints)
-            .then((stream: MediaStream) => {
-                this.localStream = stream;
-                this.updateMeetingStatus(MeetingStatus.ConnectingToSignalingServer);
-                this.websocketStatus.subscribe({
-                    next: (wsStatus) => {
-                        if (wsStatus == 'open') {
-                            const openData = {
-                                intent: 'open',
-                                username: this.username
-                            }
-                            this.sendOverWebSocket(openData);
-                        }
-                    }
-                })
-            }).catch(function (err) { console.log(err); });
+        this.updateMeetingStatus(MeetingStatus.ConnectingToSignalingServer);
+        const openData = {
+            intent: 'open',
+            username: this.username
+        }
+        this.sendOverWebSocket(openData);
     }
 
     public broadCastMessage(messageType:string, message: string) {
@@ -469,23 +485,23 @@ export class SignalingService {
         return peers;
     }
 
-    public toggleMicrophone() {
+    public setMicrophoneEnabled(isEnabled:boolean) {
         if (this.localStream) {
             this.localStream.getAudioTracks().forEach(track => {
-                track.enabled = !track.enabled
-                this.audioEnabled = track.enabled;
+                track.enabled = isEnabled;
             });
+            this.audioEnabled = isEnabled;
             this.localAudioToggled.emit(this.audioEnabled);
             this.broadCastMessage('microphoneToggle', `${this.audioEnabled}`);
         }
     }
 
-    public toggleVideo() {
+    public setVideoEnabled(isEnabled:boolean) {
         if (this.localStream) {
             this.localStream.getVideoTracks().forEach(track => {
-                track.enabled = !track.enabled
-                this.videoEnabled = track.enabled;
+                track.enabled = isEnabled;
             });
+            this.videoEnabled = isEnabled;
             this.localVideoToggled.emit(this.videoEnabled);
             this.broadCastMessage('videoToggle', `${this.videoEnabled}`);
         }
