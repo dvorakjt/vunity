@@ -161,14 +161,20 @@ export class SignalingService {
                     this.messages.push(message);
                     this.receivedNewMessage.emit();
                 } else if(data.messageType === 'microphoneToggle') {
+                    const audioToggledOn = data.message === 'true';
+                    const peer = this.establishedRTCPeerConnections[sessionId as keyof typeof this.establishedRTCPeerConnections] as any;
+                    peer.audioEnabled = audioToggledOn;
                     this.remoteAudioToggled.emit({
                         id: sessionId,
-                        status: data.message === 'true'
+                        status: audioToggledOn
                     });
                 } else if(data.messageType === 'videoToggle') {
+                    const videoToggledOn = data.message === 'true';
+                    const peer = this.establishedRTCPeerConnections[sessionId as keyof typeof this.establishedRTCPeerConnections] as any;
+                    peer.videoEnabled = videoToggledOn;
                     this.remoteVideoToggled.emit({
                         id: sessionId,
-                        status: data.message === 'true'
+                        status: videoToggledOn
                     });
                 } else if(data.messageType === 'requestMediaEnabledStatus') {
                     this.sendMediaEnabledStatus(dataChannel);
@@ -262,15 +268,21 @@ export class SignalingService {
                     this.messages.push(message);
                     this.receivedNewMessage.emit();
                 } else if(data.messageType === 'microphoneToggle') {
+                    const audioToggledOn = data.message === 'true';
+                    const peer = this.establishedRTCPeerConnections[initiatingPeerId as keyof typeof this.establishedRTCPeerConnections] as any;
+                    peer.audioEnabled = audioToggledOn;
                     this.remoteAudioToggled.emit({
                         id: initiatingPeerId,
-                        status: data.message === 'true'
+                        status: audioToggledOn
                     });
                 } else if(data.messageType === 'videoToggle') {
+                    const videoToggledOn = data.message === 'true';
+                    const peer = this.establishedRTCPeerConnections[initiatingPeerId as keyof typeof this.establishedRTCPeerConnections] as any;
+                    peer.videoEnabled = videoToggledOn;
                     this.remoteVideoToggled.emit({
                         id: initiatingPeerId,
-                        status: data.message === 'true'
-                    })
+                        status: videoToggledOn
+                    });
                 } else if(data.messageType === 'requestMediaEnabledStatus') {
                     this.sendMediaEnabledStatus(channel);
                 } else if(data.messageType === 'mediaEnabledStatus') {
@@ -483,6 +495,18 @@ export class SignalingService {
             }
         }
         return peers;
+    }
+
+    public getPeerStreamData(sessionId:string) {
+        const peerConnection:any = this.establishedRTCPeerConnections[sessionId as keyof typeof this.establishedRTCPeerConnections];
+        const peer:peerStreamData = {
+            username: peerConnection.username,
+            stream: peerConnection.stream,
+            audioEnabled: peerConnection.audioEnabled,
+            videoEnabled: peerConnection.videoEnabled,
+            id: sessionId
+        }
+        return peer;
     }
 
     public setMicrophoneEnabled(isEnabled:boolean) {

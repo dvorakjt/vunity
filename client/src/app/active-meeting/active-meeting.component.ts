@@ -69,10 +69,8 @@ export class ActiveMeetingComponent implements OnInit {
     this.peers.forEach(peer => {
       const peerListener = hark(peer.stream, {});
       peerListener.on('speaking', () => {
-        console.log('peer is speeking');
         this.currentSpeaker = 'peer';
-        this.currentSpeakingPeer = peer;
-        console.log(this.currentSpeakingPeer);
+        this.currentSpeakingPeer = this.signalingService.getPeerStreamData(peer.id);
         this.changeDetection.detectChanges();
       });
       this.speechListeners.push(peerListener);
