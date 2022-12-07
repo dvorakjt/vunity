@@ -82,7 +82,6 @@ export class SignalingService {
             this.websocketStatus.next('open');
             this.websocketConnection?.addEventListener('message', (message) => {
                 const data = JSON.parse(message.data);
-                console.log(data);
                 if (data.event === 'joined' || data.event === 'openedAsHost') {
                     this.handleJoinOrOpenAsHost(data);
                 } else if (data.event === 'opened') {
@@ -153,15 +152,11 @@ export class SignalingService {
                     this.messages.push(message);
                     this.receivedNewMessage.emit();
                 } else if(data.messageType === 'microphoneToggle') {
-                    console.log(sessionId);
-                    console.log(data.message);
                     this.remoteAudioToggled.emit({
                         id: sessionId,
                         status: data.message === 'true'
                     });
                 } else if(data.messageType === 'videoToggle') {
-                    console.log(sessionId);
-                    console.log(data.message);
                     this.remoteVideoToggled.emit({
                         id: sessionId,
                         status: data.message === 'true'
@@ -254,15 +249,11 @@ export class SignalingService {
                     this.messages.push(message);
                     this.receivedNewMessage.emit();
                 } else if(data.messageType === 'microphoneToggle') {
-                    console.log(initiatingPeerId);
-                    console.log(data.message);
                     this.remoteAudioToggled.emit({
                         id: initiatingPeerId,
                         status: data.message === 'true'
                     });
                 } else if(data.messageType === 'videoToggle') {
-                    console.log(initiatingPeerId);
-                    console.log(data.message);
                     this.remoteVideoToggled.emit({
                         id: initiatingPeerId,
                         status: data.message === 'true'

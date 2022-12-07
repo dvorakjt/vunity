@@ -3,6 +3,7 @@ import { SignalingService } from '../services/signaling/signaling.service';
 import { VideoSize } from '../shared/video/video-sizes';
 import { faMicrophone } from '@fortawesome/free-solid-svg-icons';
 import { faMicrophoneSlash } from '@fortawesome/free-solid-svg-icons';
+import * as hark from 'hark';
 
 @Component({
   selector: 'app-remote-video',
@@ -16,6 +17,9 @@ export class RemoteVideoComponent implements OnInit{
   @Input() audioEnabled:boolean = false;
   @Input() videoEnabled:boolean = false;
   @Input() sessionId:string = '';
+  isSpeaking = false;
+  speechEvents?:hark.Harker;
+
   faMicrophone = faMicrophone;
   faMicrophoneSlash = faMicrophoneSlash;
   sizes = VideoSize;
@@ -26,8 +30,6 @@ export class RemoteVideoComponent implements OnInit{
   ngOnInit(): void {
     this.signalingService.remoteAudioToggled.subscribe({
       next: (value:any) => {
-        console.log(value);
-        console.log(this.sessionId);
         if(value.id === this.sessionId) {
           this.audioEnabled = value.status
           this.changeDetection.detectChanges();
@@ -36,13 +38,20 @@ export class RemoteVideoComponent implements OnInit{
     });
     this.signalingService.remoteVideoToggled.subscribe({
       next: (value:any) => {
-        console.log(value);
-        console.log(this.sessionId);
         if(value.id === this.sessionId) {
           this.videoEnabled = value.status;
           this.changeDetection.detectChanges();
         }
       }
     });
+    if(this.stream) {
+      this.speechEvents = hark(this.stream, {});
+      this.speechEvents.on('speaking', () => {
+        this.isSpeaking = true;
+      });
+      this.speechEvents.on('stopped_speaking', () => {
+        this.isSpeaking = false;
+      });
+    }
   }
 }

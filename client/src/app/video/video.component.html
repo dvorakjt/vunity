@@ -1,9 +1,0 @@
-<div class="video-container">
-    <video [srcObject]="stream" autoplay="true" class="video"></video>
-    <div class="video-banner" [ngClass]="{
-        hide : videoEnabled
-    }">
-        <h2>{{username}}</h2>
-    </div>
-    <fa-icon [icon]="audioEnabled ? faMicrophone : faMicrophoneSlash" class="microphone-icon"></fa-icon>
-</div>

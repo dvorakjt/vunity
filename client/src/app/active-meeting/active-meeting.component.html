@@ -1,4 +1,8 @@
-<app-local-video [size]="sizes.Speaker"></app-local-video>
+<app-local-video [size]="sizes.Speaker" *ngIf="currentSpeaker==='me'"></app-local-video>
+<app-remote-video [size]="sizes.Speaker" *ngIf="currentSpeaker==='peer' && currentSpeakingPeer"
+    [username]="currentSpeakingPeer.username" [stream]="currentSpeakingPeer.stream"
+    [audioEnabled]="currentSpeakingPeer.audioEnabled" [videoEnabled]="currentSpeakingPeer.videoEnabled"
+    [sessionId]="currentSpeakingPeer.id"></app-remote-video>
 <div class="toolbar">
     <button class="toolbar-button" (click)="onToggleMicrophone()">
         <fa-icon [icon]="!muted ? faMicrophone : faMicrophoneSlash"></fa-icon>

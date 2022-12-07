@@ -11,6 +11,7 @@ import { faDesktop } from '@fortawesome/free-solid-svg-icons';
 import { faSignOut } from '@fortawesome/free-solid-svg-icons';
 import { peerStreamData } from '../models/peer-stream-data';
 import { VideoSize } from '../shared/video/video-sizes';
+import * as hark from 'hark';
 
 @Component({
   selector: 'app-active-meeting',
@@ -36,6 +37,10 @@ export class ActiveMeetingComponent implements OnInit {
   faDesktop = faDesktop;
   faSignOut = faSignOut;
 
+  currentSpeaker = 'me';
+  currentSpeakingPeer?:peerStreamData;
+  speechListeners:hark.Harker[] = [];
+
   constructor(public signalingService: SignalingService, private changeDetection: ChangeDetectorRef) { }
 
   ngOnInit(): void {
@@ -45,11 +50,35 @@ export class ActiveMeetingComponent implements OnInit {
       this.changeDetection.detectChanges();
     });
     this.peers = this.signalingService.getPeers();
+    this.addSpeechListeners();
     this.signalingService.receivedNewStream.subscribe(() => {
       this.peers = this.signalingService.getPeers();
+      this.addSpeechListeners();
       this.changeDetection.detectChanges();
     })
     this.localStream = this.signalingService.localStream;
+
+  }
+
+  addSpeechListeners() {
+    this.speechListeners = [];
+    if(this.localStream) {
+      const localListener = hark(this.localStream, {});
+      localListener.on('speaking', () => {
+        this.currentSpeaker = 'me';
+      });
+    }
+    this.peers.forEach(peer => {
+      const peerListener = hark(peer.stream, {});
+      peerListener.on('speaking', () => {
+        console.log('peer is speeking');
+        this.currentSpeaker = 'peer';
+        this.currentSpeakingPeer = peer;
+        console.log(this.currentSpeakingPeer);
+        this.changeDetection.detectChanges();
+      });
+      this.speechListeners.push(peerListener);
+    });
   }
 
   onSendMessage() {

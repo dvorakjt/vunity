@@ -3,6 +3,7 @@ import { SignalingService } from '../services/signaling/signaling.service';
 import { faMicrophone } from '@fortawesome/free-solid-svg-icons';
 import { faMicrophoneSlash } from '@fortawesome/free-solid-svg-icons';
 import { VideoSize } from '../shared/video/video-sizes';
+import * as hark from 'hark';
 
 @Component({
   selector: 'app-local-video',
@@ -16,6 +17,8 @@ export class LocalVideoComponent implements OnInit{
   videoEnabled:boolean = true;
   faMicrophone = faMicrophone;
   faMicrophoneSlash = faMicrophoneSlash;
+  isSpeaking = false;
+  speechEvents?:hark.Harker;
 
   constructor(public signalingService:SignalingService, private changeDetection: ChangeDetectorRef) {
   }
@@ -35,5 +38,14 @@ export class LocalVideoComponent implements OnInit{
         this.changeDetection.detectChanges();
       }
     });
+    if(this.signalingService.localStream) {
+      this.speechEvents = hark(this.signalingService.localStream, {});
+      this.speechEvents.on('speaking', () => {
+        this.isSpeaking = true;
+      });
+      this.speechEvents.on('stopped_speaking', () => {
+        this.isSpeaking = false;
+      });
+    }
   }
 }

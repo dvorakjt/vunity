@@ -17,4 +17,7 @@
         <h2>{{signalingService.username}}</h2>
     </div>
     <fa-icon [icon]="audioEnabled ? faMicrophone : faMicrophoneSlash" class="microphone-icon"></fa-icon>
+    <div class="outline" [ngClass]="{
+        hide : size !== sizes.Thumbnail || !isSpeaking 
+    }"></div>
 </div>
