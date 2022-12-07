@@ -41,6 +41,7 @@ export class JoinMeetingComponent implements OnInit {
       frontendValidationPassed = false;
     }
     if(!frontendValidationPassed) return;
+    console.log("authenticating");
     this.isLoading = true;
     this.signalingService.meetingStatusChanged.subscribe({
       next: (meetingStatus:MeetingStatus) => {
@@ -53,11 +54,12 @@ export class JoinMeetingComponent implements OnInit {
         this.signalingService.meetingStatusChanged.unsubscribe();
       }
     });
-    this.signalingService.authenticateToOtherUsersMeeting(this.meetingId, this.password);
+    this.signalingService.authenticateAsGuest(this.meetingId, this.password);
   }
 
   onEnterUsername() {
-    this.signalingService.joinMeeting(this.username);
+    this.signalingService.setUsername(this.username);
+    this.modalToShow = 'media';
   }
 
   onCloseSelf() {

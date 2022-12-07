@@ -10,6 +10,7 @@ import { faMessage } from '@fortawesome/free-solid-svg-icons';
 import { faDesktop } from '@fortawesome/free-solid-svg-icons';
 import { faSignOut } from '@fortawesome/free-solid-svg-icons';
 import { peerStreamData } from '../models/peer-stream-data';
+import { VideoSize } from '../shared/video/video-sizes';
 
 @Component({
   selector: 'app-active-meeting',
@@ -25,7 +26,7 @@ export class ActiveMeetingComponent implements OnInit {
   muted = false;
   hideVideo = false;
 
-
+  sizes = VideoSize;
   faMicrophone = faMicrophone;
   faMicrophoneSlash = faMicrophoneSlash;
   faVideo = faVideo;

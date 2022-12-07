@@ -10,6 +10,7 @@ import { SignalingService } from 'src/app/services/signaling/signaling.service';
 })
 export class MeetingsListComponent implements OnInit {
   meetings:Meeting[] = [];
+  showModal = false;
 
   constructor(private meetingsService:MeetingsService, private signalingService:SignalingService) { }
 
@@ -21,7 +22,8 @@ export class MeetingsListComponent implements OnInit {
   }
 
   onOpen(meeting:Meeting) {
-    this.signalingService.openMeeting(meeting.id);
+    this.signalingService.authenticateAsHost(meeting.id);
+    this.showModal = true;
   }
 
 }

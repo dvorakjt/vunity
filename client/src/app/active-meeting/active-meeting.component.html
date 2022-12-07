@@ -1,6 +1,4 @@
-<div class="speaker-view-container">
-    <video [srcObject]="localStream" autoplay="true" [muted]="'muted'" class="speaker-video"></video>
-</div>
+<app-local-video [size]="sizes.Speaker"></app-local-video>
 <div class="toolbar">
     <button class="toolbar-button" (click)="onToggleMicrophone()">
         <fa-icon [icon]="!muted ? faMicrophone : faMicrophoneSlash"></fa-icon>
@@ -22,9 +20,9 @@
     </button>
 </div>
 <div class="thumbnails-container">
-    <video [srcObject]="localStream" autoplay="true" [muted]="'muted'" class="video"></video>
-    <app-video *ngFor="let peer of peers" [stream]="peer.stream" [username]="peer.username"
-        [audioEnabled]="peer.audioEnabled" [videoEnabled]="peer.videoEnabled" [sessionId]="peer.id"></app-video>
+    <app-local-video></app-local-video>
+    <app-remote-video *ngFor="let peer of peers" [stream]="peer.stream" [username]="peer.username"
+        [audioEnabled]="peer.audioEnabled" [videoEnabled]="peer.videoEnabled" [sessionId]="peer.id"></app-remote-video>
 </div>
 <div class="messagesContainer">
     <div *ngFor="let message of messages" class="message" [ngClass]="{
@@ -35,5 +33,4 @@
     <input type="text" [(ngModel)]="newMessage" class="new-message-input" />
     <button (click)="onSendMessage()" class="btn btn-primary new-message-button">Send To All</button>
 </div>
-<button (click)="signalingService.logUserNames()" style="position: absolute; top: 0; left: 50%;">Log Usernames</button>
 <!-- <button style="position: absolute; top: 0; left: 0;" (click)="videos.push(null)">ADD VIDEO</button> -->

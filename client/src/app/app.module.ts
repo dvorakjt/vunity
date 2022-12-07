@@ -18,6 +18,9 @@ import { ModalComponent } from './shared/modal/modal.component';
 import { ActiveMeetingComponent } from './active-meeting/active-meeting.component';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { VideoComponent } from './video/video.component';
+import { MediaSettingsModalComponent } from './media-settings-modal/media-settings-modal.component';
+import { LocalVideoComponent } from './local-video/local-video.component';
+import { RemoteVideoComponent } from './remote-video/remote-video.component';
 
 @NgModule({
   declarations: [
@@ -34,6 +37,9 @@ import { VideoComponent } from './video/video.component';
     ModalComponent,
     ActiveMeetingComponent,
     VideoComponent,
+    MediaSettingsModalComponent,
+    LocalVideoComponent,
+    RemoteVideoComponent,
   ],
   imports: [
     BrowserModule,

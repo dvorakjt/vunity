@@ -33,18 +33,19 @@ const mediaConstraints = {
 
 @Injectable()
 export class SignalingService {
+    public  isHost = false;
+    public username = '';
 
     private websocketConnection?: WebSocket;
     private websocketStatus = new ReplaySubject<string>(1);
-    private username = '';
-    private isHost = false;
-    private currentMeetingId = '';
     private currentMeetingToken = '';
     private initiatedRTCPeerConnections = {};
     private establishedRTCPeerConnections = {};
 
     public localStream?: MediaStream;
     public peerStreams: MediaStream[] = [];
+    public audioEnabled = true;
+    public videoEnabled = true;
 
     public meetingStatus: MeetingStatus = MeetingStatus.NotInMeeting;
 
@@ -53,8 +54,10 @@ export class SignalingService {
     meetingStatusChanged = new EventEmitter<MeetingStatus>();
     receivedNewMessage = new EventEmitter<void>();
     receivedNewStream = new EventEmitter<void>();
-    audioToggled = new EventEmitter<{id:string; status:boolean}>();
-    videoToggled = new EventEmitter<{id:string; status:boolean}>();
+    localAudioToggled = new EventEmitter<boolean>();
+    localVideoToggled = new EventEmitter<boolean>();
+    remoteAudioToggled = new EventEmitter<{id:string; status:boolean}>();
+    remoteVideoToggled = new EventEmitter<{id:string; status:boolean}>();
 
     constructor(private authService: AuthService, private meetingService: MeetingsService, private http: HttpClient) {
         this.checkAndEstablishWebSocketConnection();
@@ -83,7 +86,7 @@ export class SignalingService {
                 if (data.event === 'joined' || data.event === 'openedAsHost') {
                     this.handleJoinOrOpenAsHost(data);
                 } else if (data.event === 'opened') {
-                    this.meetingStatus = MeetingStatus.InMeeting;
+                    this.updateMeetingStatus(MeetingStatus.InMeeting);
                     this.openConnections();
                 } else if (data.event === 'offer') {
                     this.handleOffer(data);
@@ -114,6 +117,11 @@ export class SignalingService {
         })
     }
 
+    private updateMeetingStatus(newStatus:MeetingStatus) {
+        this.meetingStatus = newStatus;
+        this.meetingStatusChanged.emit(this.meetingStatus);
+    }
+
     private handleJoinOrOpenAsHost(data: any) { //data is going to become a specific type in future version
         for (const participant of data.preexistingParticipants) {
             const {sessionId, username} = participant;
@@ -126,7 +134,7 @@ export class SignalingService {
             Object.assign(this.initiatedRTCPeerConnections, newPeerConnection);
         }
         if (data.isOpen) {
-            this.meetingStatus = MeetingStatus.InMeeting;
+            this.updateMeetingStatus(MeetingStatus.InMeeting);
             this.openConnections();
         }
     }
@@ -147,14 +155,14 @@ export class SignalingService {
                 } else if(data.messageType === 'microphoneToggle') {
                     console.log(sessionId);
                     console.log(data.message);
-                    this.audioToggled.emit({
+                    this.remoteAudioToggled.emit({
                         id: sessionId,
                         status: data.message === 'true'
                     });
                 } else if(data.messageType === 'videoToggle') {
                     console.log(sessionId);
                     console.log(data.message);
-                    this.videoToggled.emit({
+                    this.remoteVideoToggled.emit({
                         id: sessionId,
                         status: data.message === 'true'
                     })
@@ -248,14 +256,14 @@ export class SignalingService {
                 } else if(data.messageType === 'microphoneToggle') {
                     console.log(initiatingPeerId);
                     console.log(data.message);
-                    this.audioToggled.emit({
+                    this.remoteAudioToggled.emit({
                         id: initiatingPeerId,
                         status: data.message === 'true'
                     });
                 } else if(data.messageType === 'videoToggle') {
                     console.log(initiatingPeerId);
                     console.log(data.message);
-                    this.videoToggled.emit({
+                    this.remoteVideoToggled.emit({
                         id: initiatingPeerId,
                         status: data.message === 'true'
                     })
@@ -330,46 +338,61 @@ export class SignalingService {
         connection.addIceCandidate(candidate);
     }
 
-    public authenticateToOtherUsersMeeting(meetingId:string, password:string) {
-        this.meetingStatus = MeetingStatus.Authenticating;
+    public authenticateAsGuest(meetingId:string, password:string) {
+        this.updateMeetingStatus(MeetingStatus.Authenticating);
         this.http.post(`/api/meeting/join?meetingId=${meetingId}&password=${password}`, {}).subscribe({
             next: (responseData: any) => {
                 this.currentMeetingToken = responseData.access_token;
-                this.meetingStatus = MeetingStatus.AwaitingUsernameInput;
-                this.meetingStatusChanged.emit(this.meetingStatus);
+                this.updateMeetingStatus(MeetingStatus.AwaitingUsernameInput);
             },
             error: (_error) => {
-                this.meetingStatus = MeetingStatus.Error;
-                this.meetingStatusChanged.emit(this.meetingStatus);
+                this.updateMeetingStatus(MeetingStatus.Error);
             }
         });
     }
 
-    public joinMeeting(username:string) {
+    public setUsername(username:string) {
+        this.username = username;
+        this.updateMeetingStatus(MeetingStatus.AwaitingMedia);
+    }
+
+    public getMedia() {
         navigator.mediaDevices.getUserMedia(mediaConstraints)
             .then((stream: MediaStream) => {
                 this.localStream = stream;
-                this.meetingStatus = MeetingStatus.ConnectingToSignalingServer;
-                this.username = username;
-                this.checkAndEstablishWebSocketConnection();
-                this.websocketStatus.subscribe({
-                    next: (wsStatus) => {
-                        if (wsStatus == 'open') {
-                            this.meetingStatus = MeetingStatus.WaitingForHost;
-                            const joinData = {
-                                intent: 'join',
-                                username
-                            }
-                            this.sendOverWebSocket(joinData);
-                        }
-                    }
-                });
+                this.updateMeetingStatus(MeetingStatus.AwaitingMediaSettings);
             })
-            .catch(function (err) { console.log(err); });
+            .catch((error) => {
+                this.updateMeetingStatus(MeetingStatus.Error);
+            });
     }
 
-    public openMeeting(meetingId: string) {
-        this.meetingStatus = MeetingStatus.Authenticating;
+    public confirmMediaSettings() {
+        this.updateMeetingStatus(MeetingStatus.ReadyToJoin);
+        if(this.isHost) {
+            this.openMeeting();
+        } else this.joinMeeting();
+    }
+
+    public joinMeeting() {
+        this.updateMeetingStatus(MeetingStatus.ConnectingToSignalingServer);
+        this.checkAndEstablishWebSocketConnection();
+        this.websocketStatus.subscribe({
+            next: (wsStatus) => {
+                if (wsStatus == 'open') {
+                    this.updateMeetingStatus(MeetingStatus.WaitingForHost);
+                    const joinData = {
+                        intent: 'join',
+                        username: this.username
+                    }
+                    this.sendOverWebSocket(joinData);
+                }
+            }
+        });
+    }
+
+    public authenticateAsHost(meetingId:string) {
+        this.updateMeetingStatus(MeetingStatus.Authenticating);
         if (this.authService.access_token) {
             const headers = new HttpHeaders({
                 'Authorization': this.authService.getAuthorizationHeader()
@@ -377,35 +400,41 @@ export class SignalingService {
             const opts = { headers: headers };
             this.http.post('/api/users/host_token', { meetingId }, opts).subscribe({
                 next: (responseData: any) => {
+                    this.isHost = true;
                     this.currentMeetingToken = responseData.access_token;
-                    if(this.authService.activeUser) this.username = this.authService.activeUser?.name;
-                    navigator.mediaDevices.getUserMedia(mediaConstraints)
-                        .then((stream: MediaStream) => {
-                            this.localStream = stream;
-                            this.meetingStatus = MeetingStatus.ConnectingToSignalingServer;
-                            this.websocketStatus.subscribe({
-                                next: (wsStatus) => {
-                                    if (wsStatus == 'open') {
-                                        const openData = {
-                                            intent: 'open',
-                                            username: this.username
-                                        }
-                                        this.sendOverWebSocket(openData);
-                                    }
-                                }
-                            })
-                        }).catch(function (err) { console.log(err); });
+                    if(this.authService.activeUser) this.username = this.authService.activeUser.name;
+                    this.updateMeetingStatus(MeetingStatus.AwaitingMediaSettings);
                 },
-                error: (e) => {
-                    this.meetingStatus = MeetingStatus.Error;
-                    console.log(e);
+                error: (responseData:any) => {
+                    this.updateMeetingStatus(MeetingStatus.Error);
                 }
             });
-        } else this.meetingStatus = MeetingStatus.Error; //need to more precisely handle permission-related errors
+        } else {
+            this.updateMeetingStatus(MeetingStatus.Error);
+        }
+    } 
+
+    public openMeeting() {
+        navigator.mediaDevices.getUserMedia(mediaConstraints)
+            .then((stream: MediaStream) => {
+                this.localStream = stream;
+                this.updateMeetingStatus(MeetingStatus.ConnectingToSignalingServer);
+                this.websocketStatus.subscribe({
+                    next: (wsStatus) => {
+                        if (wsStatus == 'open') {
+                            const openData = {
+                                intent: 'open',
+                                username: this.username
+                            }
+                            this.sendOverWebSocket(openData);
+                        }
+                    }
+                })
+            }).catch(function (err) { console.log(err); });
     }
 
     public broadCastMessage(messageType:string, message: string) {
-        if (this.meetingStatus = MeetingStatus.InMeeting) {
+        if (this.meetingStatus === MeetingStatus.InMeeting) {
             if(messageType === 'chat') {
                 const m = new Message(message, "me");
                 this.messages.push(m);
@@ -451,30 +480,38 @@ export class SignalingService {
 
     public toggleMicrophone() {
         if (this.localStream) {
-            let status;
             this.localStream.getAudioTracks().forEach(track => {
                 track.enabled = !track.enabled
-                status = track.enabled;
+                this.audioEnabled = track.enabled;
             });
-            this.broadCastMessage('microphoneToggle', `${status}`);
+            this.localAudioToggled.emit(this.audioEnabled);
+            this.broadCastMessage('microphoneToggle', `${this.audioEnabled}`);
         }
     }
 
     public toggleVideo() {
         if (this.localStream) {
-            let status;
             this.localStream.getVideoTracks().forEach(track => {
                 track.enabled = !track.enabled
-                status = track.enabled;
+                this.videoEnabled = track.enabled;
             });
-            this.broadCastMessage('videoToggle', `${status}`);
+            this.localVideoToggled.emit(this.videoEnabled);
+            this.broadCastMessage('videoToggle', `${this.videoEnabled}`);
         }
     }
 
-    public logUserNames() {
-        for(let sessionId in this.establishedRTCPeerConnections) {
-            const peer = this.establishedRTCPeerConnections[sessionId as keyof typeof this.establishedRTCPeerConnections] as peer;
-            console.log(peer.username);
-        }
+    public cancelJoinOrOpen() {
+        //may need to send some data to server depending on meetingStatus and isHost
+        this.isHost = false;
+        this.username = '';
+        this.currentMeetingToken = '';
+        this.initiatedRTCPeerConnections = {};
+        this.establishedRTCPeerConnections = {};
+        this.localStream = undefined;
+        this.peerStreams = [];
+        this.audioEnabled = true;
+        this.videoEnabled = true;
+        this.meetingStatus = MeetingStatus.NotInMeeting;
+        this.messages = [];
     }
 }

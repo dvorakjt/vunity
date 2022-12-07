@@ -1,0 +1,37 @@
+.modalContainer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(125, 125, 125, 0.5);
+}
+
+.modal {
+    animation: fadeInAndUp 250ms ease-in-out 1 forwards;
+    background-color: white;
+    padding: 24px;
+    box-shadow: 4px 4px 8px #121922;
+    border-radius: 3px;
+}
+
+.mediaSettingsContainer {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.btn-container {
+    display: flex;
+    justify-content: flex-end;
+    flex: 1;
+
+    button {
+        width: fit-content;
+        min-width: 72px;
+        margin-right: 8px;
+    }
+}

@@ -1,4 +1,4 @@
-<div class="modalContainer">
+<div class="modalContainer" *ngIf="modalToShow !== 'media'">
     <div class="modal" *ngIf="modalToShow==='authentication'">
         <h3>Join a Meeting</h3>
         <label for="meetingId">Meeting ID</label>
@@ -39,3 +39,4 @@
         <h3>Select Your Camera and Microphone Settings</h3>
     </div>
 </div>
+<app-media-settings-modal *ngIf="modalToShow==='media'" (closeModal)="onCloseSelf()"></app-media-settings-modal>

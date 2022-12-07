@@ -40,7 +40,8 @@
     flex: 1;
 
     button {
-        width: 72px;
+        width: fit-content;
+        min-width: 72px;
     }
 }
 
