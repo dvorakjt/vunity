@@ -6,7 +6,7 @@ import { MeetingStatus } from '../services/signaling/meeting-status';
 @Component({
   selector: 'app-join-meeting',
   templateUrl: './join-meeting.component.html',
-  styleUrls: ['./join-meeting.component.scss', ]
+  styleUrls: ['./join-meeting.component.scss',]
 })
 export class JoinMeetingComponent implements OnInit {
   @Output() closeModal = new EventEmitter<void>();
@@ -22,7 +22,7 @@ export class JoinMeetingComponent implements OnInit {
   isLoading = false;
   modalToShow = 'authentication';
 
-  constructor(private signalingService:SignalingService) { }
+  constructor(private signalingService: SignalingService) { }
 
   ngOnInit(): void {
   }
@@ -32,26 +32,24 @@ export class JoinMeetingComponent implements OnInit {
     this.passwordErrorMessage = '';
     this.serverErrorMessage = '';
     let frontendValidationPassed = true;
-    if(!this.meetingId) {
+    if (!this.meetingId) {
       this.meetingIdErrorMessage = 'Please enter a meeting id.';
       frontendValidationPassed = false;
     }
-    if(!this.password) {
+    if (!this.password) {
       this.passwordErrorMessage = 'Please enter a password.';
       frontendValidationPassed = false;
     }
-    if(!frontendValidationPassed) return;
-    console.log("authenticating");
+    if (!frontendValidationPassed) return;
     this.isLoading = true;
     this.signalingService.meetingStatusChanged.subscribe({
-      next: (meetingStatus:MeetingStatus) => {
+      next: (meetingStatus: MeetingStatus) => {
         this.isLoading = false;
-        if(meetingStatus === MeetingStatus.AwaitingUsernameInput) {
+        if (meetingStatus === MeetingStatus.AwaitingUsernameInput) {
           this.modalToShow = 'username'
-        } else if(meetingStatus === MeetingStatus.Error) {
+        } else if (meetingStatus === MeetingStatus.Error) {
           this.serverErrorMessage = 'There was a problem authenticating to the meeting. Please ensure you have entered the correct credentials.'
         }
-        this.signalingService.meetingStatusChanged.unsubscribe();
       }
     });
     this.signalingService.authenticateAsGuest(this.meetingId, this.password);
@@ -60,6 +58,11 @@ export class JoinMeetingComponent implements OnInit {
   onEnterUsername() {
     this.signalingService.setUsername(this.username);
     this.modalToShow = 'media';
+  }
+
+  onCancel() {
+    this.signalingService.cancelJoinOrOpen();
+    this.closeModal.emit();
   }
 
   onCloseSelf() {

@@ -1,12 +1,13 @@
 <div class="modalContainer">
     <div class="modal">
-        <div *ngIf="modalStatus !== 'mediaSettings'">
+        <div *ngIf="modalStatus !== 'mediaSettings'" class="loadingContainer">
             <app-loading-wheel [size]="'md'"></app-loading-wheel>
-            <p *ngIf="modalStatus === 'authenticating'">Authenticating...</p>
-            <p *ngIf="modalStatus === 'awaitingMedia'">Awaiting user media...</p>
-            <p *ngIf="modalStatus === 'connectingToSignalingServer'">Connecting to signaling server...</p>
-            <p *ngIf="modalStatus === 'waitingForHost'">Waiting for host to open meeting...</p>
-            <button (click)="onCancel()">Cancel</button>
+            <p *ngIf="modalStatus === 'authenticating'" class="loading-text">Authenticating...</p>
+            <p *ngIf="modalStatus === 'awaitingMedia'" class="loading-text">Awaiting user media...</p>
+            <p *ngIf="modalStatus === 'connectingToSignalingServer'" class="loading-text">Connecting to signaling
+                server...</p>
+            <p *ngIf="modalStatus === 'waitingForHost'" class="loading-text">Waiting for host to open meeting...</p>
+            <button (click)="onCancel()" class="btn btn-primary" style="width: 100%;">Cancel</button>
         </div>
         <div *ngIf="modalStatus === 'mediaSettings'" class="mediaSettingsContainer">
             <app-local-video [size]="videoSize"></app-local-video>
@@ -22,8 +23,8 @@
                     (change)="signalingService.toggleMicrophone()" [checked]="!signalingService.audioEnabled">No</label>
             <div class="btn-container">
                 <button (click)="onCancel()" class="btn btn-primary">Cancel</button>
-                <button (click)="onContinue()"
-                    class="btn btn-primary">{{signalingService.isHost ? "Open" : "Join"}}</button>
+                <button (click)="onContinue()" class="btn btn-primary">{{signalingService.isHost ? "Open" :
+                    "Join"}}</button>
             </div>
         </div>
     </div>

@@ -15,7 +15,7 @@
             <app-loading-wheel [size]="'xs'"></app-loading-wheel><small class="loading-text">loading...</small>
         </div>
         <div class="btn-container">
-            <button class="btn btn-primary" (click)="onCloseSelf()" [disabled]="isLoading">Cancel</button>
+            <button class="btn btn-primary" (click)="onCancel()" [disabled]="isLoading">Cancel</button>
             <button class="btn btn-primary" (click)="onAuthenticateToMeeting()" [disabled]="isLoading">Join</button>
         </div>
         <br />
@@ -31,7 +31,7 @@
             <app-loading-wheel [size]="'xs'"></app-loading-wheel><small class="loading-text">loading...</small>
         </div>
         <div class="btn-container">
-            <button class="btn btn-primary" (click)="onCloseSelf()" [disabled]="isLoading">Cancel</button>
+            <button class="btn btn-primary" (click)="onCancel()" [disabled]="isLoading">Cancel</button>
             <button class="btn btn-primary" (click)="onEnterUsername()" [disabled]="isLoading">Continue</button>
         </div>
     </div>
