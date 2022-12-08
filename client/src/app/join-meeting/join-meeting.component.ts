@@ -61,7 +61,7 @@ export class JoinMeetingComponent implements OnInit {
   }
 
   onCancel() {
-    this.signalingService.cancelJoinOrOpen();
+    this.signalingService.resetMeetingData();
     this.closeModal.emit();
   }
 

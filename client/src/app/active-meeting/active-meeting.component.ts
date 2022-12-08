@@ -49,7 +49,7 @@ export class ActiveMeetingComponent implements OnInit {
     });
     this.peers = this.signalingService.getPeers();
     this.addSpeechListeners();
-    this.signalingService.receivedNewStream.subscribe(() => {
+    this.signalingService.streamsWereModified.subscribe(() => {
       this.peers = this.signalingService.getPeers();
       this.addSpeechListeners();
       this.changeDetection.detectChanges();
@@ -90,5 +90,14 @@ export class ActiveMeetingComponent implements OnInit {
   onToggleVideo() {
     this.signalingService.setVideoEnabled(!this.signalingService.videoEnabled);
     this.changeDetection.detectChanges();
+  }
+
+  onLeaveOrClose() {
+    let departureConfirmed = window.confirm(`Are you sure you would like to ${this.signalingService.isHost ? 'close' : 'leave'} this meeting?`);
+    if(departureConfirmed) {
+      console.log("departure confirmed");
+      if(this.signalingService.isHost) this.signalingService.closeMeeting();
+      else this.signalingService.leaveMeeting();
+    } 
   }
 }

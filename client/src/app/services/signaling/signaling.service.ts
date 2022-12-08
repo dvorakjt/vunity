@@ -62,7 +62,7 @@ export class SignalingService {
 
     meetingStatusChanged = new EventEmitter<MeetingStatus>();
     receivedNewMessage = new EventEmitter<void>();
-    receivedNewStream = new EventEmitter<void>();
+    streamsWereModified = new EventEmitter<void>();
     localAudioToggled = new EventEmitter<boolean>();
     localVideoToggled = new EventEmitter<boolean>();
     remoteAudioToggled = new EventEmitter<{id:string; status:boolean}>();
@@ -74,7 +74,7 @@ export class SignalingService {
 
     private checkAndEstablishWebSocketConnection() {
         if (this.websocketConnection) {
-            if (this.websocketConnection.readyState === WebSocket.CLOSING || this.websocketConnection.readyState === WebSocket.CLOSING) {
+            if (this.websocketConnection.readyState === WebSocket.CLOSING || this.websocketConnection.readyState === WebSocket.CLOSED) {
                 this.establishWebSocketConnection();
             }
         } else {
@@ -102,6 +102,12 @@ export class SignalingService {
                     this.handleAnswer(data);
                 } else if (data.event === 'candidate') {
                     this.handleCandidate(data);
+                } else if (data.event === 'peerDeparture') {
+                    console.log("peer departing");
+                    this.handlePeerDeparture(data.from);
+                } else if (data.event === 'closed') {
+                    console.log("host closure");
+                    this.handleMeetingClosure();
                 }
             });
         }
@@ -154,43 +160,8 @@ export class SignalingService {
             this.localStream?.getTracks().forEach(track => {
                 if (this.localStream) connection.addTrack(track, this.localStream);
             });
-            dataChannel.onmessage = (messageEvent: MessageEvent) => {
-                const data = JSON.parse(messageEvent.data);
-                if(data.messageType === 'chat') {
-                    const message = new Message(data.message, username);
-                    this.messages.push(message);
-                    this.receivedNewMessage.emit();
-                } else if(data.messageType === 'microphoneToggle') {
-                    const audioToggledOn = data.message === 'true';
-                    const peer = this.establishedRTCPeerConnections[sessionId as keyof typeof this.establishedRTCPeerConnections] as any;
-                    peer.audioEnabled = audioToggledOn;
-                    this.remoteAudioToggled.emit({
-                        id: sessionId,
-                        status: audioToggledOn
-                    });
-                } else if(data.messageType === 'videoToggle') {
-                    const videoToggledOn = data.message === 'true';
-                    const peer = this.establishedRTCPeerConnections[sessionId as keyof typeof this.establishedRTCPeerConnections] as any;
-                    peer.videoEnabled = videoToggledOn;
-                    this.remoteVideoToggled.emit({
-                        id: sessionId,
-                        status: videoToggledOn
-                    });
-                } else if(data.messageType === 'requestMediaEnabledStatus') {
-                    this.sendMediaEnabledStatus(dataChannel);
-                } else if(data.messageType === 'mediaEnabledStatus') {
-                    const {audioEnabled, videoEnabled} = data.message;
-                    this.remoteAudioToggled.emit({
-                        id: sessionId,
-                        status: audioEnabled
-                    });
-                    this.remoteVideoToggled.emit({
-                        id: sessionId,
-                        status: videoEnabled
-                    });
-                }
-            }
-           
+            dataChannel.onmessage = this.onMessage(dataChannel, sessionId, username);
+    
             const newEstablishedConnection = {
                 [sessionId]: {
                     dataChannel,
@@ -213,7 +184,7 @@ export class SignalingService {
                 const connectionData = this.establishedRTCPeerConnections[sessionId as keyof typeof this.establishedRTCPeerConnections];
                 (connectionData['remoteStream'] as any) = remoteStream;
                 //check whether media tracks are enabled
-                this.receivedNewStream.emit();
+                this.streamsWereModified.emit();
             });
 
             connection.createOffer().then((offer) => {
@@ -234,7 +205,15 @@ export class SignalingService {
             }).catch((e) => {
                 console.log(e);
             });
+
             connection.onicecandidate = this.onIceCandidate(sessionId);
+
+            //handle unannounced peer departures
+            connection.addEventListener("connectionstatechange", (_event) => {
+                if(connection.connectionState === 'closed' || connection.connectionState === 'failed') {
+                    this.handlePeerDeparture(sessionId);
+                }
+            });
         }
         this.initiatedRTCPeerConnections = {};
     }
@@ -257,46 +236,12 @@ export class SignalingService {
             }
         }
         Object.assign(this.establishedRTCPeerConnections, newEstablishedConnection);
+
         connection.ondatachannel = (event: RTCDataChannelEvent) => {
             const connectionData = this.establishedRTCPeerConnections[initiatingPeerId as keyof typeof this.establishedRTCPeerConnections] as any;
             connectionData.dataChannel = event.channel;
             const channel = (this.establishedRTCPeerConnections[initiatingPeerId as keyof typeof this.establishedRTCPeerConnections] as any).dataChannel;
-            channel.onmessage = (messageEvent: MessageEvent) => {
-                const data = JSON.parse(messageEvent.data);
-                if(data.messageType === 'chat') {
-                    const message = new Message(data.message, initiatingPeerUsername);
-                    this.messages.push(message);
-                    this.receivedNewMessage.emit();
-                } else if(data.messageType === 'microphoneToggle') {
-                    const audioToggledOn = data.message === 'true';
-                    const peer = this.establishedRTCPeerConnections[initiatingPeerId as keyof typeof this.establishedRTCPeerConnections] as any;
-                    peer.audioEnabled = audioToggledOn;
-                    this.remoteAudioToggled.emit({
-                        id: initiatingPeerId,
-                        status: audioToggledOn
-                    });
-                } else if(data.messageType === 'videoToggle') {
-                    const videoToggledOn = data.message === 'true';
-                    const peer = this.establishedRTCPeerConnections[initiatingPeerId as keyof typeof this.establishedRTCPeerConnections] as any;
-                    peer.videoEnabled = videoToggledOn;
-                    this.remoteVideoToggled.emit({
-                        id: initiatingPeerId,
-                        status: videoToggledOn
-                    });
-                } else if(data.messageType === 'requestMediaEnabledStatus') {
-                    this.sendMediaEnabledStatus(channel);
-                } else if(data.messageType === 'mediaEnabledStatus') {
-                    const {audioEnabled, videoEnabled} = data.message;
-                    this.remoteAudioToggled.emit({
-                        id: initiatingPeerId,
-                        status: audioEnabled
-                    });
-                    this.remoteVideoToggled.emit({
-                        id: initiatingPeerId,
-                        status: videoEnabled
-                    });
-                }
-            }
+            channel.onmessage = this.onMessage(channel, initiatingPeerId, initiatingPeerUsername);
             this.requestMediaEnabledStatus(connectionData);
         }
 
@@ -308,7 +253,7 @@ export class SignalingService {
             const [remoteStream] = event.streams;
             const connectionData = this.establishedRTCPeerConnections[initiatingPeerId as keyof typeof this.establishedRTCPeerConnections];
             (connectionData['remoteStream'] as any) = remoteStream;
-            this.receivedNewStream.emit();
+            this.streamsWereModified.emit();
         });
 
         connection.createAnswer().then(answer => {
@@ -321,7 +266,53 @@ export class SignalingService {
             this.sendOverWebSocket(dto);
         }).catch(e => {
             console.log(e);
-        })
+        });
+
+        //handle unannounced peer departures
+        connection.addEventListener("connectionstatechange", (_event) => {
+            if(connection.connectionState === 'closed' || connection.connectionState === 'failed') {
+                this.handlePeerDeparture(initiatingPeerId);
+            }
+        });
+    }
+
+    private onMessage(dataChannel:RTCDataChannel, sessionId:string, username:string) {
+        return (messageEvent: MessageEvent) => {
+            const data = JSON.parse(messageEvent.data);
+            if(data.messageType === 'chat') {
+                const message = new Message(data.message, username);
+                this.messages.push(message);
+                this.receivedNewMessage.emit();
+            } else if(data.messageType === 'microphoneToggle') {
+                const audioToggledOn = data.message === 'true';
+                const peer = this.establishedRTCPeerConnections[sessionId as keyof typeof this.establishedRTCPeerConnections] as any;
+                peer.audioEnabled = audioToggledOn;
+                this.remoteAudioToggled.emit({
+                    id: sessionId,
+                    status: audioToggledOn
+                });
+            } else if(data.messageType === 'videoToggle') {
+                const videoToggledOn = data.message === 'true';
+                const peer = this.establishedRTCPeerConnections[sessionId as keyof typeof this.establishedRTCPeerConnections] as any;
+                peer.videoEnabled = videoToggledOn;
+                this.remoteVideoToggled.emit({
+                    id: sessionId,
+                    status: videoToggledOn
+                });
+            } else if(data.messageType === 'requestMediaEnabledStatus') {
+                this.sendMediaEnabledStatus(dataChannel);
+            } else if(data.messageType === 'mediaEnabledStatus') {
+                const {audioEnabled, videoEnabled} = data.message;
+                this.remoteAudioToggled.emit({
+                    id: sessionId,
+                    status: audioEnabled
+                });
+                this.remoteVideoToggled.emit({
+                    id: sessionId,
+                    status: videoEnabled
+                });
+            }
+        }
     }
 
     private requestMediaEnabledStatus(connectionData:connectionData) {
@@ -531,18 +522,53 @@ export class SignalingService {
         }
     }
 
-    public cancelJoinOrOpen() {
-        //may need to send some data to server depending on meetingStatus and isHost
+    public resetMeetingData() {
+        if(this.localStream) {
+            this.localStream.getTracks().forEach(track => {
+                track.stop();
+            });
+        }
         this.isHost = false;
         this.username = '';
         this.currentMeetingToken = '';
         this.initiatedRTCPeerConnections = {};
+        for(let sessionId in this.establishedRTCPeerConnections) {
+            const peer = this.establishedRTCPeerConnections[sessionId as keyof typeof this.establishedRTCPeerConnections];
+            (peer['connection'] as RTCPeerConnection).close();
+        }
         this.establishedRTCPeerConnections = {};
         this.localStream = undefined;
         this.peerStreams = [];
         this.audioEnabled = true;
         this.videoEnabled = true;
-        this.meetingStatus = MeetingStatus.NotInMeeting;
         this.messages = [];
+        this.updateMeetingStatus(MeetingStatus.NotInMeeting);
+    }
+
+    public leaveMeeting() {
+        console.log('attempting to leave meeting');
+        this.sendOverWebSocket({
+            intent: 'leave'
+        });
+        this.resetMeetingData();
+    }
+
+    public closeMeeting() {
+        console.log('attempting to close meeting');
+        this.sendOverWebSocket({
+            intent: 'close'
+        });
+        this.resetMeetingData();
+    }
+
+    public handlePeerDeparture(sessionId:string) {
+        if(this.establishedRTCPeerConnections[sessionId as keyof typeof this.establishedRTCPeerConnections]) {
+            delete this.establishedRTCPeerConnections[sessionId as keyof typeof this.establishedRTCPeerConnections];
+            this.streamsWereModified.emit();
+        }
+    }
+
+    public handleMeetingClosure() {
+        this.resetMeetingData();
     }
 }

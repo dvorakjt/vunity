@@ -45,7 +45,7 @@ public class SocketHandler extends TextWebSocketHandler {
             }
 
             String intent = payload.get("intent").toString();
-            if(intent.equals("open") && !socketFilter.isAuthorizedHost(payload)) {
+            if((intent.equals("open") || intent.equals("close")) && !socketFilter.isAuthorizedHost(payload)) {
                 session.close(CloseStatus.POLICY_VIOLATION);
                 return;
             }
@@ -61,6 +61,10 @@ public class SocketHandler extends TextWebSocketHandler {
                 handleCandidate(session, payload, meetingId);
             } else if(intent.equals("open")) {
                 handleOpen(session, payload, meetingId);
+            } else if(intent.equals("leave")) {
+                handleLeave(session, meetingId);
+            } else if(intent.equals("close")) {
+                handleClose(session, meetingId);
             }
         } else { //not an authorized guest
             session.close(CloseStatus.POLICY_VIOLATION);
@@ -180,6 +184,35 @@ public class SocketHandler extends TextWebSocketHandler {
                 }
             }
         }
+    }
+
+    private void handleLeave(WebSocketSession session, String meetingId) throws InterruptedException, IOException {
+        JSONObject jsonData = new JSONObject();
+        jsonData.put("event", "peerDeparture");
+        jsonData.put("from", session.getId());
+        LiveMeeting joinedMeeting = liveMeetings.get(meetingId);
+        String JSONString = jsonData.toString();
+        for(Participant p : joinedMeeting.participants) {
+            WebSocketSession s = p.getSession();
+            if(s.isOpen() && !s.getId().equals(session.getId())) s.sendMessage(new TextMessage(JSONString));
+        }
+        session.close();
+    }
+
+    private void handleClose(WebSocketSession session, String meetingId) throws InterruptedException, IOException {
+        JSONObject jsonData = new JSONObject();
+        jsonData.put("event", "closed");
+        LiveMeeting joinedMeeting = liveMeetings.get(meetingId);
+        String JSONString = jsonData.toString();
+        List<Participant> participantsCopy = new ArrayList<Participant>(joinedMeeting.participants);
+        for(Participant p : participantsCopy) {
+            WebSocketSession s = p.getSession();
+            if(s.isOpen() && !s.getId().equals(session.getId())) {
+                s.sendMessage(new TextMessage(JSONString));
+            }
+            s.close();
+        }
+        session.close();
     }
 
     //remove closed session from livemeetings
