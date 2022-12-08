@@ -90,6 +90,12 @@
         left: 0px;
         font-style: italic;
     }
+
+    span {
+        max-width: 200px;
+        overflow: hidden;
+        overflow-wrap: break-word;
+    }
 }
 
 .ownMessage {
@@ -104,6 +110,13 @@
     }
 }
 
+.chatLink {
+    max-width: 200px;
+    word-break: break-all;
+    overflow-wrap: break-word;
+    overflow: hidden;
+    color: white;
+}
 
 
 .new-message-input-container {
@@ -121,6 +134,8 @@
 .new-message-input {
     height: 36px;
     margin-right: 8px;
+    resize: none;
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
 }
 
 fa-icon {

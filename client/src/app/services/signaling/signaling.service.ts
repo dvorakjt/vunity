@@ -232,9 +232,6 @@ export class SignalingService {
         }
         Object.assign(this.establishedRTCPeerConnections, newEstablishedConnection);
 
-        console.log("responding to offer");
-        console.log(this.establishedRTCPeerConnections[initiatingPeerId as keyof typeof this.establishedRTCPeerConnections]);
-
         connection.ondatachannel = (event: RTCDataChannelEvent) => {
             const connectionData = this.establishedRTCPeerConnections[initiatingPeerId as keyof typeof this.establishedRTCPeerConnections] as any;
             connectionData.dataChannel = event.channel;
@@ -538,7 +535,6 @@ export class SignalingService {
     }
 
     public leaveMeeting() {
-        console.log('attempting to leave meeting');
         this.sendOverWebSocket({
             intent: 'leave'
         });
@@ -546,7 +542,6 @@ export class SignalingService {
     }
 
     public closeMeeting() {
-        console.log('attempting to close meeting');
         this.sendOverWebSocket({
             intent: 'close'
         });
@@ -556,7 +551,6 @@ export class SignalingService {
     public handlePeerDeparture(sessionId:string) {
         if(this.establishedRTCPeerConnections[sessionId as keyof typeof this.establishedRTCPeerConnections]) {
             delete this.establishedRTCPeerConnections[sessionId as keyof typeof this.establishedRTCPeerConnections];
-            console.log("deleted property");
             this.streamsWereModified.emit();
         }
     }

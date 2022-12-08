@@ -31,10 +31,11 @@
 <div class="messagesContainer">
     <div *ngFor="let message of messages" class="message" [ngClass]="{
         ownMessage : message.from == 'me'
-    }">{{message.text}}<small class="sender-name-text">{{message.from}}</small></div>
+    }"><span [innerHTML]="replaceLinksWithTags(message.text)"></span><small
+            class="sender-name-text">{{message.from}}</small></div>
 </div>
 <div class="new-message-input-container">
-    <input type="text" [(ngModel)]="newMessage" class="new-message-input" />
+    <textarea [(ngModel)]="newMessage" class="new-message-input" resize="none"></textarea>
     <button (click)="onSendMessage()" class="btn btn-primary new-message-button">Send To All</button>
 </div>
 <!-- <button style="position: absolute; top: 0; left: 0;" (click)="videos.push(null)">ADD VIDEO</button> -->

@@ -100,4 +100,10 @@ export class ActiveMeetingComponent implements OnInit {
       else this.signalingService.leaveMeeting();
     } 
   }
+
+  replaceLinksWithTags(message:string) {
+    return message.replace(/http[s]{0,1}:\/\/\S+/g, (address:string) => {
+      return `<a target="_blank" ref="noreferrer" href="${address}" class="chatLink">${address}</a>`
+    });
+  }
 }
