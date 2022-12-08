@@ -91,6 +91,7 @@ export class SignalingService {
             this.websocketStatus.next('open');
             this.websocketConnection?.addEventListener('message', (message) => {
                 const data = JSON.parse(message.data);
+                console.log(data);
                 if (data.event === 'joined' || data.event === 'openedAsHost') {
                     this.handleJoinOrOpenAsHost(data);
                 } else if (data.event === 'opened') {
@@ -208,12 +209,6 @@ export class SignalingService {
 
             connection.onicecandidate = this.onIceCandidate(sessionId);
 
-            //handle unannounced peer departures
-            connection.addEventListener("connectionstatechange", (_event) => {
-                if(connection.connectionState === 'closed' || connection.connectionState === 'failed') {
-                    this.handlePeerDeparture(sessionId);
-                }
-            });
         }
         this.initiatedRTCPeerConnections = {};
     }
@@ -236,6 +231,9 @@ export class SignalingService {
             }
         }
         Object.assign(this.establishedRTCPeerConnections, newEstablishedConnection);
+
+        console.log("responding to offer");
+        console.log(this.establishedRTCPeerConnections[initiatingPeerId as keyof typeof this.establishedRTCPeerConnections]);
 
         connection.ondatachannel = (event: RTCDataChannelEvent) => {
             const connectionData = this.establishedRTCPeerConnections[initiatingPeerId as keyof typeof this.establishedRTCPeerConnections] as any;
@@ -268,12 +266,6 @@ export class SignalingService {
             console.log(e);
         });
 
-        //handle unannounced peer departures
-        connection.addEventListener("connectionstatechange", (_event) => {
-            if(connection.connectionState === 'closed' || connection.connectionState === 'failed') {
-                this.handlePeerDeparture(initiatingPeerId);
-            }
-        });
     }
 
     private onMessage(dataChannel:RTCDataChannel, sessionId:string, username:string) {
@@ -564,6 +556,7 @@ export class SignalingService {
     public handlePeerDeparture(sessionId:string) {
         if(this.establishedRTCPeerConnections[sessionId as keyof typeof this.establishedRTCPeerConnections]) {
             delete this.establishedRTCPeerConnections[sessionId as keyof typeof this.establishedRTCPeerConnections];
+            console.log("deleted property");
             this.streamsWereModified.emit();
         }
     }

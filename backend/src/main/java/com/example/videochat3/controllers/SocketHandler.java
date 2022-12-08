@@ -75,6 +75,7 @@ public class SocketHandler extends TextWebSocketHandler {
         String username = payload.get("username").toString();
         Participant participant = new Participant(username, session);
         LiveMeeting joinedMeeting = saveSessionAndGetMeeting(participant, meetingId);
+        System.out.println(liveMeetings.size());
         sendPreexistingSessions(participant, joinedMeeting, false);
     }
 
@@ -192,11 +193,15 @@ public class SocketHandler extends TextWebSocketHandler {
         jsonData.put("from", session.getId());
         LiveMeeting joinedMeeting = liveMeetings.get(meetingId);
         String JSONString = jsonData.toString();
+        joinedMeeting.participantsById.remove(session.getId());
+        joinedMeeting.participants.removeIf(p -> p.getSession().getId() == session.getId());
+        if(joinedMeeting.participants.size() == 0) {
+            this.liveMeetings.remove(meetingId);
+        }
         for(Participant p : joinedMeeting.participants) {
             WebSocketSession s = p.getSession();
             if(s.isOpen() && !s.getId().equals(session.getId())) s.sendMessage(new TextMessage(JSONString));
         }
-        session.close();
     }
 
     private void handleClose(WebSocketSession session, String meetingId) throws InterruptedException, IOException {
@@ -204,29 +209,21 @@ public class SocketHandler extends TextWebSocketHandler {
         jsonData.put("event", "closed");
         LiveMeeting joinedMeeting = liveMeetings.get(meetingId);
         String JSONString = jsonData.toString();
-        List<Participant> participantsCopy = new ArrayList<Participant>(joinedMeeting.participants);
-        for(Participant p : participantsCopy) {
+        for(Participant p : joinedMeeting.participants) {
             WebSocketSession s = p.getSession();
-            if(s.isOpen() && !s.getId().equals(session.getId())) {
-                s.sendMessage(new TextMessage(JSONString));
-            }
-            s.close();
+            if(s.isOpen() && !s.getId().equals(session.getId())) s.sendMessage(new TextMessage(JSONString));
         }
-        session.close();
+        liveMeetings.remove(meetingId);
     }
 
     //remove closed session from livemeetings
     @Override
-    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
+    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws InterruptedException, IOException {
         String sessionId = session.getId();
         for(Entry<String, LiveMeeting> entry : this.liveMeetings.entrySet()) {
             LiveMeeting meeting = entry.getValue();
             if(meeting.participantsById.containsKey(sessionId)) {
-                meeting.participantsById.remove(sessionId);
-                meeting.participants.removeIf(p -> p.getSession().getId() == sessionId);
-                if(meeting.participants.size() == 0) {
-                    this.liveMeetings.remove(meeting.meetingId);
-                }
+                handleLeave(session, meeting.meetingId);
                 break;
             }
         }
