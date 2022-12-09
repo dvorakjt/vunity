@@ -1,4 +1,4 @@
-import { EventEmitter, Injectable } from '@angular/core';
+import { AbstractType, EventEmitter, Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { AuthService } from '../auth/auth.service';
 import { MeetingsService } from '../meetings/meetings.service';
@@ -56,6 +56,13 @@ export class SignalingService {
     public audioEnabled = true;
     public videoEnabled = true;
 
+    private audioContext:any;
+    private gainController?:GainNode;
+    private mediaStreamSource?:MediaStreamAudioSourceNode;
+    private mediaStreamDestination?:MediaStreamAudioDestinationNode;
+
+    public gain = 1;
+
     public meetingStatus: MeetingStatus = MeetingStatus.NotInMeeting;
 
     public messages: Message[] = []; //this will need to be an array of message objects which includes a from field. meeting participants should have usernames as fields (both in frontend & backend)
@@ -91,6 +98,7 @@ export class SignalingService {
             this.websocketStatus.next('open');
             this.websocketConnection?.addEventListener('message', (message) => {
                 const data = JSON.parse(message.data);
+                console.log(data);
                 if (data.event === 'joined' || data.event === 'openedAsHost') {
                     this.handleJoinOrOpenAsHost(data);
                 } else if (data.event === 'opened') {
@@ -208,12 +216,6 @@ export class SignalingService {
 
             connection.onicecandidate = this.onIceCandidate(sessionId);
 
-            //handle unannounced peer departures
-            connection.addEventListener("connectionstatechange", (_event) => {
-                if(connection.connectionState === 'closed' || connection.connectionState === 'failed') {
-                    this.handlePeerDeparture(sessionId);
-                }
-            });
         }
         this.initiatedRTCPeerConnections = {};
     }
@@ -268,12 +270,6 @@ export class SignalingService {
             console.log(e);
         });
 
-        //handle unannounced peer departures
-        connection.addEventListener("connectionstatechange", (_event) => {
-            if(connection.connectionState === 'closed' || connection.connectionState === 'failed') {
-                this.handlePeerDeparture(initiatingPeerId);
-            }
-        });
     }
 
     private onMessage(dataChannel:RTCDataChannel, sessionId:string, username:string) {
@@ -385,7 +381,19 @@ export class SignalingService {
     public getMedia() {
         navigator.mediaDevices.getUserMedia(mediaConstraints)
             .then((stream: MediaStream) => {
-                this.localStream = stream;
+                const videoTracks = stream.getVideoTracks();
+                if(!this.audioContext) this.audioContext = new AudioContext();
+                this.mediaStreamSource = this.audioContext.createMediaStreamSource(stream);
+                this.mediaStreamDestination = this.audioContext.createMediaStreamDestination();
+                this.gainController = this.audioContext.createGain();
+                if(this.gainController && this.mediaStreamSource && this.mediaStreamDestination) {
+                    this.mediaStreamSource.connect(this.gainController);
+                    this.gainController.connect(this.mediaStreamDestination);
+                    this.localStream = this.mediaStreamDestination.stream;
+                    for(const videoTrack of videoTracks) {
+                        this.localStream.addTrack(videoTrack);
+                    }
+                }
                 this.updateMeetingStatus(MeetingStatus.AwaitingMediaSettings);
             })
             .catch((error) => {
@@ -522,6 +530,15 @@ export class SignalingService {
         }
     }
 
+    public setGain(newGain:number) {
+        if(newGain < 0) newGain = 0;
+        if(newGain > 1.5) newGain = 1.5;
+        if(this.gainController) {
+            this.gain = newGain;
+            this.gainController.gain.setTargetAtTime(newGain, this.audioContext.currentTime, 0.015);
+        }
+    }
+
     public resetMeetingData() {
         if(this.localStream) {
             this.localStream.getTracks().forEach(track => {
@@ -539,6 +556,10 @@ export class SignalingService {
         this.establishedRTCPeerConnections = {};
         this.localStream = undefined;
         this.peerStreams = [];
+        this.gainController = undefined;
+        this.mediaStreamSource = undefined;
+        this.mediaStreamDestination = undefined;
+        this.gain = 1;
         this.audioEnabled = true;
         this.videoEnabled = true;
         this.messages = [];
@@ -546,7 +567,6 @@ export class SignalingService {
     }
 
     public leaveMeeting() {
-        console.log('attempting to leave meeting');
         this.sendOverWebSocket({
             intent: 'leave'
         });
@@ -554,7 +574,6 @@ export class SignalingService {
     }
 
     public closeMeeting() {
-        console.log('attempting to close meeting');
         this.sendOverWebSocket({
             intent: 'close'
         });
