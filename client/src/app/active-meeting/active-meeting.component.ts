@@ -24,6 +24,7 @@ export class ActiveMeetingComponent implements OnInit {
   peers:peerStreamData[] = [];
   newMessage = '';
   chatIsOpen = false;
+  showSettingsModal = false;
 
   sizes = VideoSize;
   faMicrophone = faMicrophone;
@@ -99,6 +100,15 @@ export class ActiveMeetingComponent implements OnInit {
       if(this.signalingService.isHost) this.signalingService.closeMeeting();
       else this.signalingService.leaveMeeting();
     } 
+  }
+
+  onChangeMicLevel(event:Event) {
+    const target = event.target as HTMLInputElement;
+    if(target) {
+      console.log(target.value);
+      this.signalingService.setGain(Number(target.value));
+    }
+    console.log(this.signalingService.gain);
   }
 
   replaceLinksWithTags(message:string) {

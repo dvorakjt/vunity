@@ -1,4 +1,4 @@
-import { EventEmitter, Injectable } from '@angular/core';
+import { AbstractType, EventEmitter, Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { AuthService } from '../auth/auth.service';
 import { MeetingsService } from '../meetings/meetings.service';
@@ -55,6 +55,13 @@ export class SignalingService {
     public peerStreams: MediaStream[] = [];
     public audioEnabled = true;
     public videoEnabled = true;
+
+    private audioContext:any;
+    private gainController?:GainNode;
+    private mediaStreamSource?:MediaStreamAudioSourceNode;
+    private mediaStreamDestination?:MediaStreamAudioDestinationNode;
+
+    public gain = 1;
 
     public meetingStatus: MeetingStatus = MeetingStatus.NotInMeeting;
 
@@ -374,7 +381,19 @@ export class SignalingService {
     public getMedia() {
         navigator.mediaDevices.getUserMedia(mediaConstraints)
             .then((stream: MediaStream) => {
-                this.localStream = stream;
+                const videoTracks = stream.getVideoTracks();
+                if(!this.audioContext) this.audioContext = new AudioContext();
+                this.mediaStreamSource = this.audioContext.createMediaStreamSource(stream);
+                this.mediaStreamDestination = this.audioContext.createMediaStreamDestination();
+                this.gainController = this.audioContext.createGain();
+                if(this.gainController && this.mediaStreamSource && this.mediaStreamDestination) {
+                    this.mediaStreamSource.connect(this.gainController);
+                    this.gainController.connect(this.mediaStreamDestination);
+                    this.localStream = this.mediaStreamDestination.stream;
+                    for(const videoTrack of videoTracks) {
+                        this.localStream.addTrack(videoTrack);
+                    }
+                }
                 this.updateMeetingStatus(MeetingStatus.AwaitingMediaSettings);
             })
             .catch((error) => {
@@ -511,6 +530,15 @@ export class SignalingService {
         }
     }
 
+    public setGain(newGain:number) {
+        if(newGain < 0) newGain = 0;
+        if(newGain > 1.5) newGain = 1.5;
+        if(this.gainController) {
+            this.gain = newGain;
+            this.gainController.gain.setTargetAtTime(newGain, this.audioContext.currentTime, 0.015);
+        }
+    }
+
     public resetMeetingData() {
         if(this.localStream) {
             this.localStream.getTracks().forEach(track => {
@@ -528,6 +556,10 @@ export class SignalingService {
         this.establishedRTCPeerConnections = {};
         this.localStream = undefined;
         this.peerStreams = [];
+        this.gainController = undefined;
+        this.mediaStreamSource = undefined;
+        this.mediaStreamDestination = undefined;
+        this.gain = 1;
         this.audioEnabled = true;
         this.videoEnabled = true;
         this.messages = [];
