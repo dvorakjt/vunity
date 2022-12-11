@@ -10,6 +10,7 @@ public class LiveMeeting {
     boolean isOpen = false;
     List<Participant> participants = new CopyOnWriteArrayList<>();
     Map<String, Participant> participantsById = new HashMap<String, Participant>();
+    String activeScreenSharerId = null;
 
     public LiveMeeting(String meetingId) {
         this.meetingId = meetingId;

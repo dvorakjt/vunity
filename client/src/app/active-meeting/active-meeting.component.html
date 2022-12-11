@@ -10,7 +10,7 @@
     <button class="toolbar-button" (click)="onToggleVideo()">
         <fa-icon [icon]="signalingService.videoEnabled ? faVideo : faVideoSlash"></fa-icon>
     </button>
-    <button class="toolbar-button">
+    <button class="toolbar-button" (click)="onScreenShareAction()">
         <fa-icon [icon]="faDesktop"></fa-icon>
     </button>
     <button class="toolbar-button">

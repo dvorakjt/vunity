@@ -13,6 +13,7 @@ import org.springframework.boot.json.JsonParserFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
@@ -65,6 +66,10 @@ public class SocketHandler extends TextWebSocketHandler {
                 handleLeave(session, meetingId);
             } else if(intent.equals("close")) {
                 handleClose(session, meetingId);
+            } else if(intent.equals("shareScreen")) {
+                handleShareScreen(session, meetingId);
+            } else if(intent.equals("stopSharing")) {
+                handleStopSharing(session, meetingId);
             }
         } else { //not an authorized guest
             session.close(CloseStatus.POLICY_VIOLATION);
@@ -75,7 +80,9 @@ public class SocketHandler extends TextWebSocketHandler {
         String username = payload.get("username").toString();
         Participant participant = new Participant(username, session);
         LiveMeeting joinedMeeting = saveSessionAndGetMeeting(participant, meetingId);
-        System.out.println(liveMeetings.size());
+        if(joinedMeeting.activeScreenSharerId != null) {
+            sendActiveScreenSharerId(session, joinedMeeting.activeScreenSharerId);
+        }
         sendPreexistingSessions(participant, joinedMeeting, false);
     }
 
@@ -119,6 +126,13 @@ public class SocketHandler extends TextWebSocketHandler {
         String dataString = jsonData.toString();
         WebSocketSession s = participant.getSession();
         if(s.isOpen()) s.sendMessage(new TextMessage(dataString)); //usernames will be sent in preexistingParticipants and handleOffer
+    }
+
+    private void sendActiveScreenSharerId(WebSocketSession session, String activeScreenSharerId) throws InterruptedException, IOException {
+        JSONObject message = new JSONObject();
+        message.put("event", "newScreenSharer");
+        message.put("id", activeScreenSharerId);
+        session.sendMessage(new TextMessage(message.toString()));
     }
 
 
@@ -188,13 +202,18 @@ public class SocketHandler extends TextWebSocketHandler {
     }
 
     private void handleLeave(WebSocketSession session, String meetingId) throws InterruptedException, IOException {
+        handleStopSharing(session, meetingId);
+
+        LiveMeeting joinedMeeting = liveMeetings.get(meetingId);
+        
+        joinedMeeting.participantsById.remove(session.getId());
+        joinedMeeting.participants.removeIf(p -> p.getSession().getId() == session.getId());
+
         JSONObject jsonData = new JSONObject();
         jsonData.put("event", "peerDeparture");
         jsonData.put("from", session.getId());
-        LiveMeeting joinedMeeting = liveMeetings.get(meetingId);
         String JSONString = jsonData.toString();
-        joinedMeeting.participantsById.remove(session.getId());
-        joinedMeeting.participants.removeIf(p -> p.getSession().getId() == session.getId());
+
         if(joinedMeeting.participants.size() == 0) {
             this.liveMeetings.remove(meetingId);
         }
@@ -216,7 +235,45 @@ public class SocketHandler extends TextWebSocketHandler {
         liveMeetings.remove(meetingId);
     }
 
-    //remove closed session from livemeetings
+    //when a new user joins, they will have to be sent the sharer info
+    private void handleShareScreen(WebSocketSession session, String meetingId) throws InterruptedException, IOException {
+        LiveMeeting joinedMeeting = liveMeetings.get(meetingId);
+        JSONObject sendToSharer = new JSONObject();
+        if(joinedMeeting.activeScreenSharerId == null) {
+
+            joinedMeeting.activeScreenSharerId = session.getId();
+        
+            sendToSharer.put("event", "screenShareSucceeded");
+            session.sendMessage(new TextMessage(sendToSharer.toString()));
+
+            JSONObject broadcastToParticipants = new JSONObject();
+            broadcastToParticipants.put("event", "newScreenSharer");
+            broadcastToParticipants.put("id", session.getId());
+
+            for(Participant p : joinedMeeting.participants) {
+                WebSocketSession s = p.getSession();
+                if(s.isOpen() && !s.getId().equals(session.getId())) s.sendMessage(new TextMessage(broadcastToParticipants.toString()));
+            }
+        } else {
+            sendToSharer.put("event", "screenShareFailed");
+            session.sendMessage(new TextMessage(sendToSharer.toString()));
+        }
+    }  
+
+    private void handleStopSharing(WebSocketSession session, String meetingId) throws InterruptedException, IOException {
+        LiveMeeting joinedMeeting = liveMeetings.get(meetingId);
+            if(joinedMeeting.activeScreenSharerId == session.getId()) {
+            joinedMeeting.activeScreenSharerId = null;
+            JSONObject broadcastToAllParticipants = new JSONObject();
+            broadcastToAllParticipants.put("event", "screenShareStopped");
+            for(Participant p : joinedMeeting.participants) {
+                WebSocketSession s = p.getSession();
+                if(s.isOpen()) s.sendMessage(new TextMessage(broadcastToAllParticipants.toString()));
+            }
+        }
+    }
+
+    //remove closed session from livemeetings, if participant was screen sharing, set activeScreenSharer to null
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws InterruptedException, IOException {
         String sessionId = session.getId();

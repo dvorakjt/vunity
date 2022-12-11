@@ -6,6 +6,7 @@ import { MeetingStatus } from './meeting-status';
 import { Message } from '../../models/message.model';
 import { ReplaySubject } from 'rxjs';
 import { peerStreamData } from '../../models/peer-stream-data';
+import { ScreenShareAttemptStatus } from './screen-share-attempt-status';
 
 //probably need ws to trigger some sort of observable, and to restart when closed
 //this service should probably be split into two separate services
@@ -28,6 +29,12 @@ type connectionData = {
     videoEnabled:boolean;
 }
 
+type screenShareStatus = {
+    participantIsSharing:boolean;
+    isSharer:boolean;
+    activeSharerId?:string;
+}
+
 const peerConnectionConfig: RTCConfiguration = {
     iceServers: [{
         urls: "stun:stun2.1.google.com:19302"
@@ -42,7 +49,7 @@ const mediaConstraints = {
 
 @Injectable()
 export class SignalingService {
-    public  isHost = false;
+    public isHost = false;
     public username = '';
 
     private websocketConnection?: WebSocket;
@@ -52,6 +59,8 @@ export class SignalingService {
     private establishedRTCPeerConnections = {};
 
     public localStream?: MediaStream;
+    public cameraTracks?:MediaStreamTrack[]; //holds camera tracks while screen sharing
+    public screenShareStream?:MediaStream;
     public peerStreams: MediaStream[] = [];
     public audioEnabled = true;
     public videoEnabled = true;
@@ -67,6 +76,9 @@ export class SignalingService {
 
     public messages: Message[] = []; //this will need to be an array of message objects which includes a from field. meeting participants should have usernames as fields (both in frontend & backend)
 
+    public isSharingScreen = false;
+    public remoteScreenSharerId?:string;
+
     meetingStatusChanged = new EventEmitter<MeetingStatus>();
     receivedNewMessage = new EventEmitter<void>();
     streamsWereModified = new EventEmitter<void>();
@@ -74,6 +86,8 @@ export class SignalingService {
     localVideoToggled = new EventEmitter<boolean>();
     remoteAudioToggled = new EventEmitter<{id:string; status:boolean}>();
     remoteVideoToggled = new EventEmitter<{id:string; status:boolean}>();
+
+    screenShareAttemptStatusChanged = new EventEmitter<ScreenShareAttemptStatus>();
 
     constructor(private authService: AuthService, private meetingService: MeetingsService, private http: HttpClient) {
         this.checkAndEstablishWebSocketConnection();
@@ -114,9 +128,17 @@ export class SignalingService {
                     console.log("peer departing");
                     this.handlePeerDeparture(data.from);
                 } else if (data.event === 'closed') {
-                    console.log("host closure");
                     this.handleMeetingClosure();
+                } else if (data.event === 'screenShareSucceeded') {
+                    this.handleSuccessfulScreenShare();
+                } else if (data.event === 'screenShareFailed') {
+                    this.handleFailedScreenShare();
+                } else if (data.event === 'newScreenSharer') {
+                    this.handleNewScreenSharer(data);
+                } else if (data.event === 'screenShareStopped') {
+                    this.handleStoppedScreenShare();
                 }
+
             });
         }
         this.websocketConnection.onerror = (error) => {
@@ -189,6 +211,8 @@ export class SignalingService {
 
             connection.addEventListener('track', async (event) => {
                 const [remoteStream] = event.streams;
+                console.log('stream added');
+                console.log(remoteStream);
                 const connectionData = this.establishedRTCPeerConnections[sessionId as keyof typeof this.establishedRTCPeerConnections];
                 (connectionData['remoteStream'] as any) = remoteStream;
                 //check whether media tracks are enabled
@@ -253,6 +277,8 @@ export class SignalingService {
 
         connection.addEventListener('track', async (event) => {
             const [remoteStream] = event.streams;
+            console.log('stream added');
+            console.log(remoteStream);
             const connectionData = this.establishedRTCPeerConnections[initiatingPeerId as keyof typeof this.establishedRTCPeerConnections];
             (connectionData['remoteStream'] as any) = remoteStream;
             this.streamsWereModified.emit();
@@ -500,7 +526,7 @@ export class SignalingService {
         const peerConnection:any = this.establishedRTCPeerConnections[sessionId as keyof typeof this.establishedRTCPeerConnections];
         const peer:peerStreamData = {
             username: peerConnection.username,
-            stream: peerConnection.stream,
+            stream: peerConnection.remoteStream,
             audioEnabled: peerConnection.audioEnabled,
             videoEnabled: peerConnection.videoEnabled,
             id: sessionId
@@ -538,6 +564,83 @@ export class SignalingService {
             this.gainController.gain.setTargetAtTime(newGain, this.audioContext.currentTime, 0.015);
         }
     }
+
+    public async initiateScreenShare() {
+
+        //check that no one is screen sharing
+
+        this.screenShareAttemptStatusChanged.emit(ScreenShareAttemptStatus.Initiating);
+        this.screenShareStream = await navigator.mediaDevices.getDisplayMedia({
+            audio: true,
+            video: true
+        });
+        this.screenShareStream.addEventListener('inactive', () => {
+            console.log('inactive event fired');
+            if(this.isSharingScreen && this.screenShareStream && this.localStream && this.cameraTracks) {
+                this.isSharingScreen = false;
+                for(let track of this.screenShareStream.getTracks()) {
+                    this.localStream.removeTrack(track);
+                }
+                for(let videoTrack of this.cameraTracks) {
+                    this.localStream.addTrack(videoTrack);
+                }
+                this.sendOverWebSocket({
+                    intent: "stopSharing"
+                });
+                this.broadCastMessage('videoToggle', `${this.videoEnabled}`);
+            }
+        });
+        const dto = {
+            intent : 'shareScreen'
+        }
+        this.sendOverWebSocket(dto);
+    }
+
+    private handleSuccessfulScreenShare() {
+        this.screenShareAttemptStatusChanged.emit(ScreenShareAttemptStatus.Succeeded);
+        if(this.localStream && this.screenShareStream) {
+            this.isSharingScreen = true;
+            this.cameraTracks = this.localStream.getVideoTracks();
+            for(let cameraTrack of this.cameraTracks) {
+                this.localStream.removeTrack(cameraTrack);
+            }
+            for(let screenShareTrack of this.screenShareStream.getTracks()) {
+                this.localStream.addTrack(screenShareTrack);
+            }
+            this.broadCastMessage('videoToggle', "true");
+        } else {
+            this.sendOverWebSocket({intent: 'stopSharing'});
+        }
+    }
+
+    private handleFailedScreenShare() {
+        this.screenShareAttemptStatusChanged.emit(ScreenShareAttemptStatus.Failed);
+    }
+
+    private handleNewScreenSharer(data:any) {
+        console.log(data);
+    }
+
+    public stopSharing() {
+        if(this.isSharingScreen && this.localStream && this.screenShareStream && this.cameraTracks) {
+            this.isSharingScreen = false;
+            for(let track of this.screenShareStream.getTracks()) {
+                this.localStream.removeTrack(track);
+                track.stop();
+            }
+            for(let videoTrack of this.cameraTracks) {
+                this.localStream.addTrack(videoTrack);
+            }
+            this.sendOverWebSocket({
+                intent: "stopSharing"
+            });
+            this.broadCastMessage('videoToggle', `${this.videoEnabled}`);
+        }
+    }
+    
+    private handleStoppedScreenShare() {
+        console.log("peer stopped sharing");
+    }   
 
     public resetMeetingData() {
         if(this.localStream) {

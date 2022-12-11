@@ -72,6 +72,8 @@ export class ActiveMeetingComponent implements OnInit {
       peerListener.on('speaking', () => {
         this.currentSpeaker = 'peer';
         this.currentSpeakingPeer = this.signalingService.getPeerStreamData(peer.id);
+        console.log("current speaking peer:");
+        console.log(this.currentSpeakingPeer);
         this.changeDetection.detectChanges();
       });
       this.speechListeners.push(peerListener);
@@ -91,6 +93,12 @@ export class ActiveMeetingComponent implements OnInit {
   onToggleVideo() {
     this.signalingService.setVideoEnabled(!this.signalingService.videoEnabled);
     this.changeDetection.detectChanges();
+  }
+
+  onScreenShareAction() {
+    if(this.signalingService.isSharingScreen) {
+      this.signalingService.stopSharing()
+    } else this.signalingService.initiateScreenShare();
   }
 
   onLeaveOrClose() {

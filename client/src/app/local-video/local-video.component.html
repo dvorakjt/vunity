@@ -12,7 +12,7 @@
         videoBannerThumbnail : size === sizes.Thumbnail,
         videoBannerModal : size === sizes.Modal,
         videoBannerSpeaker : size === sizes.Speaker,
-        hide : videoEnabled
+        hide : videoEnabled || signalingService.isSharingScreen
     }">
         <h2>{{signalingService.username}}</h2>
     </div>
