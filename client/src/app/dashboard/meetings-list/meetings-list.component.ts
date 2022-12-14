@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { MeetingsService } from 'src/app/services/meetings/meetings.service';
 import { Meeting } from 'src/app/models/meeting.model';
-import { SignalingService } from 'src/app/services/signaling/signaling.service';
+import { ActiveMeetingService } from 'src/app/services/active-meeting/active-meeting.service';
+import { MeetingStatus } from 'src/app/constants/meeting-status';
 
 @Component({
   selector: 'app-meetings-list',
@@ -12,7 +13,7 @@ export class MeetingsListComponent implements OnInit {
   meetings:Meeting[] = [];
   showModal = false;
 
-  constructor(private meetingsService:MeetingsService, private signalingService:SignalingService) { }
+  constructor(private meetingsService:MeetingsService, private activeMeetingService:ActiveMeetingService) { }
 
   ngOnInit(): void {
     this.meetings = this.meetingsService.getMeetings();
@@ -22,8 +23,12 @@ export class MeetingsListComponent implements OnInit {
   }
 
   onOpen(meeting:Meeting) {
-    this.signalingService.authenticateAsHost(meeting.id);
-    this.showModal = true;
+    this.activeMeetingService.meetingStatusChanged.subscribe({
+      next: (value:any) => {
+        if(value === MeetingStatus.AwaitingMedia) this.showModal = true;
+      }
+    })
+    this.activeMeetingService.authenticateAsHost(meeting.id);
   }
 
 }

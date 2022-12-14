@@ -1,8 +1,8 @@
-import { AbstractType, EventEmitter, Injectable } from '@angular/core';
+import { EventEmitter, Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { AuthService } from '../auth/auth.service';
 import { MeetingsService } from '../meetings/meetings.service';
-import { MeetingStatus } from './meeting-status';
+import { MeetingStatus } from '../../constants/meeting-status';
 import { Message } from '../../models/message.model';
 import { ReplaySubject } from 'rxjs';
 import { peerStreamData } from '../../models/peer-stream-data';
@@ -80,6 +80,7 @@ export class SignalingService {
     public remoteScreenSharerId?:string;
 
     meetingStatusChanged = new EventEmitter<MeetingStatus>();
+    
     receivedNewMessage = new EventEmitter<void>();
     streamsWereModified = new EventEmitter<void>();
     localAudioToggled = new EventEmitter<boolean>();

@@ -1,7 +1,7 @@
 import { Component, OnInit, Output, EventEmitter } from '@angular/core';
-import { SignalingService } from '../services/signaling/signaling.service';
 import { faTimes } from '@fortawesome/free-solid-svg-icons';
-import { MeetingStatus } from '../services/signaling/meeting-status';
+import { MeetingStatus } from '../constants/meeting-status';
+import { ActiveMeetingService } from '../services/active-meeting/active-meeting.service';
 
 @Component({
   selector: 'app-join-meeting',
@@ -22,7 +22,7 @@ export class JoinMeetingComponent implements OnInit {
   isLoading = false;
   modalToShow = 'authentication';
 
-  constructor(private signalingService: SignalingService) { }
+  constructor(private activeMeetingService:ActiveMeetingService) { }
 
   ngOnInit(): void {
   }
@@ -42,26 +42,28 @@ export class JoinMeetingComponent implements OnInit {
     }
     if (!frontendValidationPassed) return;
     this.isLoading = true;
-    this.signalingService.meetingStatusChanged.subscribe({
+    this.activeMeetingService.meetingStatusChanged.subscribe({
       next: (meetingStatus: MeetingStatus) => {
         this.isLoading = false;
         if (meetingStatus === MeetingStatus.AwaitingUsernameInput) {
-          this.modalToShow = 'username'
-        } else if (meetingStatus === MeetingStatus.Error) {
+          this.modalToShow = 'username';
+        } else if(meetingStatus === MeetingStatus.AwaitingMedia || meetingStatus === MeetingStatus.AwaitingMediaSettings) {
+          this.modalToShow = 'media';
+        } 
+        else if (meetingStatus === MeetingStatus.Error) {
           this.serverErrorMessage = 'There was a problem authenticating to the meeting. Please ensure you have entered the correct credentials.'
         }
       }
     });
-    this.signalingService.authenticateAsGuest(this.meetingId, this.password);
+    this.activeMeetingService.authenticateAsGuest(this.meetingId, this.password);
   }
 
   onEnterUsername() {
-    this.signalingService.setUsername(this.username);
-    this.modalToShow = 'media';
+    this.activeMeetingService.setLocalPeerUsername(this.username);
   }
 
   onCancel() {
-    this.signalingService.resetMeetingData();
+    this.activeMeetingService.resetMeetingData();
     this.closeModal.emit();
   }
 

@@ -1,6 +1,6 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
-import { MeetingStatus } from '../services/signaling/meeting-status';
-import { SignalingService } from '../services/signaling/signaling.service';
+import { MeetingStatus } from '../constants/meeting-status';
+import { ActiveMeetingService } from '../services/active-meeting/active-meeting.service';
 import { VideoSize } from '../shared/video/video-sizes';
 
 @Component({
@@ -13,10 +13,10 @@ export class MediaSettingsModalComponent implements OnInit {
   modalStatus = 'awaitingMedia';
   videoSize = VideoSize.Modal;
 
-  constructor(public signalingService:SignalingService) {}
+  constructor(public activeMeetingService:ActiveMeetingService) {}
 
   ngOnInit(): void {
-    this.signalingService.meetingStatusChanged.subscribe({
+    this.activeMeetingService.meetingStatusChanged.subscribe({
       next: (status:MeetingStatus) => {  
         if(status === MeetingStatus.AwaitingMediaSettings) {
           this.modalStatus = 'mediaSettings';
@@ -32,15 +32,15 @@ export class MediaSettingsModalComponent implements OnInit {
         }
       }
     })
-    this.signalingService.getMedia();
+    this.activeMeetingService.getLocalMedia();
   }
 
   onCancel() {
-    this.signalingService.resetMeetingData();
+    this.activeMeetingService.resetMeetingData();
     this.closeModal.emit();
   }
 
   onContinue() {
-    this.signalingService.confirmMediaSettings();
+    this.activeMeetingService.confirmMediaSettings();
   }
 }

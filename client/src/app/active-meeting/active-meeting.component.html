@@ -1,16 +1,12 @@
-<app-local-video [size]="sizes.Speaker" *ngIf="currentSpeaker==='me'"></app-local-video>
-<app-remote-video [size]="sizes.Speaker" *ngIf="currentSpeaker==='peer' && currentSpeakingPeer"
-    [username]="currentSpeakingPeer.username" [stream]="currentSpeakingPeer.stream"
-    [audioEnabled]="currentSpeakingPeer.audioEnabled" [videoEnabled]="currentSpeakingPeer.videoEnabled"
-    [sessionId]="currentSpeakingPeer.id"></app-remote-video>
+<app-video [peer]="activeMeetingService.localPeer" [size]="sizes.Speaker" [muted]="true"></app-video>
 <div class="toolbar">
     <button class="toolbar-button" (click)="onToggleMicrophone()">
-        <fa-icon [icon]="signalingService.audioEnabled ? faMicrophone : faMicrophoneSlash"></fa-icon>
+        <fa-icon [icon]="activeMeetingService.localPeer?.audioEnabled ? faMicrophone : faMicrophoneSlash"></fa-icon>
     </button>
     <button class="toolbar-button" (click)="onToggleVideo()">
-        <fa-icon [icon]="signalingService.videoEnabled ? faVideo : faVideoSlash"></fa-icon>
+        <fa-icon [icon]="activeMeetingService.localPeer?.videoEnabled ? faVideo : faVideoSlash"></fa-icon>
     </button>
-    <button class="toolbar-button" (click)="onScreenShareAction()">
+    <button class="toolbar-button">
         <fa-icon [icon]="faDesktop"></fa-icon>
     </button>
     <button class="toolbar-button">
@@ -24,12 +20,12 @@
     </button>
 </div>
 <div class="thumbnails-container">
-    <app-local-video></app-local-video>
-    <app-remote-video *ngFor="let peer of peers" [stream]="peer.stream" [username]="peer.username"
-        [audioEnabled]="peer.audioEnabled" [videoEnabled]="peer.videoEnabled" [sessionId]="peer.id"></app-remote-video>
+    <app-video [peer]="activeMeetingService.localPeer" [muted]="true"></app-video>
+    <app-video *ngFor="let remotePeer of activeMeetingService.remotePeerList" [peer]="remotePeer"
+        [muted]="false"></app-video>
 </div>
 <div class="messagesContainer">
-    <div *ngFor="let message of messages" class="message" [ngClass]="{
+    <div *ngFor="let message of activeMeetingService.messages" class="message" [ngClass]="{
         ownMessage : message.from == 'me'
     }"><span [innerHTML]="replaceLinksWithTags(message.text)"></span><small
             class="sender-name-text">{{message.from}}</small></div>
@@ -43,9 +39,8 @@
         <h2>Settings</h2>
         <label>Microphone Input Level</label>
         <input type="range" [min]="0" [max]="1.5" [step]="0.1" (change)="onChangeMicLevel($event)"
-            [value]="signalingService.gain" />
+            [value]="activeMeetingService.localPeer?.gain" />
         <br />
         <button (click)="showSettingsModal=false" class="btn btn-primary">Done</button>
     </div>
 </div>
-<!-- <button style="position: absolute; top: 0; left: 0;" (click)="videos.push(null)">ADD VIDEO</button> -->

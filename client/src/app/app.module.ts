@@ -20,6 +20,7 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { MediaSettingsModalComponent } from './media-settings-modal/media-settings-modal.component';
 import { LocalVideoComponent } from './local-video/local-video.component';
 import { RemoteVideoComponent } from './remote-video/remote-video.component';
+import { VideoComponent } from './video/video.component';
 
 @NgModule({
   declarations: [
@@ -38,6 +39,7 @@ import { RemoteVideoComponent } from './remote-video/remote-video.component';
     MediaSettingsModalComponent,
     LocalVideoComponent,
     RemoteVideoComponent,
+    VideoComponent,
   ],
   imports: [
     BrowserModule,

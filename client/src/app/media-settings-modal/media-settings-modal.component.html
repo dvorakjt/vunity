@@ -10,24 +10,20 @@
             <button (click)="onCancel()" class="btn btn-primary" style="width: 100%;">Cancel</button>
         </div>
         <div *ngIf="modalStatus === 'mediaSettings'" class="mediaSettingsContainer">
-            <app-local-video [size]="videoSize"></app-local-video>
+            <app-video [peer]="activeMeetingService.localPeer" [size]="videoSize" [muted]="true"></app-video>
             <label>Join with camera on?</label>
             <label><input type="radio" id="yes" name="cameraEnabled" value="yes"
-                    (input)="signalingService.setVideoEnabled(true)"
-                    [checked]="signalingService.videoEnabled">Yes</label>
+                    (input)="activeMeetingService.setLocalVideoEnabled(true)">Yes</label>
             <label><input type="radio" id="no" name="cameraEnabled" value="no"
-                    (input)="signalingService.setVideoEnabled(false)"
-                    [checked]="!signalingService.videoEnabled">No</label>
+                    (input)="activeMeetingService.setLocalVideoEnabled(false)">No</label>
             <label>Join with microphone on?</label>
             <label><input type="radio" id="yes" name="audioEnabled" value="yes"
-                    (input)="signalingService.setMicrophoneEnabled(true)"
-                    [checked]="signalingService.audioEnabled">Yes</label>
+                    (input)="activeMeetingService.setLocalAudioEnabled(true)">Yes</label>
             <label><input type="radio" id="no" name="audioEnabled" value="no"
-                    (input)="signalingService.setMicrophoneEnabled(false)"
-                    [checked]="!signalingService.audioEnabled">No</label>
+                    (input)="activeMeetingService.setLocalAudioEnabled(false)">No</label>
             <div class="btn-container">
                 <button (click)="onCancel()" class="btn btn-primary">Cancel</button>
-                <button (click)="onContinue()" class="btn btn-primary">{{signalingService.isHost ? "Open" :
+                <button (click)="onContinue()" class="btn btn-primary">{{activeMeetingService.isHost ? "Open" :
                     "Join"}}</button>
             </div>
         </div>
