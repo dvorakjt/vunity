@@ -1,4 +1,4 @@
-<app-video [peer]="activeMeetingService.localPeer" [size]="sizes.Speaker" [muted]="true"></app-video>
+<app-video [peer]="activeMeetingService.speakingPeer" [size]="sizes.Speaker" [muted]="true"></app-video>
 <div class="toolbar">
     <button class="toolbar-button" (click)="onToggleMicrophone()">
         <fa-icon [icon]="activeMeetingService.localPeer?.audioEnabled ? faMicrophone : faMicrophoneSlash"></fa-icon>

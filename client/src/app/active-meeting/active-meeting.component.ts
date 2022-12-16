@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectorRef, OnInit } from '@angular/core';
 import { faMicrophone } from '@fortawesome/free-solid-svg-icons';
 import { faMicrophoneSlash } from '@fortawesome/free-solid-svg-icons';
 import { faVideo } from '@fortawesome/free-solid-svg-icons';
@@ -15,7 +15,7 @@ import { ActiveMeetingService } from '../services/active-meeting/active-meeting.
   templateUrl: './active-meeting.component.html',
   styleUrls: ['./active-meeting.component.scss']
 })
-export class ActiveMeetingComponent {
+export class ActiveMeetingComponent implements OnInit {
   newMessage = '';
   chatIsOpen = false;
   showSettingsModal = false;
@@ -32,7 +32,15 @@ export class ActiveMeetingComponent {
 
   currentSpeaker = 'me';
 
-  constructor(public activeMeetingService:ActiveMeetingService) {}
+  constructor(public activeMeetingService:ActiveMeetingService, private changeDetector:ChangeDetectorRef) {}
+
+  ngOnInit(): void {
+    this.activeMeetingService.newChatMessageReceived.subscribe({
+      next: () => {
+       this.changeDetector.detectChanges();
+      }
+    });
+  }
 
   onSendMessage() {
     this.activeMeetingService.broadCastMessage('chat', this.newMessage);

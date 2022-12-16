@@ -1,7 +1,6 @@
 import { EventEmitter, Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { AuthService } from '../auth/auth.service';
-import { MeetingsService } from '../meetings/meetings.service';
 import { MeetingStatus } from '../../constants/meeting-status';
 import { Message } from '../../models/message.model';
 import { ReplaySubject } from 'rxjs';
@@ -11,6 +10,7 @@ import { RemotePeer } from 'src/app/models/remote-peer.model';
 import { RemotePeerMap } from 'src/app/types/remote-peer-map.type';
 import { PEER_CONNECTION_CONFIG } from 'src/app/constants/peer-connection';
 import { DataChannelMessage } from 'src/app/types/data-channel-message.type';
+import { Peer } from 'src/app/models/peer.model';
 
 declare var SockJS: any;
 declare var Stomp: any;
@@ -26,10 +26,14 @@ export class ActiveMeetingService {
     private remotePeerPartials:RemotePeerPartial[] = [];
     public remotePeerList:RemotePeer[] = [];
     public remotePeersById:RemotePeerMap = {};
+
+    public speakingPeer?:Peer;
+
     public messages:Message[] = [];
+    public newChatMessageReceived = new EventEmitter<void>();
 
     public meetingStatus: MeetingStatus = MeetingStatus.NotInMeeting;
-    meetingStatusChanged = new EventEmitter<MeetingStatus>();
+    public meetingStatusChanged = new EventEmitter<MeetingStatus>(); 
 
     constructor(private authService: AuthService, private http: HttpClient) {
     }
@@ -85,7 +89,21 @@ export class ActiveMeetingService {
         this.localPeer = new LocalPeer(username);
         this.localPeer.dataChannelEventEmitter.subscribe({
             next: (value:DataChannelMessage) => {
+                console.log(value);
                 this.broadCastMessage(value.messageType, value.message);
+            },
+            error: (e) => {
+                console.log(e);
+            },
+            complete: () => {
+                console.log("complete");
+            }
+        });
+        //speaking peer defaults to localPeer
+        this.speakingPeer = this.localPeer;
+        this.localPeer.speechEventEmitter.subscribe({
+            next: (isSpeaking) => {
+                if(isSpeaking) this.speakingPeer = this.localPeer;
             }
         });
     }
@@ -163,7 +181,7 @@ export class ActiveMeetingService {
             this.remotePeerPartials.push(remotePeerPartial);
         }
         if (data.isOpen) {
-            this.meetingStatusChanged.emit(MeetingStatus.InMeeting);
+            this.updateMeetingStatus(MeetingStatus.InMeeting);
             this.openConnections();
         }
     }
@@ -220,6 +238,14 @@ export class ActiveMeetingService {
         remotePeer.chatMessageEventEmitter.subscribe({
             next: (message) => {
                 this.messages.push(message);
+                this.newChatMessageReceived.emit();
+            }
+        });
+        remotePeer.speechEventEmitter.subscribe({
+            next: (isSpeaking) => {
+                if(isSpeaking) {
+                    this.speakingPeer = remotePeer
+                }
             }
         });
     }
@@ -310,6 +336,7 @@ export class ActiveMeetingService {
     //send data over data channel
 
     public broadCastMessage(messageType:string, message:any) {
+        console.log(this.meetingStatus);
         if (this.meetingStatus === MeetingStatus.InMeeting) {
             if(messageType === 'chat') {
                 const m = new Message(message, "me");
@@ -320,6 +347,9 @@ export class ActiveMeetingService {
                 message
             });
             for(const remotePeer of this.remotePeerList) {
+                console.log(remotePeer);
+                console.log(remotePeer.dataChannel);
+                console.log(remotePeer.dataChannel?.readyState);
                 if (remotePeer.dataChannel && remotePeer.dataChannel.readyState == 'open') {
                     remotePeer.dataChannel.send(broadcastData);
                 }

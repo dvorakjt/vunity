@@ -1,4 +1,5 @@
 import { ReplaySubject, Subject } from "rxjs";
+import * as hark from 'hark';
 import { Message } from "./message.model";
 import { Peer } from "./peer.model";
 import { RemotePeerPartial } from "./remote-peer-partial.model";
@@ -21,11 +22,34 @@ export class RemotePeer extends Peer {
 
     public static initiateRemoteConnection(remotePeerPartial:RemotePeerPartial, localStream:MediaStream) {
         const remotePeer = new RemotePeer(remotePeerPartial.sessionId, remotePeerPartial.username, remotePeerPartial.connection);
+        
         remotePeer.dataChannel = remotePeer.connection.createDataChannel('dataChannel-' + remotePeer.sessionId);
+
         localStream.getTracks().forEach(track => {
             remotePeer.connection.addTrack(track, localStream);
         });
-        remotePeer.dataChannel.onmessage = remotePeer.onMessage;
+
+        remotePeer.dataChannel.onmessage = (messageEvent: MessageEvent) => {
+            const data = JSON.parse(messageEvent.data);
+            console.log(data);
+            if(data.messageType === 'chat') {
+                const message = new Message(data.message, remotePeer.username);
+                remotePeer.chatMessageEventEmitter.next(message);
+            } else if(data.messageType === 'microphoneToggle') {
+                remotePeer.audioEnabled = data.message;
+                remotePeer.audioToggled.next();
+            } else if(data.messageType === 'videoToggle') {
+                remotePeer.videoEnabled = data.message;
+                remotePeer.videoToggled.next();
+            } else if(data.messageType === 'requestMediaEnabledStatus') {
+                remotePeer.mediaStatusRequestEventEmitter.next();
+            } else if(data.messageType === 'mediaEnabledStatus') {
+                const {audioEnabled, videoEnabled} = data.message;
+                remotePeer.audioEnabled = audioEnabled;
+                remotePeer.videoEnabled = videoEnabled;
+                remotePeer.audioToggled.next();
+            }
+        }
 
         remotePeer.dataChannel.onopen = () => {
             remotePeer.requestMediaEnabledStatus();
@@ -34,21 +58,70 @@ export class RemotePeer extends Peer {
         remotePeer.connection.addEventListener('track', async (event) => {
             const [remoteStream] = event.streams;
             remotePeer.stream = remoteStream;
+            remotePeer.speechListener = hark(remotePeer.stream, {});
+            remotePeer.speechListener.on('speaking', () => {
+                remotePeer.speechEventEmitter.next(true);
+            });
+            remotePeer.speechListener.on('stopped_speaking', () => {
+                remotePeer.speechEventEmitter.next(false);
+            });
         });
 
-        remotePeer.connection.onicecandidate = remotePeer.onIceCandidate;
+        remotePeer.connection.onicecandidate = remotePeer.connection.onicecandidate = (event) => {
+            if (event.candidate) {
+                const candidate = JSON.stringify(new RTCIceCandidate(event.candidate as RTCIceCandidateInit).toJSON());
+                const signalingEventObject = {
+                    intent: 'candidate',
+                    to: remotePeer.sessionId,
+                    candidate
+                }
+                remotePeer.signalingEventEmitter.next(signalingEventObject);
+            }
+        }
 
         return remotePeer;
     }
 
     public static createRemoteConnectionFromOffer(sessionId:string, username:string, connection:RTCPeerConnection, offer:RTCSessionDescription, localStream:MediaStream) {
         const remotePeer = new RemotePeer(sessionId, username, connection);
+
+        remotePeer.connection.setRemoteDescription(offer);
         
-        remotePeer.connection.onicecandidate = remotePeer.onIceCandidate;
+        remotePeer.connection.onicecandidate = (event) => {
+            if (event.candidate) {
+                const candidate = JSON.stringify(new RTCIceCandidate(event.candidate as RTCIceCandidateInit).toJSON());
+                const signalingEventObject = {
+                    intent: 'candidate',
+                    to: remotePeer.sessionId,
+                    candidate
+                }
+                remotePeer.signalingEventEmitter.next(signalingEventObject);
+            }
+        }
         
         remotePeer.connection.ondatachannel = (event: RTCDataChannelEvent) => {
             remotePeer.dataChannel = event.channel;
-            remotePeer.dataChannel.onmessage = remotePeer.onMessage;
+            remotePeer.dataChannel.onmessage = (messageEvent: MessageEvent) => {
+                const data = JSON.parse(messageEvent.data);
+                console.log(data);
+                if(data.messageType === 'chat') {
+                    const message = new Message(data.message, remotePeer.username);
+                    remotePeer.chatMessageEventEmitter.next(message);
+                } else if(data.messageType === 'microphoneToggle') {
+                    remotePeer.audioEnabled = data.message;
+                    remotePeer.audioToggled.next();
+                } else if(data.messageType === 'videoToggle') {
+                    remotePeer.videoEnabled = data.message;
+                    remotePeer.videoToggled.next();
+                } else if(data.messageType === 'requestMediaEnabledStatus') {
+                    remotePeer.mediaStatusRequestEventEmitter.next();
+                } else if(data.messageType === 'mediaEnabledStatus') {
+                    const {audioEnabled, videoEnabled} = data.message;
+                    remotePeer.audioEnabled = audioEnabled;
+                    remotePeer.videoEnabled = videoEnabled;
+                    remotePeer.audioToggled.next();
+                }
+            }
             remotePeer.requestMediaEnabledStatus();
         }
 
@@ -59,40 +132,16 @@ export class RemotePeer extends Peer {
         remotePeer.connection.addEventListener('track', async (event) => {
             const [remoteStream] = event.streams;
             remotePeer.stream = remoteStream;
+            remotePeer.speechListener = hark(remotePeer.stream, {});
+            remotePeer.speechListener.on('speaking', () => {
+                remotePeer.speechEventEmitter.next(true);
+            });
+            remotePeer.speechListener.on('stopped_speaking', () => {
+                remotePeer.speechEventEmitter.next(false);
+            });
         });
 
         return remotePeer;
-    }
-
-    private onMessage(messageEvent: MessageEvent) {
-        const data = JSON.parse(messageEvent.data);
-        if(data.messageType === 'chat') {
-            const message = new Message(data.message, this.username);
-            this.chatMessageEventEmitter.next(message);
-        } else if(data.messageType === 'microphoneToggle') {
-            this.audioEnabled = data.message;
-            
-        } else if(data.messageType === 'videoToggle') {
-            this.videoEnabled = data.message;
-        } else if(data.messageType === 'requestMediaEnabledStatus') {
-            this.mediaStatusRequestEventEmitter.next();
-        } else if(data.messageType === 'mediaEnabledStatus') {
-            const {audioEnabled, videoEnabled} = data.message;
-            this.audioEnabled = audioEnabled;
-            this.videoEnabled = videoEnabled;
-        }
-    }
-
-    private onIceCandidate(event: RTCPeerConnectionIceEvent) {
-        if (event.candidate) {
-            const candidate = JSON.stringify(new RTCIceCandidate(event.candidate as RTCIceCandidateInit).toJSON());
-            const signalingEventObject = {
-                intent: 'candidate',
-                to: this.sessionId,
-                candidate
-            }
-            this.signalingEventEmitter.next(signalingEventObject)
-        }
     }
 
     public createOffer() {

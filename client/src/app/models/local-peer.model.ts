@@ -1,4 +1,5 @@
 import { Subject } from "rxjs";
+import * as hark from "hark";
 import { DataChannelMessage } from "../types/data-channel-message.type";
 import { Peer } from "./peer.model";
 
@@ -32,6 +33,13 @@ export class LocalPeer extends Peer {
                         this.stream.addTrack(videoTrack);
                     }
                 } else this.stream = stream;
+                this.speechListener = hark(this.stream, {});
+                this.speechListener.on('speaking', () => {
+                    this.speechEventEmitter.next(true);
+                });
+                this.speechListener.on('stopped_speaking', () => {
+                    this.speechEventEmitter.next(false);
+                });
                 resolve();
             })
             .catch((e) => {
@@ -61,7 +69,7 @@ export class LocalPeer extends Peer {
             this.videoEnabled = videoEnabled;
             this.dataChannelEventEmitter.next({
                 messageType: 'videoToggle',
-                message: this.audioEnabled
+                message: this.videoEnabled
             });
         }
     }

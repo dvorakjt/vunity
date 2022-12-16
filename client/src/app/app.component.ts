@@ -2,7 +2,6 @@ import { Component, HostListener, OnInit } from '@angular/core';
 import { AuthService } from './services/auth/auth.service';
 import { AuthInterceptor } from './services/auth/auth-interceptor.service';
 import { MeetingsService } from './services/meetings/meetings.service';
-import { SignalingService } from './services/signaling/signaling.service';
 import { MeetingStatus } from './constants/meeting-status';
 import { ActiveMeetingService } from './services/active-meeting/active-meeting.service';
 
@@ -10,7 +9,7 @@ import { ActiveMeetingService } from './services/active-meeting/active-meeting.s
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
-  providers: [AuthInterceptor, MeetingsService, SignalingService, ActiveMeetingService]
+  providers: [AuthInterceptor, MeetingsService, ActiveMeetingService]
 })
 export class AppComponent implements OnInit {
   title = 'client';
