@@ -11,6 +11,8 @@ import { RemotePeerMap } from 'src/app/types/remote-peer-map.type';
 import { PEER_CONNECTION_CONFIG } from 'src/app/constants/peer-connection';
 import { DataChannelMessage } from 'src/app/types/data-channel-message.type';
 import { Peer } from 'src/app/models/peer.model';
+import { ScreenViewer } from 'src/app/models/screen-viewer.model';
+import { ScreenViewerMap } from 'src/app/types/screen-viewer-map.type';
 
 declare var SockJS: any;
 declare var Stomp: any;
@@ -26,6 +28,10 @@ export class ActiveMeetingService {
     private remotePeerPartials:RemotePeerPartial[] = [];
     public remotePeerList:RemotePeer[] = [];
     public remotePeersById:RemotePeerMap = {};
+
+    public screenSharingStream?:MediaStream;
+    public screenSharingPeer?:Peer;
+    public screenViewersById:ScreenViewerMap = {};
 
     public speakingPeer?:Peer;
 
@@ -155,6 +161,15 @@ export class ActiveMeetingService {
         this.sendOverWebSocket(openData);
     }
 
+    public async shareScreen() {
+        try {
+            this.screenSharingStream = await navigator.mediaDevices.getDisplayMedia({audio: true, video: true});
+            this.sendOverWebSocket({intent: 'shareScreen'});
+        } catch(e) {
+            this.handleError(e);
+        }
+    }
+
     public leave() {
         this.sendOverWebSocket({
             intent: 'leave'
@@ -268,14 +283,72 @@ export class ActiveMeetingService {
         }
     }
 
-    public handlePeerDeparture(remotePeerId:string) {
+    private handleScreenShareSucceeded(data:any) {
+        data.peerIds.forEach((peerId:string) => {
+            this.createScreenShareOffer(peerId);
+        });
+    }
+
+    private createScreenShareOffer(peerId:string) {
+        const viewer = new ScreenViewer(peerId, new RTCPeerConnection(PEER_CONNECTION_CONFIG));
+        this.screenViewersById[peerId] = viewer;
+
+        viewer.connection.onicecandidate = (event) => {
+            if (event.candidate) {
+                const candidate = JSON.stringify(new RTCIceCandidate(event.candidate as RTCIceCandidateInit).toJSON());
+                const signalingEventObject = {
+                    intent: 'candidate-screenShare',
+                    to: viewer.sessionId,
+                    candidate
+                }
+                this.sendOverWebSocket(signalingEventObject);
+            }
+        }
+
+        if(this.screenSharingStream) {
+            for(const track of this.screenSharingStream?.getTracks()) {
+                viewer.connection.addTrack(track, this.screenSharingStream);
+            }
+        }
+
+        viewer.connection.createOffer().then((offer) => {
+            const offerDTO = {
+                intent: 'offer-screenShare',
+                to: viewer.sessionId,
+                offer: JSON.stringify(new RTCSessionDescription(offer).toJSON()),
+            }
+            this.sendOverWebSocket(offerDTO);
+        }).catch((e) => {
+            this.handleError(e);
+        });
+    }
+
+    private handleScreenShareOffer(data:any) {
+        console.log('screen share offer received');
+        console.log(data);
+    }
+
+    //handleScreenShareCandidate
+    //handleScreenShareAnswer -- need to create method in backend to send peer sessionId when a new participant joins
+    //handleNewParticipantWhileSharing
+    //handleStoppedScreenSharing
+
+    private handleScreenShareFailed(data:any) {
+        console.log(data);
+    }
+
+    private handleScreenShareStopped() {
+        console.log("screen share stopped");
+    }
+
+    private handlePeerDeparture(remotePeerId:string) {
         this.remotePeerList = this.remotePeerList.filter((peer) => {
             return peer.sessionId !== remotePeerId;
         });
         delete this.remotePeersById[remotePeerId];
     }
 
-    public handleMeetingClosure() {
+    private handleMeetingClosure() {
         this.resetMeetingData();
     }
 
@@ -304,6 +377,14 @@ export class ActiveMeetingService {
                         this.handleAnswer(data);
                     } else if (data.event === 'candidate') {
                         this.handleCandidate(data);
+                    } else if (data.event === 'screenShareSucceeded') {
+                        this.handleScreenShareSucceeded(data);
+                    } else if (data.event === 'screenShareFailed') {
+                        this.handleScreenShareFailed(data);
+                    } else if (data.event === 'screenShareStopped') {
+                        this.handleScreenShareStopped();
+                    } else if (data.event === 'offer-screenShare') {
+                        this.handleScreenShareOffer(data);
                     } else if (data.event === 'peerDeparture') {
                         console.log("peer departing");
                         this.handlePeerDeparture(data.from);

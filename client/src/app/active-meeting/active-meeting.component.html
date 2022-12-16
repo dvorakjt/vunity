@@ -7,7 +7,7 @@
         <fa-icon [icon]="activeMeetingService.localPeer?.videoEnabled ? faVideo : faVideoSlash"></fa-icon>
     </button>
     <button class="toolbar-button">
-        <fa-icon [icon]="faDesktop"></fa-icon>
+        <fa-icon [icon]="faDesktop" (click)="activeMeetingService.shareScreen()"></fa-icon>
     </button>
     <button class="toolbar-button">
         <fa-icon [icon]="faMessage"></fa-icon>
