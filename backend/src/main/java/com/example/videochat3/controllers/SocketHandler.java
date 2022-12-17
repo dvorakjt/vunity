@@ -50,6 +50,8 @@ public class SocketHandler extends TextWebSocketHandler {
                 session.close(CloseStatus.POLICY_VIOLATION);
                 return;
             }
+
+            System.out.println(intent);
             
             String meetingId = socketFilter.getMeetingIdFromToken(payload);
             if(intent.equals("join")) {
@@ -68,8 +70,14 @@ public class SocketHandler extends TextWebSocketHandler {
                 handleClose(session, meetingId);
             } else if(intent.equals("shareScreen")) {
                 handleShareScreen(session, meetingId);
-            } else if(intent.equals("offer-screenShare")) {
-                handleScreenShareOffer(session, payload, meetingId);
+            } else if(intent.equals("offer-screenSharer")) {
+                handleScreenSharerOffer(session, payload, meetingId);
+            } else if(intent.equals("answer-screenViewer")) {
+                handleScreenViewerAnswer(session, payload, meetingId);
+            } else if(intent.equals("candidate-screenSharer")) {
+                handleScreenSharerCandidate(session, payload, meetingId);
+            } else if(intent.equals("candidate-screenViewer")) {
+                handleScreenViewerCandidate(session, payload, meetingId);
             } else if(intent.equals("stopSharing")) {
                 handleStopSharing(session, meetingId);
             }
@@ -131,10 +139,10 @@ public class SocketHandler extends TextWebSocketHandler {
     private void handleOffer(WebSocketSession session, Map<String,Object> payload, String meetingId) throws InterruptedException, IOException {
         String forwardToId = payload.get("to").toString();
         LiveMeeting joinedMeeting = liveMeetings.get(meetingId);
-        Participant initiatingParticipant = joinedMeeting.participantsById.get(session.getId());
-        if(initiatingParticipant != null) {
-            String username = initiatingParticipant.getUsername();
-            if(joinedMeeting != null) {
+        if(joinedMeeting != null) {
+            Participant initiatingParticipant = joinedMeeting.participantsById.get(session.getId());
+            if(initiatingParticipant != null) {
+                String username = initiatingParticipant.getUsername();
                 Participant forwardToParticipant = joinedMeeting.participantsById.get(forwardToId);
                 if(forwardToParticipant != null) {
                 WebSocketSession forwardToSession = forwardToParticipant.getSession();
@@ -215,26 +223,89 @@ public class SocketHandler extends TextWebSocketHandler {
         }
     }
 
-    private void handleScreenShareOffer(WebSocketSession session, Map<String,Object> payload, String meetingId) throws InterruptedException, IOException{
+    private void handleScreenSharerOffer(WebSocketSession session, Map<String,Object> payload, String meetingId) throws InterruptedException, IOException {
         String forwardToId = payload.get("to").toString();
         LiveMeeting joinedMeeting = liveMeetings.get(meetingId);
-        Participant initiatingParticipant = joinedMeeting.participantsById.get(session.getId());
-        if(initiatingParticipant != null) {
-            String username = initiatingParticipant.getUsername();
-            if(joinedMeeting != null) {
+        if(joinedMeeting != null) {
+            Participant initiatingParticipant = joinedMeeting.participantsById.get(session.getId());
+            if(initiatingParticipant != null) {
+                String username = initiatingParticipant.getUsername();
                 Participant forwardToParticipant = joinedMeeting.participantsById.get(forwardToId);
                 if(forwardToParticipant != null) {
                 WebSocketSession forwardToSession = forwardToParticipant.getSession();
                     if(forwardToSession.isOpen()) {
                         JSONObject jsonData = new JSONObject();
                         String offer = payload.get("offer").toString();
-                        jsonData.put("event", "offer-screenShare");
+                        jsonData.put("event", "offer-screenSharer");
                         jsonData.put("from", session.getId());
                         jsonData.put("username", username);
                         jsonData.put("offer", offer);
                         String dataString = jsonData.toString();
                         forwardToSession.sendMessage(new TextMessage(dataString));
                     }
+                }
+            }
+        }
+    }
+
+    private void handleScreenViewerAnswer(WebSocketSession session, Map<String,Object> payload, String meetingId) throws InterruptedException, IOException {
+        String forwardToId = payload.get("to").toString();
+        LiveMeeting joinedMeeting = liveMeetings.get(meetingId);
+        if(joinedMeeting != null) {
+            Participant screenViewer = joinedMeeting.participantsById.get(session.getId());
+            if(screenViewer != null) {
+                Participant forwardToParticipant = joinedMeeting.participantsById.get(forwardToId);
+                if(forwardToParticipant != null) {
+                WebSocketSession forwardToSession = forwardToParticipant.getSession();
+                    if(forwardToSession.isOpen()) {
+                        JSONObject jsonData = new JSONObject();
+                        String answer = payload.get("answer").toString();
+                        jsonData.put("event", "answer-screenViewer");
+                        jsonData.put("from", session.getId());
+                        jsonData.put("answer", answer);
+                        String dataString = jsonData.toString();
+                        forwardToSession.sendMessage(new TextMessage(dataString));
+                    }
+                }
+            }
+        }
+    }
+
+    private void handleScreenSharerCandidate(WebSocketSession session, Map<String,Object> payload, String meetingId) throws InterruptedException, IOException {
+        String forwardToId = payload.get("to").toString();
+        LiveMeeting joinedMeeting = liveMeetings.get(meetingId);
+        if(joinedMeeting != null) {
+            Participant forwardToParticipant = joinedMeeting.participantsById.get(forwardToId);
+            if(forwardToParticipant != null) {
+                WebSocketSession forwardToSession = forwardToParticipant.getSession();
+                if(forwardToSession.isOpen()) {
+                    JSONObject jsonData = new JSONObject();
+                    String candidate = payload.get("candidate").toString();
+                    jsonData.put("event", "candidate-screenSharer");
+                    jsonData.put("from", session.getId());
+                    jsonData.put("candidate", candidate);
+                    String dataString = jsonData.toString();
+                    forwardToSession.sendMessage(new TextMessage(dataString));
+                }
+            }
+        }
+    }
+
+    private void handleScreenViewerCandidate(WebSocketSession session, Map<String,Object> payload, String meetingId) throws InterruptedException, IOException {
+        String forwardToId = payload.get("to").toString();
+        LiveMeeting joinedMeeting = liveMeetings.get(meetingId);
+        if(joinedMeeting != null) {
+            Participant forwardToParticipant = joinedMeeting.participantsById.get(forwardToId);
+            if(forwardToParticipant != null) {
+                WebSocketSession forwardToSession = forwardToParticipant.getSession();
+                if(forwardToSession.isOpen()) {
+                    JSONObject jsonData = new JSONObject();
+                    String candidate = payload.get("candidate").toString();
+                    jsonData.put("event", "candidate-screenViewer");
+                    jsonData.put("from", session.getId());
+                    jsonData.put("candidate", candidate);
+                    String dataString = jsonData.toString();
+                    forwardToSession.sendMessage(new TextMessage(dataString));
                 }
             }
         }
