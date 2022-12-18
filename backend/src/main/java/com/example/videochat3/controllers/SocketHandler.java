@@ -78,8 +78,8 @@ public class SocketHandler extends TextWebSocketHandler {
                 handleScreenSharerCandidate(session, payload, meetingId);
             } else if(intent.equals("candidate-screenViewer")) {
                 handleScreenViewerCandidate(session, payload, meetingId);
-            } else if(intent.equals("stopSharing")) {
-                handleStopSharing(session, meetingId);
+            } else if(intent.equals("stopSharingScreen")) {
+                handleStopSharingScreen(session, meetingId);
             }
         } else { //not an authorized guest
             session.close(CloseStatus.POLICY_VIOLATION);
@@ -91,6 +91,7 @@ public class SocketHandler extends TextWebSocketHandler {
         Participant participant = new Participant(username, session);
         LiveMeeting joinedMeeting = saveSessionAndGetMeeting(participant, meetingId);
         sendPreexistingSessions(participant, joinedMeeting, false);
+        sendNewParticipantToScreenSharer(session.getId(), joinedMeeting);
     }
 
     private void handleOpen(WebSocketSession session, Map<String, Object> payload, String meetingId) throws InterruptedException, IOException {
@@ -135,7 +136,19 @@ public class SocketHandler extends TextWebSocketHandler {
         if(s.isOpen()) s.sendMessage(new TextMessage(dataString)); //usernames will be sent in preexistingParticipants and handleOffer
     }
 
-    //payload field isScreenSharingOffer
+    private void sendNewParticipantToScreenSharer(String sessionId, LiveMeeting joinedMeeting) throws InterruptedException, IOException {
+        if(joinedMeeting.activeScreenSharerId != null) {
+            JSONObject data = new JSONObject();
+            data.put("event", "newScreenViewer");
+            data.put("peerId", sessionId);
+            String dataString = data.toString();
+            Participant screenSharer = joinedMeeting.participantsById.get(joinedMeeting.activeScreenSharerId);
+            if(screenSharer != null) {
+                screenSharer.getSession().sendMessage(new TextMessage(dataString));
+            }
+        } 
+    }
+    
     private void handleOffer(WebSocketSession session, Map<String,Object> payload, String meetingId) throws InterruptedException, IOException {
         String forwardToId = payload.get("to").toString();
         LiveMeeting joinedMeeting = liveMeetings.get(meetingId);
@@ -208,12 +221,12 @@ public class SocketHandler extends TextWebSocketHandler {
         if(joinedMeeting.activeScreenSharerId == null && joinedMeeting.isOpen) {
             joinedMeeting.activeScreenSharerId = session.getId();
             response.put("event", "screenShareSucceeded");
-            List<String> peers = new ArrayList<String>();
+            List<String> peerIds = new ArrayList<String>();
             for(Participant p : joinedMeeting.participants) {
                 String id = p.getSession().getId();
-                if(!id.equals(session.getId())) peers.add(id);
+                if(!id.equals(session.getId())) peerIds.add(id);
             }
-            response.put("peerIds", peers);
+            response.put("peerIds", peerIds);
             responseString = response.toString();
             session.sendMessage(new TextMessage(responseString));
         } else {
@@ -311,7 +324,7 @@ public class SocketHandler extends TextWebSocketHandler {
         }
     }
 
-    private void handleStopSharing(WebSocketSession session, String meetingId) throws InterruptedException, IOException {
+    private void handleStopSharingScreen(WebSocketSession session, String meetingId) throws InterruptedException, IOException {
         LiveMeeting joinedMeeting = liveMeetings.get(meetingId);
             if(joinedMeeting.activeScreenSharerId == session.getId()) {
             joinedMeeting.activeScreenSharerId = null;
@@ -325,7 +338,7 @@ public class SocketHandler extends TextWebSocketHandler {
     }
 
     private void handleLeave(WebSocketSession session, String meetingId) throws InterruptedException, IOException {
-        handleStopSharing(session, meetingId);
+        handleStopSharingScreen(session, meetingId);
 
         LiveMeeting joinedMeeting = liveMeetings.get(meetingId);
         

@@ -31,6 +31,7 @@ export class ActiveMeetingService {
     public remotePeerList:RemotePeer[] = [];
     public remotePeersById:RemotePeerMap = {};
 
+    public isSharingScreen = false;
     public screenSharingStream?:MediaStream;
     public screenSharingPeer?:Peer;
     public screenViewersById:ScreenViewerMap = {};
@@ -163,8 +164,25 @@ export class ActiveMeetingService {
         this.sendOverWebSocket(openData);
     }
 
-    public async shareScreen() {
+    public shareScreen() {
         this.sendOverWebSocket({intent: 'shareScreen'});
+    }
+
+    public stopScreenShare() {
+        if(this.screenSharingStream && this.isSharingScreen) {
+            this.sendOverWebSocket({intent: 'stopSharingScreen'});
+            this.screenSharingPeer = undefined;
+            for(const track of this.screenSharingStream?.getTracks()) {
+                track.stop();
+            }
+            for(const key in this.screenViewersById) {
+                const viewer = this.screenViewersById[key];
+                viewer.connection.close();
+            }
+            this.screenSharingStream = undefined;
+            this.screenViewersById = {};
+            this.isSharingScreen = false;
+        }
     }
 
     public leave() {
@@ -182,6 +200,7 @@ export class ActiveMeetingService {
     }
 
     public resetMeetingData() {
+        
     }
 
     //Handle Signaling messages
@@ -283,6 +302,18 @@ export class ActiveMeetingService {
     private async handleScreenShareSucceeded(data:any) {
         try {
             this.screenSharingStream = await navigator.mediaDevices.getDisplayMedia({audio: true, video: true});
+            this.isSharingScreen = true;
+            this.screenSharingStream.addEventListener('inactive', () => {
+                this.sendOverWebSocket({intent: 'stopSharingScreen'});
+                this.screenSharingPeer = undefined;
+                this.screenSharingStream = undefined;
+                for(const key in this.screenViewersById) {
+                    const viewer = this.screenViewersById[key];
+                    viewer.connection.close();
+                }
+                this.screenViewersById = {};
+                this.isSharingScreen = false;
+            });
             this.screenSharingPeer = new LocalScreenSharingPeer('My');
             this.screenSharingPeer.stream = this.screenSharingStream;
             data.peerIds.forEach((peerId:string) => {
@@ -290,6 +321,7 @@ export class ActiveMeetingService {
             });
         } catch(e) {
             this.handleError(e);
+            this.sendOverWebSocket({intent: 'stopSharingScreen'});
         }
     }
 
@@ -393,15 +425,16 @@ export class ActiveMeetingService {
         }
     }
 
-    //handleNewParticipantWhileSharing
-    //handleStoppedScreenSharing
+    private handleNewScreenViewer(data:any) {
+        this.createScreenShareOffer(data.peerId);
+    }
 
     private handleScreenShareFailed(data:any) {
         console.log(data);
     }
 
     private handleScreenShareStopped() {
-        console.log("screen share stopped");
+        this.screenSharingPeer = undefined;
     }
 
     private handlePeerDeparture(remotePeerId:string) {
@@ -444,8 +477,6 @@ export class ActiveMeetingService {
                         this.handleScreenShareSucceeded(data);
                     } else if (data.event === 'screenShareFailed') {
                         this.handleScreenShareFailed(data);
-                    } else if (data.event === 'screenShareStopped') {
-                        this.handleScreenShareStopped();
                     } else if (data.event === 'offer-screenSharer') {
                         this.handleScreenShareOffer(data);
                     } else if (data.event === 'answer-screenViewer') {
@@ -454,6 +485,10 @@ export class ActiveMeetingService {
                         this.handleScreenShareCandidate(data);
                     } else if (data.event === 'candidate-screenViewer') {
                         this.handleScreenViewerCandidate(data);
+                    } else if (data.event === 'newScreenViewer') {
+                        this.handleNewScreenViewer(data);
+                    } else if (data.event === 'screenShareStopped') {
+                        this.handleScreenShareStopped();
                     } else if (data.event === 'peerDeparture') {
                         this.handlePeerDeparture(data.from);
                     } else if (data.event === 'closed') {
