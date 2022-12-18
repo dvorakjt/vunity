@@ -15,6 +15,8 @@ export class LocalPeer extends Peer {
 
     constructor(username:string) {
         super(username);
+        this.audioEnabled = false;
+        this.videoEnabled = true;
     }
 
     getMedia() {
@@ -33,6 +35,8 @@ export class LocalPeer extends Peer {
                         this.stream.addTrack(videoTrack);
                     }
                 } else this.stream = stream;
+                //start with audio muted
+                for(const audioTrack of this.stream.getAudioTracks()) audioTrack.enabled = false;
                 this.speechListener = hark(this.stream, {});
                 this.speechListener.on('speaking', () => {
                     this.speechEventEmitter.next(true);
@@ -46,6 +50,19 @@ export class LocalPeer extends Peer {
                 reject(e);
             });
         })
+    }
+
+    releaseMedia() {
+        if(this.mediaStreamSource) {
+            for(const track of this.mediaStreamSource?.mediaStream.getTracks()) {
+                track.stop();
+            }
+        }
+        if(this.stream) {
+            for(const track of this.stream.getTracks()) {
+                track.stop();
+            }
+        }
     }
 
     setAudioEnabled(audioEnabled:boolean) {

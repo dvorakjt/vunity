@@ -200,7 +200,42 @@ export class ActiveMeetingService {
     }
 
     public resetMeetingData() {
+        for(const remotePeer of this.remotePeerList) {
+            remotePeer.connection.close();
+        }
+        for(const screenViewerSessionId in this.screenViewersById) {
+            const screenViewer = this.screenViewersById[screenViewerSessionId];
+            screenViewer.connection.close();
+        }
+        if(this.screenSharingPeer && "connection" in this.screenSharingPeer) {
+            const screenSharingPeer = this.screenSharingPeer as ScreenSharingPeer;
+            screenSharingPeer.connection.close();
+        }
+        this.localPeer?.releaseMedia();
+        if(this.screenSharingStream) {
+            for(const track of this.screenSharingStream.getTracks()) {
+                track.stop();
+            }
+        }
+        this.websocketConnection?.close();
+        this.isHost = false;
+        this.authToken = '';
+        this.localPeer = undefined;
+        this.remotePeerPartials = [];
+        this.remotePeerList = [];
+        this.remotePeersById = {};
+
+        this.isSharingScreen = false;
         
+        this.screenSharingStream = undefined;
+        this.screenSharingPeer = undefined;
+        this.screenViewersById = {};
+
+        this.speakingPeer = undefined;
+
+        this.messages = [];
+
+        this.updateMeetingStatus(MeetingStatus.NotInMeeting);
     }
 
     //Handle Signaling messages
@@ -442,6 +477,8 @@ export class ActiveMeetingService {
             return peer.sessionId !== remotePeerId;
         });
         delete this.remotePeersById[remotePeerId];
+        console.log(this.remotePeerList);
+        console.log(this.remotePeersById);
     }
 
     private handleMeetingClosure() {
@@ -503,18 +540,18 @@ export class ActiveMeetingService {
     }
 
     private sendOverWebSocket(dto: any) {
-        this.websocketStatus.subscribe({
-            next: (status) => {
-                if (status === 'open') {
-                    const authData = {
-                        isHost: this.isHost,
-                        meetingAccessToken: this.authToken
-                    }
-                    Object.assign(dto, authData);
-                    this.websocketConnection?.send(JSON.stringify(dto));
-                }
-            }
-        })
+        const authData = {
+            isHost: this.isHost,
+            meetingAccessToken: this.authToken
+        }
+        Object.assign(dto, authData);
+        if(this.websocketConnection && this.websocketConnection.readyState === WebSocket.OPEN) {
+            this.websocketConnection.send(JSON.stringify(dto));
+        } else if(this.websocketConnection && this.websocketConnection.readyState === WebSocket.CONNECTING) {
+            this.websocketConnection.addEventListener('open', () => {
+                this.websocketConnection?.send(JSON.stringify(dto));
+            });
+        } else this.handleError(new Error("No websocket connection exists or the connection is closing."));
     }
 
     //send data over data channel

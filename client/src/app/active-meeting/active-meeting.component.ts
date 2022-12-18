@@ -1,4 +1,4 @@
-import { Component, ChangeDetectorRef, OnInit } from '@angular/core';
+import { Component, ChangeDetectorRef, OnInit, ViewChild, ElementRef, ViewChildren, QueryList, AfterViewInit } from '@angular/core';
 import { faMicrophone } from '@fortawesome/free-solid-svg-icons';
 import { faMicrophoneSlash } from '@fortawesome/free-solid-svg-icons';
 import { faVideo } from '@fortawesome/free-solid-svg-icons';
@@ -15,7 +15,10 @@ import { ActiveMeetingService } from '../services/active-meeting/active-meeting.
   templateUrl: './active-meeting.component.html',
   styleUrls: ['./active-meeting.component.scss']
 })
-export class ActiveMeetingComponent implements OnInit {
+export class ActiveMeetingComponent implements OnInit, AfterViewInit {
+  @ViewChildren('messages') messages?: QueryList<any>;
+  @ViewChild('messagesContainer', {static: false}) messagesContainer?:ElementRef;
+
   newMessage = '';
   chatIsOpen = false;
   showSettingsModal = false;
@@ -37,14 +40,28 @@ export class ActiveMeetingComponent implements OnInit {
   ngOnInit(): void {
     this.activeMeetingService.newChatMessageReceived.subscribe({
       next: () => {
-       this.changeDetector.detectChanges();
+        this.changeDetector.detectChanges();
+        this.scrollToBottomOfMessages();
       }
     });
+  }
+
+  ngAfterViewInit() {
+    this.scrollToBottomOfMessages();
+    if(this.messages) this.messages.changes.subscribe(this.scrollToBottomOfMessages);
   }
 
   onSendMessage() {
     this.activeMeetingService.broadCastMessage('chat', this.newMessage);
     this.newMessage = '';
+  }
+  
+  scrollToBottomOfMessages = () => {
+    try {
+      if(this.messagesContainer) {
+        this.messagesContainer.nativeElement.scrollTop = this.messagesContainer.nativeElement.scrollHeight;
+      } 
+    } catch (err) {}
   }
 
   onToggleMicrophone() {

@@ -18,6 +18,6 @@
     </div>
     <fa-icon [icon]="peer?.audioEnabled ? faMicrophone : faMicrophoneSlash" class="microphone-icon"></fa-icon>
     <div class="outline" [ngClass]="{
-        hide : size !== sizes.Thumbnail || !isSpeaking 
+        hide : size !== sizes.Thumbnail || !isSpeaking || !peer?.audioEnabled
     }"></div>
 </div>

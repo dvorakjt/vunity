@@ -26,10 +26,10 @@
     <app-video *ngFor="let remotePeer of activeMeetingService.remotePeerList" [peer]="remotePeer"
         [muted]="false"></app-video>
 </div>
-<div class="messagesContainer">
+<div class="messagesContainer" #messagesContainer>
     <div *ngFor="let message of activeMeetingService.messages" class="message" [ngClass]="{
         ownMessage : message.from == 'me'
-    }"><span [innerHTML]="replaceLinksWithTags(message.text)"></span><small
+    }" #messages><span [innerHTML]="replaceLinksWithTags(message.text)"></span><small
             class="sender-name-text">{{message.from}}</small></div>
 </div>
 <div class="new-message-input-container">
