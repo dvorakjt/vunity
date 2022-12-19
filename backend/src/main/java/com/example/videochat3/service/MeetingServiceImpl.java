@@ -18,7 +18,7 @@ import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.UUID;
+import java.util.Date;
 
 @Slf4j
 @Service
@@ -66,9 +66,9 @@ public class MeetingServiceImpl implements MeetingService, UserDetailsService {
     }
 
     @Override
-    public List<Meeting> getMeetings(String ownerId) {
+    public List<Meeting> getMeetings(String ownerId, Date startDate, Date endDate) {
         log.info("Fetching all your meetings.");
-        return meetingRepo.findAllByOwnerId(ownerId);
+        return meetingRepo.findAllByOwnerIdWithinRange(ownerId, startDate, endDate);
     }
 
     @Override

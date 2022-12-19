@@ -1,12 +1,12 @@
 export class MeetingDTO {
     title?:string;
-    dateTime?:string;
+    startDateTime?:number;
     duration?:number;
     password?:string;
 
-    constructor({title, dateTime, duration, password}:any, public guests:string[]) {
+    constructor(title:string, startDateTime:number, duration:number, password:string, public guests:string[]) {
         this.title = title;
-        this.dateTime = dateTime;
+        this.startDateTime = startDateTime;
         this.duration = duration;
         this.password = password;
     }

@@ -7,13 +7,13 @@ import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
-import java.util.UUID;
 import java.util.ArrayList;
+import java.util.Date;
 
 @Entity @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name="meetings")
+@Table(name="Meetings")
 public class Meeting {
     @Id
     @GeneratedValue(generator="system-uuid")
@@ -23,7 +23,7 @@ public class Meeting {
     private String title;
     private String password;
     private int duration;
-    private String dateTime;
+    private Date startDateTime;
     private ArrayList<String> guests;
     private String ownerId;
 }

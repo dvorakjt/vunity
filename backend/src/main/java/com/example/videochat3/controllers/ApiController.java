@@ -16,6 +16,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+
 import com.example.videochat3.tokens.UserTokenManager;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.security.core.userdetails.User;
@@ -26,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -78,7 +81,7 @@ public class ApiController {
             consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE},
             produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     public ResponseEntity createNewMeeting(@RequestBody MeetingDTO meetingDTO, Principal principal) {
-        if(meetingDTO.getTitle() == null || meetingDTO.getPassword() == null || meetingDTO.getDuration() == null || meetingDTO.getDateTime() == null) {
+        if(meetingDTO.getTitle() == null || meetingDTO.getPassword() == null || meetingDTO.getDuration() == null || meetingDTO.getStartDateTime() == null) {
             return new ResponseEntity("Missing fields.", HttpStatus.BAD_REQUEST);
         }
         String email = principal.getName();
@@ -90,7 +93,7 @@ public class ApiController {
                 meetingDTO.getTitle(), 
                 meetingDTO.getPassword(), 
                 meetingDTO.getDuration(), 
-                meetingDTO.getDateTime(), 
+                new Date(meetingDTO.getStartDateTime()),
                 new ArrayList<String>(meetingDTO.getGuests()),
                 user.getId().toString());
         meeting = meetingService.saveMeeting(meeting);
@@ -99,10 +102,10 @@ public class ApiController {
 
     //get all of a user's meetings, this will eventually change and use indexedDB in the frontend
     @GetMapping("/api/users/meetings")
-    public ResponseEntity<List<Meeting>> getMeetings(Principal principal) {
+    public ResponseEntity<List<Meeting>> getMeetings(Principal principal, @RequestParam Long startDate, @RequestParam Long endDate) {
         String email = principal.getName();
         AppUser user = appUserService.findAppUserByEmail(email);
-        return ResponseEntity.ok().body(meetingService.getMeetings(user.getId().toString()));
+        return ResponseEntity.ok().body(meetingService.getMeetings(user.getId().toString(), new Date(startDate), new Date(endDate)));
     }
 
     //create host token

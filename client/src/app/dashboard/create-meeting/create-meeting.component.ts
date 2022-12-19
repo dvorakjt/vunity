@@ -3,6 +3,7 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import {MeetingDTO} from '../../models/meeting-dto.model';
 import * as password from 'secure-random-password';
 import { MeetingsService } from 'src/app/services/meetings/meetings.service';
+import { getTimezoneOffsetString } from 'src/app/utils/datetime.util';
 
 @Component({
   selector: 'app-create-meeting',
@@ -13,11 +14,12 @@ export class CreateMeetingComponent implements OnInit {
 
   newMeetingForm = new FormGroup({
     'title': new FormControl(null, [Validators.required]),
-    'dateTime': new FormControl(null, [Validators.required]),
+    'startDateTime': new FormControl(null, [Validators.required]),
     'duration': new FormControl(null, [Validators.required, Validators.pattern(/\d+/), Validators.min(5), Validators.max(120)]),
     'password': new FormControl(this.getRandomPassword(), [Validators.required, Validators.minLength(8), Validators.maxLength(60)])
   });
   userTZ? = '';
+  userOffsetStr = '';
   guest = '';
   guests:Set<string> = new Set<string>();
   guestError = '';
@@ -41,6 +43,8 @@ export class CreateMeetingComponent implements OnInit {
       timeZoneName: 'short',
     })
     .slice(4);
+
+    this.userOffsetStr = getTimezoneOffsetString();
   }
 
   addGuest(event:Event) {
@@ -63,9 +67,15 @@ export class CreateMeetingComponent implements OnInit {
   }
 
   onSubmit() {
-    if(this.newMeetingForm.valid) {
+    if(this.newMeetingForm.valid && 
+      this.newMeetingForm.value.title &&
+      this.newMeetingForm.value.duration &&
+      this.newMeetingForm.value.password &&
+      this.newMeetingForm.value.startDateTime
+    ) {
       this.isLoading = true;
-      const meetingDTO = new MeetingDTO(this.newMeetingForm.value, Array.from(this.guests));
+      const startDateTime = new Date(this.newMeetingForm.value.startDateTime + this.userOffsetStr).getMilliseconds();
+      const meetingDTO = new MeetingDTO(this.newMeetingForm.value.title, startDateTime, this.newMeetingForm.value.duration, this.newMeetingForm.value.password, Array.from(this.guests));
       this.meetingsService.apiCall.subscribe({
         next: () => {
           this.isLoading = false;

@@ -13,7 +13,7 @@ public class MeetingDTO {
     private String title;
     private String password;
     private Integer duration;
-    private String dateTime;
+    private Long startDateTime;
     private List<String> guests;
 
     @JsonCreator
@@ -21,13 +21,13 @@ public class MeetingDTO {
         @JsonProperty("title") String title, 
         @JsonProperty("password") String password,  
         @JsonProperty("duration") Integer duration, 
-        @JsonProperty("dateTime") String dateTime, 
+        @JsonProperty("startDateTime") Long startDateTime,
         @JsonProperty("guests") List<String> guests
     ) {
         this.title = title;
         this.password = password;
         this.duration = duration;
-        this.dateTime = dateTime;
+        this.startDateTime = startDateTime;
         this.guests = guests;
     }
 }

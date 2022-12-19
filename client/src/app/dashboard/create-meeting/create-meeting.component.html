@@ -14,12 +14,12 @@
     </div>
 
     <div [ngClass]="{
-        'required-field': !newMeetingForm.get('dateTime')?.valid && (ngForm.submitted || newMeetingForm.get('dateTime')?.dirty || newMeetingForm.get('dateTime')?.touched)
+        'required-field': !newMeetingForm.get('startDateTime')?.valid && (ngForm.submitted || newMeetingForm.get('startDateTime')?.dirty || newMeetingForm.get('startDateTime')?.touched)
         }">
         <label>Date and time</label>
         <br />
-        <input type="datetime-local" name="dateTime" id="dateTime"
-            formControlName="dateTime" /><label>{{userTZ}}</label>
+        <input type="datetime-local" name="startDateTime" id="startDateTime"
+            formControlName="startDateTime" /><label>{{userTZ}}</label>
         <div class="error-container">
             <small class="error hide-by-default">Please enter a valid date and starting time.</small>
         </div>
