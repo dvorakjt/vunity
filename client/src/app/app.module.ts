@@ -19,6 +19,8 @@ import { ActiveMeetingComponent } from './active-meeting/active-meeting.componen
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { MediaSettingsModalComponent } from './media-settings-modal/media-settings-modal.component';
 import { VideoComponent } from './video/video.component';
+import { CalendarComponent } from './calendar/calendar.component';
+import { DateComponent } from './calendar/date/date.component';
 
 @NgModule({
   declarations: [
@@ -36,6 +38,8 @@ import { VideoComponent } from './video/video.component';
     ActiveMeetingComponent,
     MediaSettingsModalComponent,
     VideoComponent,
+    CalendarComponent,
+    DateComponent,
   ],
   imports: [
     BrowserModule,

@@ -1,0 +1,11 @@
+<div class="calendarDate">
+    <ul class="meetingsList">
+        <small>{{date}}</small>
+        <li class="meeting" *ngFor="let meeting of meetings">
+            {{meeting.getTime() + " " + meeting.title}}
+        </li>
+    </ul>
+    <div [ngClass]="{hide : meetings.length <= 4}" class="moreMeetings">
+        {{"+" + (meetings.length - 4) + " more"}}
+    </div>
+</div>

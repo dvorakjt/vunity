@@ -10,16 +10,11 @@ import { MeetingStatus } from 'src/app/constants/meeting-status';
   styleUrls: ['./meetings-list.component.scss']
 })
 export class MeetingsListComponent implements OnInit {
-  meetings:Meeting[] = [];
   showModal = false;
 
-  constructor(private meetingsService:MeetingsService, private activeMeetingService:ActiveMeetingService) { }
+  constructor(public meetingsService:MeetingsService, private activeMeetingService:ActiveMeetingService) { }
 
   ngOnInit(): void {
-    this.meetings = this.meetingsService.getMeetings();
-    this.meetingsService.meetingsModified.subscribe((modifiedMeetings:Meeting[]) => {
-      this.meetings = modifiedMeetings;
-    });
   }
 
   onOpen(meeting:Meeting) {

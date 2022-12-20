@@ -1,0 +1,20 @@
+<div class="calendarContainer">
+    <div class="calendarControlBar">
+        <button (click)="onGotoPreviousMonth()">Previous</button>
+        <h2>{{currentMonthName + ", " + currentYear}}</h2>
+        <button (click)="onGotoNextMonth()">Next</button>
+    </div>
+    <div class="calendar">
+        <div class="calendarHeader">Monday</div>
+        <div class="calendarHeader">Tuesday</div>
+        <div class="calendarHeader">Wednesday</div>
+        <div class="calendarHeader">Thursday</div>
+        <div class="calendarHeader">Friday</div>
+        <div class="calendarHeader">Saturday</div>
+        <div class="calendarHeader">Sunday</div>
+        <div class="calendarDate" *ngFor="let date of previousMonthDays"></div>
+        <app-date class="calendarDate thisMonth" *ngFor="let date of days; let i = index" [meetings]="date"
+            [date]="i + 1"></app-date>
+        <div class="calendarDate" *ngFor="let date of nextMonthDays"></div>
+    </div>
+</div>

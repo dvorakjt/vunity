@@ -1,0 +1,28 @@
+.calendarContainer {
+    position: absolute;
+    top: 80px;
+    left: 650px;
+}
+
+.calendarControlBar {
+    background-color: white;
+    display: flex;
+    justify-content: space-between;
+}
+
+.calendar {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    background-color: white;
+}
+
+.calendarHeader {
+    background-color: blue;
+    width: 100px;
+}
+
+.calendarDate {
+    width: 100px;
+    height: 80px;
+    border: 1px solid black;
+}

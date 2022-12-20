@@ -1,10 +1,33 @@
 <div class="meetings-list-container">
     <h2>Upcoming Meetings</h2>
+    <h3>Today</h3>
     <ul class="meetings-list">
-        <li *ngFor="let meeting of meetings" class="meeting-list-item">
+        <li *ngFor="let meeting of meetingsService.upcomingMeetings.today" class="meeting-list-item">
             <h4>{{meeting.title}}</h4>
             <small>meeting date</small>
-            <p>{{meeting.dateTime}}</p>
+            <p>{{meeting.getTime() + " | " + meeting.getDate()}}</p>
+            <small>meeting length</small>
+            <p>{{meeting.duration}} minutes</p>
+            <a>View</a> | <a>Edit</a> | <a>Delete</a> | <a (click)="onOpen(meeting)" style="cursor: pointer;">Start</a>
+        </li>
+    </ul>
+    <h3>Tomorrow</h3>
+    <ul class="meetings-list">
+        <li *ngFor="let meeting of meetingsService.upcomingMeetings.tomorrow" class="meeting-list-item">
+            <h4>{{meeting.title}}</h4>
+            <small>meeting date</small>
+            <p>{{meeting.getTime() + " | " + meeting.getDate()}}</p>
+            <small>meeting length</small>
+            <p>{{meeting.duration}} minutes</p>
+            <a>View</a> | <a>Edit</a> | <a>Delete</a> | <a (click)="onOpen(meeting)" style="cursor: pointer;">Start</a>
+        </li>
+    </ul>
+    <h3>Later This Week</h3>
+    <ul class="meetings-list">
+        <li *ngFor="let meeting of meetingsService.upcomingMeetings.laterThisWeek" class="meeting-list-item">
+            <h4>{{meeting.title}}</h4>
+            <small>meeting date</small>
+            <p>{{meeting.getTime() + " | " + meeting.getDate()}}</p>
             <small>meeting length</small>
             <p>{{meeting.duration}} minutes</p>
             <a>View</a> | <a>Edit</a> | <a>Delete</a> | <a (click)="onOpen(meeting)" style="cursor: pointer;">Start</a>

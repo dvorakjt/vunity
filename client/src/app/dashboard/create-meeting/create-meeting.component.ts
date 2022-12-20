@@ -4,6 +4,7 @@ import {MeetingDTO} from '../../models/meeting-dto.model';
 import * as password from 'secure-random-password';
 import { MeetingsService } from 'src/app/services/meetings/meetings.service';
 import { getTimezoneOffsetString } from 'src/app/utils/datetime.util';
+import { DateTime } from 'luxon';
 
 @Component({
   selector: 'app-create-meeting',
@@ -74,8 +75,10 @@ export class CreateMeetingComponent implements OnInit {
       this.newMeetingForm.value.startDateTime
     ) {
       this.isLoading = true;
-      const startDateTime = new Date(this.newMeetingForm.value.startDateTime + this.userOffsetStr).getMilliseconds();
-      const meetingDTO = new MeetingDTO(this.newMeetingForm.value.title, startDateTime, this.newMeetingForm.value.duration, this.newMeetingForm.value.password, Array.from(this.guests));
+      console.log(this.newMeetingForm.value.startDateTime + this.userOffsetStr);
+      const startDateTime = DateTime.fromISO(this.newMeetingForm.value.startDateTime);
+      console.log(startDateTime);
+      const meetingDTO = new MeetingDTO(this.newMeetingForm.value.title, startDateTime.toMillis(), this.newMeetingForm.value.duration, this.newMeetingForm.value.password, Array.from(this.guests));
       this.meetingsService.apiCall.subscribe({
         next: () => {
           this.isLoading = false;
