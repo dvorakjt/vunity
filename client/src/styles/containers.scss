@@ -1,0 +1,14 @@
+$navbar-height: 57px;
+
+.screenContainer {
+    width: 100%;
+    min-height: calc(100vh - $navbar-height);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.horizontalContainerCentered {
+    display: flex;
+    justify-content: center;
+}

@@ -1,48 +1,19 @@
+//colors
+@use 'styles/colors';
+@use 'styles/buttons.scss';
+@use 'styles/forms.scss';
+@use 'styles/containers.scss';
+@use 'styles/hide.scss';
+
 body {
     margin: 0;
     padding: 0;
-    background-color: #233142;
+    background-color: colors.$dark-gray-1;
     font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
     min-height: 100%;
-}
-
-.btn {
-    font-size: 16px;
-    padding: 10px;
-    border: none;
-    border-radius: 0;
-    box-shadow: 2px 2px 4px #121922;
-    font-weight: bold;
-    transition: all ease-in-out 50ms;
-}
-
-.btn-sm {
-    font-size: 12px;
-    padding: 4px;
-    border: none;
-    border-radius: 0;
-    box-shadow: 1px 1px 3px #121922;
-    transition: all ease-in-out 50ms;
-}
-
-.btn:hover,
-.btn-sm:hover {
-    cursor: pointer;
-}
-
-.btn:active {
-    box-shadow: none;
-    transform: translate(1px, 1px);
-}
-
-
-.btn-primary {
-    background-color: #d4624d;
-}
-
-.btn-primary:hover,
-.btn-primary:active {
-    background-color: #eb816e;
+    -webkit-font-smoothing: antialiased;
+    -moz-font-smoothing: antialiased;
+    -o-font-smoothing: antialiased;
 }
 
 /* width */

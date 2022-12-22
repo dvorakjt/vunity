@@ -1,0 +1,16 @@
+@mixin fade-in($duration-value) {
+    animation-name: fadeIn;
+    animation-duration: $duration-value;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: 1;
+    animation-fill-mode: forwards;
+}
+
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    } to {
+        opacity: 1;
+    }
+}

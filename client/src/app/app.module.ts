@@ -21,6 +21,13 @@ import { MediaSettingsModalComponent } from './media-settings-modal/media-settin
 import { VideoComponent } from './video/video.component';
 import { CalendarComponent } from './calendar/calendar.component';
 import { DateComponent } from './calendar/date/date.component';
+import { UpcomingMeetingsComponent } from './pages/upcoming-meetings/upcoming-meetings.component';
+import { NewMeetingComponent } from './pages/new-meeting/new-meeting.component';
+import { ViewMeetingComponent } from './pages/view-meeting/view-meeting.component';
+import { EditMeetingComponent } from './pages/edit-meeting/edit-meeting.component';
+import { ForgotPasswordComponent } from './pages/forgot-password/forgot-password.component';
+import { ResetPasswordComponent } from './pages/reset-password/reset-password.component';
+import { NavbarComponent } from './components/navbar/navbar.component';
 
 @NgModule({
   declarations: [
@@ -40,6 +47,13 @@ import { DateComponent } from './calendar/date/date.component';
     VideoComponent,
     CalendarComponent,
     DateComponent,
+    UpcomingMeetingsComponent,
+    NewMeetingComponent,
+    ViewMeetingComponent,
+    EditMeetingComponent,
+    ForgotPasswordComponent,
+    ResetPasswordComponent,
+    NavbarComponent,
   ],
   imports: [
     BrowserModule,

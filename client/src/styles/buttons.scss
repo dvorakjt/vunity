@@ -1,0 +1,36 @@
+@use 'colors';
+
+@mixin btn {
+    width: fit-content;
+    border: none;
+    border-radius: 3.5px;
+    padding: 12px;
+
+    &:hover {
+        cursor: pointer;
+    }
+
+    &:active {
+        cursor: pointer;
+        transform: translate(1px, 1px);
+    }
+
+    transition: all 100ms ease-in-out;
+
+    font-size: 14px;
+    font-weight: 400;
+}
+
+.btnPrimary {
+    @include btn;
+
+    background-color: colors.$brand-primary;
+
+    &:hover {
+        background-color: colors.$brand-primary-tint;
+    }
+
+    &:active {
+        background-color: colors.$brand-primary-shade;
+    }
+}

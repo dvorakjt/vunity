@@ -15,4 +15,6 @@ public interface MeetingRepo extends JpaRepository<Meeting, String> {
         nativeQuery = true
     )
     List<Meeting> findAllByOwnerIdWithinRange(String ownerId, Date startDate, Date endDate);
+
+    
 }

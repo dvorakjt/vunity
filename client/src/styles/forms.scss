@@ -1,0 +1,40 @@
+@use 'colors';
+@use 'errors';
+
+@mixin form-label {
+    color: white;
+    font-size: 16px;
+}
+
+@mixin form-input {
+    color: white;
+    font-size: 12px;
+    background-color: transparent;
+    border: none;
+    border-bottom: 3px solid white;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+}
+
+.formHeader {
+    color: white;
+    font-size: 24px;
+    text-align: center;
+    margin-left: 0;
+    padding-left: 0;
+}
+
+.formLabel {
+    @include form-label()
+}
+
+.formInput {
+    @include form-input();
+}
+
+.formFieldError {
+    @include errors.error-text();
+}
