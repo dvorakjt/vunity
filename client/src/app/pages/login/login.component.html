@@ -1,17 +1,30 @@
-<div class="screenContainer">
-    <form class="form">
-        <h1 class="formHeader">Login</h1>
-        <label for="email" class="formLabel">Email</label>
-        <input type="email" name="email" id="email" class="formInput" />
-        <small class="formFieldError">Error</small>
-        <br />
-        <label for="password" class="formLabel">Password</label>
-        <input type="password" name="password" id="password" class="formInput" />
-        <small class="formFieldError">Error</small>
-        <br />
-        <div class="horizontalContainerCentered">
-            <button class="btnPrimary">Login</button>
+<div class="outerScreenContainer">
+    <div class="innerScreenContainer">
+        <form class="form">
+            <h1 class="formHeader">Login</h1>
+            <div class="spacer-lg"></div>
+            <label for="email" class="formLabel">Email</label>
+            <input type="email" name="email" id="email" class="formInput" [(ngModel)]="email"
+                (input)="this.emailErrorMessage = ''" />
+            <div class="formFieldErrorContainer">
+                <small class="formFieldError" *ngIf="emailErrorMessage">{{emailErrorMessage}}</small>
+            </div>
+            <div class="spacer-sm"></div>
+            <label for="password" class="formLabel">Password</label>
+            <input type="password" name="password" id="password" class="formInput" [(ngModel)]="password"
+                (input)="this.passwordErrorMessage = ''" />
+            <div class="formFieldErrorContainer">
+                <small class="formFieldError" *ngIf="passwordErrorMessage">{{passwordErrorMessage}}</small>
+            </div>
+            <div class="spacer-lg"></div>
+            <div class="horizontalContainerCentered">
+                <button class="btnPrimary" (click)="onLogin()">Login</button>
+            </div>
+            <div class="spacer-lg"></div>
+            <p class="formSubmissionError"></p>
+        </form>
+        <div class="formLinkContainer">
+            <a routerLink="/forgotpassword" routerLinkActive="active" ariaCurrentWhenActive="page">Forgot password?</a>
         </div>
-        <a>Forgot password?</a>
-    </form>
+    </div>
 </div>

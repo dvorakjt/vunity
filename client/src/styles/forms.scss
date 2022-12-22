@@ -1,14 +1,15 @@
 @use 'colors';
 @use 'errors';
+@use 'font-sizes';
 
 @mixin form-label {
     color: white;
-    font-size: 16px;
+    font-size: font-sizes.$sm;
 }
 
 @mixin form-input {
     color: white;
-    font-size: 12px;
+    font-size: font-sizes.$xs;
     background-color: transparent;
     border: none;
     border-bottom: 3px solid white;
@@ -17,14 +18,15 @@
 .form {
     display: flex;
     flex-direction: column;
+    width: 180px;
 }
 
 .formHeader {
     color: white;
-    font-size: 24px;
+    font-size: font-sizes.$md;
     text-align: center;
-    margin-left: 0;
-    padding-left: 0;
+    margin: 0;
+    padding: 0;
 }
 
 .formLabel {
@@ -35,6 +37,25 @@
     @include form-input();
 }
 
+.formFieldErrorContainer {
+    min-height: 20px;
+    margin-top: 2px;
+}
+
 .formFieldError {
     @include errors.error-text();
+    font-size: font-sizes.$xs;
+}
+
+.formSubmissionError {
+    @include errors.error-text();
+    font-size: font-sizes.$sm;
+}
+
+.formLinkContainer {
+    width: 100%;
+    position: absolute;
+    bottom: 24px;
+    display: flex;
+    justify-content: center;
 }

@@ -1,11 +1,26 @@
 $navbar-height: 57px;
 
-.screenContainer {
+.outerScreenContainer {
     width: 100%;
     min-height: calc(100vh - $navbar-height);
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    // background-color: red;
+}
+
+.innerScreenContainer {
+    min-height: calc(100vh - $navbar-height);
+    width: 280px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    // background-color: blue;
 }
 
 .horizontalContainerCentered {

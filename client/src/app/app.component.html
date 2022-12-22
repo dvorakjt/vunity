@@ -3,6 +3,8 @@
     <li><a routerLink="/" routerLinkActive="active" ariaCurrentWhenActive="page">Home</a></li>
     <li *ngIf="!authService.activeUser"><a routerLink="/login" routerLinkActive="active"
         ariaCurrentWhenActive="page">Login</a></li>
+    <li *ngIf="!authService.activeUser"><a routerLink="/forgotpassword" routerLinkActive="active"
+        ariaCurrentWhenActive="page">FP</a></li>
     <li *ngIf="authService.activeUser"><a routerLink="/dashboard" routerLinkActive="active"
         ariaCurrentWhenActive="page">Dashboard</a></li>
     <li><a (click)="joinMeetingModalOpen = true" style="cursor:pointer;">Join a Meeting</a></li>

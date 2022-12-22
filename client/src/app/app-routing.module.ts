@@ -20,12 +20,12 @@ const routes: Routes = [
     canActivate: [NoAuthGuard]
   },
   {
-    path: "forgot-password",
+    path: "forgotpassword",
     component: ForgotPasswordComponent,
     canActivate: [NoAuthGuard]
   },
   {
-    path: "reset-password",
+    path: "resetpassword",
     component: ResetPasswordComponent,
     canActivate: [NoAuthGuard]
   },
