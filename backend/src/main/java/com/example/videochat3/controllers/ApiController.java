@@ -6,6 +6,7 @@ import com.example.videochat3.DTO.PasswordResetDTO;
 import com.example.videochat3.DTO.HostTokenDTO;
 import com.example.videochat3.domain.AppUser;
 import com.example.videochat3.service.AppUserService;
+import com.example.videochat3.service.EmailService;
 import com.example.videochat3.service.MeetingService;
 import lombok.RequiredArgsConstructor;
 
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.example.videochat3.tokens.UserTokenManager;
+import com.example.videochat3.DTO.EmailDetails;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -48,6 +50,7 @@ public class ApiController {
 
     private final AppUserService appUserService;
     private final MeetingService meetingService;
+    private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
 
     @GetMapping("/api/users/userinfo")
@@ -106,6 +109,15 @@ public class ApiController {
 
             System.out.println(passwordResetURI);
             System.out.println(passwordResetCode);
+
+            String messageBody = "Dear Sia User,\n\nSomeone has requested a password reset link for your account. If this wasn't you, no action needs to be taken. " +
+            "If this was you, please go to the following link:\n\n" +
+            "http://localhost:4200/resetpassword/=" + passwordResetURI + "\n\n" +
+            "and enter the following password:\n\n" + passwordResetCode + "\n\n" + 
+            "Thank you.\n\nThe Sia Team";
+
+            EmailDetails appToUserEmailDetails = new EmailDetails(user.getEmail(), messageBody, "Password Reset Request", "");
+            emailService.sendSimpleMail(appToUserEmailDetails);
 
             return ResponseEntity.ok().build();
         }

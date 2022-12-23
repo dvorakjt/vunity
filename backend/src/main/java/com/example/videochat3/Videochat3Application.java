@@ -35,7 +35,7 @@ public class Videochat3Application {
 	@Bean
 	CommandLineRunner run(AppUserService appUserService, MeetingService meetingService) {
 		return args -> {
-			appUserService.saveUser(new AppUser(null, "john", "john@example.com", "1234", "", ""));
+			appUserService.saveUser(new AppUser(null, "Joe", "jdvorakdevelops@gmail.com", "1234", "", ""));
 		};
 	}
 }
