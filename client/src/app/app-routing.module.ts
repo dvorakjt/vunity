@@ -25,7 +25,7 @@ const routes: Routes = [
     canActivate: [NoAuthGuard]
   },
   {
-    path: "resetpassword",
+    path: "resetpassword/:passwordResetURI",
     component: ResetPasswordComponent,
     canActivate: [NoAuthGuard]
   },

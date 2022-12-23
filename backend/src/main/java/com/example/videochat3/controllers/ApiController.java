@@ -104,15 +104,11 @@ public class ApiController {
             PasswordGenerator passwordGenerator = new PasswordGenerator();
             String passwordResetCode = passwordGenerator.generatePassword(8, digits, upperCase, lowerCase);
 
-            appUserService.setName("Steve");
             appUserService.setUserPasswordResetCodes(user.getId(), passwordEncoder.encode(passwordResetURI), passwordEncoder.encode(passwordResetCode));
-
-            System.out.println(passwordResetURI);
-            System.out.println(passwordResetCode);
 
             String messageBody = "Dear Sia User,\n\nSomeone has requested a password reset link for your account. If this wasn't you, no action needs to be taken. " +
             "If this was you, please go to the following link:\n\n" +
-            "http://localhost:4200/resetpassword/=" + passwordResetURI + "\n\n" +
+            "http://localhost:4200/resetpassword/" + passwordResetURI + "\n\n" +
             "and enter the following password:\n\n" + passwordResetCode + "\n\n" + 
             "Thank you.\n\nThe Sia Team";
 
