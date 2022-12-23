@@ -46,8 +46,10 @@ public class SecurityConfig {
 
             
 
-            http.antMatcher("/api/users/**").csrf().disable().authorizeRequests().antMatchers("/login").permitAll().anyRequest().authenticated();
-            
+            // http.antMatcher("/api/users/**").csrf().disable().authorizeRequests().antMatchers("/login", "/request_password_reset*", "/reset_password").permitAll().anyRequest().authenticated();
+            http.csrf().disable().authorizeRequests()
+            .antMatchers("/api/users/login", "/api/users/request_password_reset*", "/api/users/reset_password").permitAll().and()
+            .antMatcher("/api/users/**").authorizeRequests().anyRequest().authenticated();
             
             http.addFilter(appUserAuthNFilter); //could set the login route to /api so that the frontend can make a post request
             http.addFilterBefore(new AppAuthZFilter(), UsernamePasswordAuthenticationFilter.class);

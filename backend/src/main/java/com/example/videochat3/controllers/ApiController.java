@@ -2,12 +2,15 @@ package com.example.videochat3.controllers;
 
 import com.example.videochat3.domain.Meeting;
 import com.example.videochat3.DTO.MeetingDTO;
+import com.example.videochat3.DTO.PasswordResetDTO;
 import com.example.videochat3.DTO.HostTokenDTO;
 import com.example.videochat3.domain.AppUser;
 import com.example.videochat3.service.AppUserService;
 import com.example.videochat3.service.MeetingService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+
+import com.aventrix.jnanoid.jnanoid.*;
+import org.passay.*;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -21,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.example.videochat3.tokens.UserTokenManager;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.security.core.userdetails.User;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.security.Principal;
 import java.util.HashMap;
@@ -36,6 +40,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+
 @Controller
 @RequiredArgsConstructor
 public class ApiController {
@@ -43,6 +48,7 @@ public class ApiController {
 
     private final AppUserService appUserService;
     private final MeetingService meetingService;
+    private final PasswordEncoder passwordEncoder;
 
     @GetMapping("/api/users/userinfo")
     public ResponseEntity userInfo(Principal principal) {
@@ -73,6 +79,56 @@ public class ApiController {
             }
         } else {
             throw new RuntimeException("Refresh token is missing.");
+        }
+    }
+
+    @PostMapping("/api/users/request_password_reset")
+    public ResponseEntity requestPasswordReset(@RequestParam String email) throws IOException {
+        //find the user by email
+
+        System.out.println("reset_password_route reached");
+
+        AppUser user = appUserService.findAppUserByEmail(email);
+        if(user == null) return ResponseEntity.notFound().build();
+        else {
+            String passwordResetURI = NanoIdUtils.randomNanoId();
+
+            CharacterRule digits = new CharacterRule(EnglishCharacterData.Digit);
+            CharacterRule upperCase = new CharacterRule(EnglishCharacterData.UpperCase);
+            CharacterRule lowerCase = new CharacterRule(EnglishCharacterData.LowerCase);
+
+            //these should be hashed
+            PasswordGenerator passwordGenerator = new PasswordGenerator();
+            String passwordResetCode = passwordGenerator.generatePassword(8, digits, upperCase, lowerCase);
+
+            appUserService.setName("Steve");
+            appUserService.setUserPasswordResetCodes(user.getId(), passwordEncoder.encode(passwordResetURI), passwordEncoder.encode(passwordResetCode));
+
+            System.out.println(passwordResetURI);
+            System.out.println(passwordResetCode);
+
+            return ResponseEntity.ok().build();
+        }
+    }
+
+    @PostMapping(value ="/api/users/reset_password",
+            consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE},
+            produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    public ResponseEntity resetPassword(@RequestBody PasswordResetDTO passwordResetDTO) {
+        AppUser user = appUserService.findAppUserByEmail(passwordResetDTO.getEmail());
+        if(user == null) return ResponseEntity.notFound().build();
+        else if(
+            user.getPasswordResetCode().length() > 0 &&
+            user.getPasswordResetURI().length() > 0 &&
+            passwordEncoder.matches(passwordResetDTO.getPasswordResetURI(), user.getPasswordResetURI()) &&
+            passwordEncoder.matches(passwordResetDTO.getPasswordResetCode(), user.getPasswordResetCode())
+        ) {
+            appUserService.resetUserPassword(user.getId(), passwordEncoder.encode(passwordResetDTO.getNewPassword()));
+            return ResponseEntity.ok().build();
+        } else {
+            System.out.println(passwordEncoder.matches(passwordResetDTO.getPasswordResetURI(), user.getPasswordResetURI()));
+            System.out.println(passwordEncoder.matches(passwordResetDTO.getPasswordResetCode(), user.getPasswordResetCode()));
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
     }
 

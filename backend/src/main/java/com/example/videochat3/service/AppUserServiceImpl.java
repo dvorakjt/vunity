@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -46,8 +47,24 @@ public class AppUserServiceImpl implements AppUserService, UserDetailsService {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         return appUserRepo.save(user);
     }
+
+    @Override
+    public void setUserPasswordResetCodes(UUID id, String passwordResetURI, String passwordResetCode) {
+        appUserRepo.setPasswordResetCodes(id, passwordResetURI, passwordResetCode);
+    }
+
+    @Override
+    public void resetUserPassword(UUID id, String newPassword) {
+        appUserRepo.resetPassword(id, newPassword);
+    }
+
     @Override
     public AppUser findAppUserByEmail(String email) {
         return appUserRepo.findAppUserByEmail(email);
+    }
+
+    @Override
+    public void setName(String name) {
+        appUserRepo.setName(name);
     }
 }
