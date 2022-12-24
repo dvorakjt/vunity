@@ -20,6 +20,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import com.example.videochat3.recaptcha.*;
 
 @Slf4j
 @Configuration
@@ -33,6 +34,7 @@ public class SecurityConfig {
         @Qualifier("AppUserDetailsService")
         private final UserDetailsService appUserDetailsService;
         private final BCryptPasswordEncoder bCryptPasswordEncoder;
+        private final RecaptchaManager recaptchaManager;
 
         @Override
         protected void configure(AuthenticationManagerBuilder auth) throws Exception {
@@ -41,7 +43,7 @@ public class SecurityConfig {
 
         @Override
         protected void configure(HttpSecurity http) throws Exception {
-            AppUserAuthNFilter appUserAuthNFilter = new AppUserAuthNFilter(authenticationManagerBean());
+            AppUserAuthNFilter appUserAuthNFilter = new AppUserAuthNFilter(authenticationManagerBean(), recaptchaManager);
             appUserAuthNFilter.setFilterProcessesUrl("/api/users/login");
 
             

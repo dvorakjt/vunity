@@ -11,17 +11,20 @@ public class PasswordResetDTO {
     private String passwordResetURI;
     private String passwordResetCode;
     private String newPassword;
+    private String recaptchaToken;
 
     @JsonCreator
     public PasswordResetDTO(
         @JsonProperty("email") String email,
         @JsonProperty("passwordResetURI") String passwordResetURI,
         @JsonProperty("passwordResetCode") String passwordResetCode,
-        @JsonProperty("newPassword") String newPassword
+        @JsonProperty("newPassword") String newPassword,
+        @JsonProperty("recaptchaToken") String recaptchaToken
     ) {
         this.email = email;
         this.passwordResetURI = passwordResetURI;
         this.passwordResetCode = passwordResetCode;
         this.newPassword = newPassword;
+        this.recaptchaToken = recaptchaToken;
     }
 }

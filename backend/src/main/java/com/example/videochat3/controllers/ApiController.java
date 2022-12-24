@@ -1,6 +1,7 @@
 package com.example.videochat3.controllers;
 
 import com.example.videochat3.domain.Meeting;
+import com.example.videochat3.recaptcha.RecaptchaManager;
 import com.example.videochat3.DTO.MeetingDTO;
 import com.example.videochat3.DTO.PasswordResetDTO;
 import com.example.videochat3.DTO.HostTokenDTO;
@@ -52,6 +53,7 @@ public class ApiController {
     private final MeetingService meetingService;
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
+    private final RecaptchaManager recaptchaManager;
 
     @GetMapping("/api/users/userinfo")
     public ResponseEntity userInfo(Principal principal) {
@@ -86,36 +88,36 @@ public class ApiController {
     }
 
     @PostMapping("/api/users/request_password_reset")
-    public ResponseEntity requestPasswordReset(@RequestParam String email) throws IOException {
-        //find the user by email
+    public ResponseEntity requestPasswordReset(@RequestParam String email, @RequestParam String recaptchaToken) throws IOException {
+        if(recaptchaManager.verifyRecaptchaToken(recaptchaToken)) {
+            AppUser user = appUserService.findAppUserByEmail(email);
+            if(user == null) return ResponseEntity.notFound().build();
+            else {
+                String passwordResetURI = NanoIdUtils.randomNanoId();
 
-        System.out.println("reset_password_route reached");
+                CharacterRule digits = new CharacterRule(EnglishCharacterData.Digit);
+                CharacterRule upperCase = new CharacterRule(EnglishCharacterData.UpperCase);
+                CharacterRule lowerCase = new CharacterRule(EnglishCharacterData.LowerCase);
 
-        AppUser user = appUserService.findAppUserByEmail(email);
-        if(user == null) return ResponseEntity.notFound().build();
-        else {
-            String passwordResetURI = NanoIdUtils.randomNanoId();
+                //these should be hashed
+                PasswordGenerator passwordGenerator = new PasswordGenerator();
+                String passwordResetCode = passwordGenerator.generatePassword(8, digits, upperCase, lowerCase);
 
-            CharacterRule digits = new CharacterRule(EnglishCharacterData.Digit);
-            CharacterRule upperCase = new CharacterRule(EnglishCharacterData.UpperCase);
-            CharacterRule lowerCase = new CharacterRule(EnglishCharacterData.LowerCase);
+                appUserService.setUserPasswordResetCodes(user.getId(), passwordEncoder.encode(passwordResetURI), passwordEncoder.encode(passwordResetCode));
 
-            //these should be hashed
-            PasswordGenerator passwordGenerator = new PasswordGenerator();
-            String passwordResetCode = passwordGenerator.generatePassword(8, digits, upperCase, lowerCase);
+                String messageBody = "Dear Sia User,\n\nSomeone has requested a password reset link for your account. If this wasn't you, no action needs to be taken. " +
+                "If this was you, please go to the following link:\n\n" +
+                "http://localhost:4200/resetpassword/" + passwordResetURI + "\n\n" +
+                "and enter the following password:\n\n" + passwordResetCode + "\n\n" + 
+                "Thank you.\n\nThe Sia Team";
 
-            appUserService.setUserPasswordResetCodes(user.getId(), passwordEncoder.encode(passwordResetURI), passwordEncoder.encode(passwordResetCode));
+                EmailDetails appToUserEmailDetails = new EmailDetails(user.getEmail(), messageBody, "Password Reset Request", "");
+                emailService.sendSimpleMail(appToUserEmailDetails);
 
-            String messageBody = "Dear Sia User,\n\nSomeone has requested a password reset link for your account. If this wasn't you, no action needs to be taken. " +
-            "If this was you, please go to the following link:\n\n" +
-            "http://localhost:4200/resetpassword/" + passwordResetURI + "\n\n" +
-            "and enter the following password:\n\n" + passwordResetCode + "\n\n" + 
-            "Thank you.\n\nThe Sia Team";
-
-            EmailDetails appToUserEmailDetails = new EmailDetails(user.getEmail(), messageBody, "Password Reset Request", "");
-            emailService.sendSimpleMail(appToUserEmailDetails);
-
-            return ResponseEntity.ok().build();
+                return ResponseEntity.ok().build();
+            }
+        } else {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
     }
 
@@ -123,19 +125,23 @@ public class ApiController {
             consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE},
             produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     public ResponseEntity resetPassword(@RequestBody PasswordResetDTO passwordResetDTO) {
+        if(recaptchaManager.verifyRecaptchaToken(passwordResetDTO.getRecaptchaToken())) {
         AppUser user = appUserService.findAppUserByEmail(passwordResetDTO.getEmail());
-        if(user == null) return ResponseEntity.notFound().build();
-        else if(
-            user.getPasswordResetCode().length() > 0 &&
-            user.getPasswordResetURI().length() > 0 &&
-            passwordEncoder.matches(passwordResetDTO.getPasswordResetURI(), user.getPasswordResetURI()) &&
-            passwordEncoder.matches(passwordResetDTO.getPasswordResetCode(), user.getPasswordResetCode())
-        ) {
-            appUserService.resetUserPassword(user.getId(), passwordEncoder.encode(passwordResetDTO.getNewPassword()));
-            return ResponseEntity.ok().build();
+            if(user == null) return ResponseEntity.notFound().build();
+            else if(
+                user.getPasswordResetCode().length() > 0 &&
+                user.getPasswordResetURI().length() > 0 &&
+                passwordEncoder.matches(passwordResetDTO.getPasswordResetURI(), user.getPasswordResetURI()) &&
+                passwordEncoder.matches(passwordResetDTO.getPasswordResetCode(), user.getPasswordResetCode())
+            ) {
+                appUserService.resetUserPassword(user.getId(), passwordEncoder.encode(passwordResetDTO.getNewPassword()));
+                return ResponseEntity.ok().build();
+            } else {
+                System.out.println(passwordEncoder.matches(passwordResetDTO.getPasswordResetURI(), user.getPasswordResetURI()));
+                System.out.println(passwordEncoder.matches(passwordResetDTO.getPasswordResetCode(), user.getPasswordResetCode()));
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
         } else {
-            System.out.println(passwordEncoder.matches(passwordResetDTO.getPasswordResetURI(), user.getPasswordResetURI()));
-            System.out.println(passwordEncoder.matches(passwordResetDTO.getPasswordResetCode(), user.getPasswordResetCode()));
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
     }

@@ -55,10 +55,10 @@ export class AuthService {
         });
     }
 
-    login(email:string, password:string) {
+    login(email:string, password:string, recaptchaToken:string) {
         this.errorMessage = "";
         this.isLoading = true;
-        this.http.post(`/api/users/login?email=${email}&password=${password}`, {}).subscribe(
+        this.http.post(`/api/users/login?email=${email}&password=${password}&recaptchaToken=${recaptchaToken}`, {}).subscribe(
             {
               next: (responseData:any) => {
                 localStorage.setItem("access_token", responseData.access_token);

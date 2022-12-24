@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Component } from '@angular/core';
+import { ReCaptchaV3Service } from 'ng-recaptcha';
 
 @Component({
   selector: 'app-forgot-password',
@@ -13,7 +14,7 @@ export class ForgotPasswordComponent {
   public emailErrorMessage = '';
   public serverErrorMessage = '';
 
-  constructor(private http:HttpClient) {}
+  constructor(private http:HttpClient, private recaptchaV3Service:ReCaptchaV3Service) {}
 
   onRequestPasswordReset() {
 
@@ -27,16 +28,25 @@ export class ForgotPasswordComponent {
     }
 
     this.isLoading = true;
-    this.http.post('/api/users/request_password_reset?email=' + this.email, {}).subscribe({
-      next: () => {
-        this.isLoading = false;
-        this.succeeded = true;
-        console.log('succeeded');
+
+    this.recaptchaV3Service.execute('passwordResetRequest').subscribe({
+      next: (recaptchaToken) => {
+        this.http.post('/api/users/request_password_reset?email=' + this.email + "&recaptchaToken=" + recaptchaToken, {}).subscribe({
+          next: () => {
+            this.isLoading = false;
+            this.succeeded = true;
+          },
+          error: () => {
+            this.isLoading = false;
+            this.serverErrorMessage = "We're sorry, we couldn't send you a reset code. Please ensure that your email address is entered correctly."
+          }
+        })
       },
-      error: () => {
+      error: (error) => {
+        console.log(error);
         this.isLoading = false;
-        this.serverErrorMessage = "We're sorry, we couldn't send you a reset code. Please ensure that your email address is entered correctly."
+        this.serverErrorMessage = 'There was a problem creating a Recaptcha token.';
       }
-    })
+    });
   }
 }

@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Component } from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
+import { ReCaptchaV3Service } from 'ng-recaptcha';
 
 @Component({
   selector: 'app-reset-password',
@@ -23,7 +24,7 @@ export class ResetPasswordComponent {
   confirmPasswordErrorMessage = '';
   serverErrorMessage = '';
 
-  constructor(private http:HttpClient, private route:ActivatedRoute) {
+  constructor(private http:HttpClient, private route:ActivatedRoute, private recaptchaV3Service:ReCaptchaV3Service) {
     this.passwordResetURI = this.route.snapshot.paramMap.get('passwordResetURI');
     console.log(this.passwordResetURI);
   }
@@ -54,20 +55,31 @@ export class ResetPasswordComponent {
     }
     if(failedFrontEndValidation) return;
 
-    this.http.post('/api/users/reset_password', {
-      email: this.email,
-      passwordResetURI : this.passwordResetURI,
-      passwordResetCode : this.passwordResetCode,
-      newPassword : this.newPassword
-    }).subscribe({
-      next: () => {
-        this.succeeded = true;
-        this.isLoading = false;
+    this.isLoading = true;
+
+    this.recaptchaV3Service.execute('resetPassword').subscribe({
+      next: (recaptchaToken) => {
+        this.http.post('/api/users/reset_password', {
+          email: this.email,
+          passwordResetURI : this.passwordResetURI,
+          passwordResetCode : this.passwordResetCode,
+          newPassword : this.newPassword,
+          recaptchaToken
+        }).subscribe({
+          next: () => {
+            this.succeeded = true;
+            this.isLoading = false;
+          },
+          error: () => {
+            this.serverErrorMessage = "We're sorry. We were unable to reset your password. Please ensure you have entered the correct credentials.";
+            this.isLoading = false;
+          }
+        })
       },
       error: () => {
-        this.serverErrorMessage = "We're sorry. We were unable to reset your password. Please ensure you have entered the correct credentials.";
         this.isLoading = false;
+        this.serverErrorMessage = 'There was a problem with recaptcha. Please reload the page and try again.';
       }
-    })
+    });
   }
 }

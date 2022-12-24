@@ -28,6 +28,8 @@ import { EditMeetingComponent } from './pages/edit-meeting/edit-meeting.componen
 import { ForgotPasswordComponent } from './pages/forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './pages/reset-password/reset-password.component';
 import { NavbarComponent } from './components/navbar/navbar.component';
+import { RECAPTCHA_V3_SITE_KEY, RecaptchaV3Module } from "ng-recaptcha";
+import { environment } from '../environments/environment';
 
 @NgModule({
   declarations: [
@@ -61,9 +63,10 @@ import { NavbarComponent } from './components/navbar/navbar.component';
     FormsModule,
     ReactiveFormsModule,
     HttpClientModule,
-    FontAwesomeModule
+    FontAwesomeModule,
+    RecaptchaV3Module
   ],
-  providers: [],
+  providers: [{ provide: RECAPTCHA_V3_SITE_KEY, useValue: environment.recaptcha.siteKey }],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

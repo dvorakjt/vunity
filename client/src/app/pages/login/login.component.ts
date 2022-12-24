@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { AuthService } from 'src/app/services/auth/auth.service';
+import { ReCaptchaV3Service } from 'ng-recaptcha';
 
 @Component({
   selector: 'app-login',
@@ -13,7 +14,7 @@ export class LoginComponent {
   passwordErrorMessage = '';
   formSubmissionError = '';
 
-  constructor(public authService:AuthService) { }
+  constructor(public authService:AuthService, private recaptchaV3Service:ReCaptchaV3Service) { }
 
   onLogin() {
     let failed = false;
@@ -32,6 +33,14 @@ export class LoginComponent {
       failed = true;
     }
     if(failed) return;
-    this.authService.login(this.email, this.password);
+    this.recaptchaV3Service.execute('importantAction')
+      .subscribe({
+        next: (recaptchaToken) => {
+          this.authService.login(this.email, this.password, recaptchaToken);
+        }, 
+        error: (error) => {
+          this.formSubmissionError = 'There was a problem with recaptcha. Please reload the page and try again.'
+        }
+      });
   }
 }
