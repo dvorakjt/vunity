@@ -35,8 +35,10 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.security.Principal;
+import java.text.DateFormat;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -172,6 +174,25 @@ public class ApiController {
                 new ArrayList<String>(meetingDTO.getGuests()),
                 user.getId().toString());
         meeting = meetingService.saveMeeting(meeting);
+        DateFormat DFormat = DateFormat.getDateTimeInstance(
+            DateFormat.LONG, DateFormat.LONG,
+            Locale.getDefault());
+        //email guests that the meeting has been canceled, then
+        for(String guest : meeting.getGuests()) {
+            String messageBody = 
+            "Dear " + guest + ",\n\n" +
+            user.getName() + " has invited you to join a Sia video meeting:\n\n" +
+            meeting.getTitle() + "\n" +
+            "Scheduled for " + DFormat.format(meeting.getStartDateTime()) + "\n\n" +
+            "To join this meeting, visit:\n\n" + 
+            "http://localhost:4200/joinmeeting?id=" + meeting.getId() + "\n\n" +
+            "And enter the password:\n\n" + 
+            meetingDTO.getPassword() + "\n\n" +
+            "Thank you,\n" +
+            "The Sia Team";
+            EmailDetails emailDetails = new EmailDetails(guest, messageBody, "New Sia Meeting Invitation", "");
+            this.emailService.sendSimpleMail(emailDetails);
+        }
         return ResponseEntity.ok().body(meeting);
     }
 
@@ -196,6 +217,30 @@ public class ApiController {
             System.out.println("forbidden");
             return new ResponseEntity("Forbidden.", HttpStatus.FORBIDDEN);
         } else {
+            DateFormat DFormat = DateFormat.getDateTimeInstance(
+                DateFormat.LONG, DateFormat.LONG,
+                Locale.getDefault());
+            //email guests that the meeting has been canceled, then
+            for(String guest : m.getGuests()) {
+            String messageBody = 
+            "Dear Sia Guest,\n\n" +
+            user.getName() + " has updated a meeting you were invited to.\n\nOld meeting details:\n\n" +
+            m.getTitle() + "\n" +
+            "Scheduled for: " + DFormat.format(m.getStartDateTime()) + "\n" +
+            "Length: " + m.getDuration() + " minutes\n\n" +
+            "New meeting details:\n\n" +
+            meetingUpdateDTO.getTitle() + "\n" +
+            "Scheduled for: " + DFormat.format(new Date(meetingUpdateDTO.getStartDateTime())) + "\n" +
+            "Length: " + meetingUpdateDTO.getDuration() + " minutes\n" +
+            "Password: " + meetingUpdateDTO.getPassword() + "\n\n" + 
+            "To join this meeting, visit:\n\n" + 
+            "http://localhost:4200/joinmeeting?id=" + m.getId() + "\n\n" +
+            "And enter the password listed above.\n\n" +
+            "Thank you,\n" +
+            "The Sia Team";
+            EmailDetails emailDetails = new EmailDetails(guest, messageBody, "Updated Sia Meeting Invitation", "");
+            this.emailService.sendSimpleMail(emailDetails);
+        }
             //email users that the meeting has been update
             meetingService.updateMeeting(
                 meetingUpdateDTO.getTitle(),
@@ -215,7 +260,21 @@ public class ApiController {
         if(!m.getOwnerId().equals(user.getId().toString())) {
             return new ResponseEntity("Forbidden.", HttpStatus.FORBIDDEN);
         } else {
+            DateFormat DFormat = DateFormat.getDateTimeInstance(
+            DateFormat.LONG, DateFormat.LONG,
+            Locale.getDefault());
             //email guests that the meeting has been canceled, then
+            for(String guest : m.getGuests()) {
+                String messageBody = 
+                "Dear Sia Guest,\n\n" +
+                user.getName() + " has canceled the following meeting:\n\n" +
+                m.getTitle() + "\n" +
+                "Scheduled for " + DFormat.format(m.getStartDateTime()) + "\n\n" +
+                "Thank you,\n" +
+                "The Sia Team";
+                EmailDetails emailDetails = new EmailDetails(guest, messageBody, "Meeting Canceled", "");
+                this.emailService.sendSimpleMail(emailDetails);
+            }
             meetingService.deleteMeetingById(id);
             return ResponseEntity.ok().build();
         }
