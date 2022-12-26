@@ -3,6 +3,7 @@ package com.example.videochat3.service;
 import com.example.videochat3.domain.Meeting;
 
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Date;
 
 import org.springframework.security.core.userdetails.User;
@@ -13,4 +14,6 @@ public interface MeetingService {
     List<Meeting> getMeetings(String ownerId, Date startDate, Date endDate);
     Meeting getMeeting(String meetingId);
     User loadHostByMeetingId(String meetingId) throws UsernameNotFoundException;
+    void updateMeeting(String newTitle, String newPassword, int newDuration, Date newStartDateTime, String id);
+    void deleteMeetingById(String id);
 }

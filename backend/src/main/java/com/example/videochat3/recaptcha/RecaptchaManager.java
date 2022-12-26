@@ -23,8 +23,6 @@ public class RecaptchaManager {
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<String> req = new HttpEntity<String>("", headers);
         String recaptchaResult = recaptchaTokenTemplate.postForObject(uri, req, String.class);
-        System.out.println(recaptchaResult);
-        System.out.println(this.secret);
         JSONObject jsonObject = new JSONObject(recaptchaResult);
         if(jsonObject.keySet().contains("score")) {
             Double score = jsonObject.getDouble("score");

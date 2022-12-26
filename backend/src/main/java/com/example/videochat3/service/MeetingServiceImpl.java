@@ -60,19 +60,29 @@ public class MeetingServiceImpl implements MeetingService, UserDetailsService {
 
     @Override
     public Meeting saveMeeting(Meeting meeting) {
-        log.info("Saving new meeting to db.");
         meeting.setPassword(meetingPasswordEncoder.encode(meeting.getPassword()));
         return meetingRepo.save(meeting);
     }
 
     @Override
     public List<Meeting> getMeetings(String ownerId, Date startDate, Date endDate) {
-        log.info("Fetching all your meetings.");
         return meetingRepo.findAllByOwnerIdWithinRange(ownerId, startDate, endDate);
     }
 
     @Override
     public Meeting getMeeting(String meetingId) {
         return meetingRepo.findMeetingById(meetingId);
+    }
+
+    @Override
+    public void updateMeeting(String newTitle, String newPassword, int newDuration, Date newStartDateTime, String id) {
+        System.out.println("in update meeting");
+        String encodedNewPassword = this.meetingPasswordEncoder.encode(newPassword);
+        meetingRepo.updateMeeting(newTitle, encodedNewPassword, newDuration, newStartDateTime, id);
+    }
+
+    @Override 
+    public void deleteMeetingById(String id) {
+        meetingRepo.deleteById(id);
     }
 }

@@ -41,11 +41,11 @@ public class AppUserAuthNFilter extends UsernamePasswordAuthenticationFilter {
         String email = request.getParameter("email");
         String password = request.getParameter("password");
         String recaptchaToken = request.getParameter("recaptchaToken");
-        if(recaptchaManager.verifyRecaptchaToken(recaptchaToken)) {
-            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(email, password);
-            return authenticationManager.authenticate(authToken);
-        }
-        else return authenticationManager.authenticate(null);
+        UsernamePasswordAuthenticationToken authToken;
+        // if(recaptchaManager.verifyRecaptchaToken(recaptchaToken)) 
+        if(true) authToken = new UsernamePasswordAuthenticationToken(email, password);
+        else authToken = new UsernamePasswordAuthenticationToken("", "");
+        return authenticationManager.authenticate(authToken);
     }
 
     @Override

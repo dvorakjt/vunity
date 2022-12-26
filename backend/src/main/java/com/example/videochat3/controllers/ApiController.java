@@ -3,6 +3,7 @@ package com.example.videochat3.controllers;
 import com.example.videochat3.domain.Meeting;
 import com.example.videochat3.recaptcha.RecaptchaManager;
 import com.example.videochat3.DTO.MeetingDTO;
+import com.example.videochat3.DTO.MeetingUpdateDTO;
 import com.example.videochat3.DTO.PasswordResetDTO;
 import com.example.videochat3.DTO.HostTokenDTO;
 import com.example.videochat3.domain.AppUser;
@@ -12,14 +13,18 @@ import com.example.videochat3.service.MeetingService;
 import lombok.RequiredArgsConstructor;
 
 import com.aventrix.jnanoid.jnanoid.*;
+
+import org.apache.catalina.connector.Response;
 import org.passay.*;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -178,6 +183,44 @@ public class ApiController {
         return ResponseEntity.ok().body(meetingService.getMeetings(user.getId().toString(), new Date(startDate), new Date(endDate)));
     }
 
+    @PutMapping(
+        value = "/api/users/update_meeting",
+        consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE},
+        produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE}
+    )
+    public ResponseEntity updateMeeting(@RequestBody MeetingUpdateDTO meetingUpdateDTO, Principal principal) {
+        Meeting m = meetingService.getMeeting(meetingUpdateDTO.getId());
+        AppUser user = appUserService.findAppUserByEmail(principal.getName());
+        System.out.println("we are here");
+        if(!m.getOwnerId().equals(user.getId().toString())) {
+            System.out.println("forbidden");
+            return new ResponseEntity("Forbidden.", HttpStatus.FORBIDDEN);
+        } else {
+            //email users that the meeting has been update
+            meetingService.updateMeeting(
+                meetingUpdateDTO.getTitle(),
+                meetingUpdateDTO.getPassword(), 
+                meetingUpdateDTO.getDuration(), 
+                new Date(meetingUpdateDTO.getStartDateTime()), 
+                meetingUpdateDTO.getId()
+            );
+            return ResponseEntity.ok().build();
+        }
+    }
+
+    @DeleteMapping("/api/users/delete_meeting") 
+    public ResponseEntity deleteMeeting(Principal principal, @RequestParam String id) {
+        Meeting m = meetingService.getMeeting(id);
+        AppUser user = appUserService.findAppUserByEmail(principal.getName());
+        if(!m.getOwnerId().equals(user.getId().toString())) {
+            return new ResponseEntity("Forbidden.", HttpStatus.FORBIDDEN);
+        } else {
+            //email guests that the meeting has been canceled, then
+            meetingService.deleteMeetingById(id);
+            return ResponseEntity.ok().build();
+        }
+    }
+
     //create host token
     @PostMapping("/api/users/host_token")
     public ResponseEntity generateHostToken(Principal principal, @RequestBody HostTokenDTO hostTokenDTO) {
@@ -194,10 +237,4 @@ public class ApiController {
             return ResponseEntity.ok().body(meetingToken);
         }
     }
-
-    //put req to update one meeting
-
-    //del req to delete one meeting (that is not currently open
-
-    //post request to open a meeting (that is not currently open)
 }
