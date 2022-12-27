@@ -23,7 +23,29 @@ $navbar-height: 57px;
     // background-color: blue;
 }
 
+.mediumVerticalContainer {
+    display: flex;
+    flex-direction: column;
+    width: 260px;
+}
+
+.narrowVerticalContainer {
+    display: flex;
+    flex-direction: column;
+    width: 180px;
+}
+
 .horizontalContainerCentered {
     display: flex;
     justify-content: center;
+}
+
+.horizontalContainerSpaceBetween {
+    display: flex;
+    justify-content: space-between;
+}
+
+.horizontalContainerFlexEnd {
+    display: flex;
+    justify-content: flex-end;
 }

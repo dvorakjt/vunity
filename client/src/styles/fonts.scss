@@ -1,0 +1,29 @@
+@use 'font-sizes';
+
+.text {
+    color:white;
+}
+
+.xl {
+    font-size: font-sizes.$xl;
+}
+
+.lg {
+    font-size: font-sizes.$lg;
+}
+
+.md {
+    font-size: font-sizes.$md;
+}
+
+.ms {
+    font-size: font-sizes.$ms;
+}
+
+.sm {
+    font-size: font-sizes.$sm;
+}
+
+.xs {
+    font-size: font-sizes.$xs;
+}

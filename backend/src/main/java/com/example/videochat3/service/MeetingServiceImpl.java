@@ -75,10 +75,8 @@ public class MeetingServiceImpl implements MeetingService, UserDetailsService {
     }
 
     @Override
-    public void updateMeeting(String newTitle, String newPassword, int newDuration, Date newStartDateTime, String id) {
-        System.out.println("in update meeting");
-        String encodedNewPassword = this.meetingPasswordEncoder.encode(newPassword);
-        meetingRepo.updateMeeting(newTitle, encodedNewPassword, newDuration, newStartDateTime, id);
+    public void updateMeeting(String newTitle, int newDuration, Date newStartDateTime, String id) {
+        meetingRepo.updateMeeting(newTitle, newDuration, newStartDateTime, id);
     }
 
     @Override 

@@ -1,0 +1,4 @@
+<app-view-meeting *ngIf="!isEditing" (editModeActivated)="isEditing = true" [showBackButton]="showBackButton"
+    [meeting]="meeting"></app-view-meeting>
+<app-edit-meeting *ngIf="isEditing" (viewModeActivated)="isEditing = false" (backButtonClicked)="onGoBack()"
+    [meeting]="meeting"></app-edit-meeting>

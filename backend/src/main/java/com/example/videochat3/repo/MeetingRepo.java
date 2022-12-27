@@ -20,11 +20,10 @@ public interface MeetingRepo extends JpaRepository<Meeting, String> {
 
     @Modifying
     @Query(
-        value = "update Meeting m set m.title = :newTitle, m.password = :newPassword, m.duration = :newDuration, m.startDateTime = :newStartDateTime where m.id = :id"
+        value = "update Meeting m set m.title = :newTitle, m.duration = :newDuration, m.startDateTime = :newStartDateTime where m.id = :id"
     )
     void updateMeeting(
-        @Param("newTitle") String newTitle, 
-        @Param("newPassword") String newPassword, 
+        @Param("newTitle") String newTitle,
         @Param("newDuration") int newDuration, 
         @Param("newStartDateTime") Date newStartDateTime,
         @Param("id") String id

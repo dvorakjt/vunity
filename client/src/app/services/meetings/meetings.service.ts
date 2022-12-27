@@ -41,6 +41,22 @@ export class MeetingsService {
         });
     }
 
+    //meeting password is encrypted when it comes back from the db
+    //this should search a local hashmap of meetings by id before requesting data from the server
+    public getMeetingById(meetingId:string) {
+        return new Promise((resolve, reject) => {
+            this.http.get(`/api/users/meeting?meetingId=${meetingId}`).subscribe(({
+                next: (responseData) => {   
+                    console.log(responseData);
+                    resolve(responseData as Meeting);
+                },
+                error: (e) => {
+                    reject(e);
+                }
+            }));
+        });
+    }
+
     private loadUpcomingMeetings() {
         const today = DateTime.now().startOf('day');
         const nextWeek = today.plus({weeks: 1});
@@ -109,7 +125,7 @@ export class MeetingsService {
             next: (responseData) => {
                 console.log(responseData);
                 this.meetingsModified.emit();
-                //this.apiCall.emit({success:true, message:"succeeded"});
+                this.apiCall.emit({success:true, message:"succeeded"});
             },
             error: (error) => {
                 this.apiCall.emit({success:false, message:error.message});

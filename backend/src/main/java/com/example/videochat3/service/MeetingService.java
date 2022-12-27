@@ -14,6 +14,6 @@ public interface MeetingService {
     List<Meeting> getMeetings(String ownerId, Date startDate, Date endDate);
     Meeting getMeeting(String meetingId);
     User loadHostByMeetingId(String meetingId) throws UsernameNotFoundException;
-    void updateMeeting(String newTitle, String newPassword, int newDuration, Date newStartDateTime, String id);
+    void updateMeeting(String newTitle, int newDuration, Date newStartDateTime, String id);
     void deleteMeetingById(String id);
 }

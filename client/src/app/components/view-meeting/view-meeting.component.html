@@ -1,0 +1,29 @@
+<div class="narrowVerticalContainer">
+    <div class="horizontalContainerSpaceBetween">
+        <button class="btnTransparent" (click)="onGoBack()"><fa-icon [icon]="faAngleLeft" [size]="'lg'"
+                *ngIf="showBackButton"></fa-icon></button>
+        <h1 class="text md" style="max-width: 132px; word-wrap: break-word; text-align: center;">
+            {{meeting ? meeting.title : ''}}
+        </h1>
+        <span style="min-width: 22.41px;" *ngIf="showBackButton"></span>
+    </div>
+    <div class="spacer-lg"></div>
+    <label class="text sm">Date &amp; Time</label>
+    <p class="text xs">{{meeting ? meeting.startDateTime : ''}}</p>
+    <div class="spacer-sm"></div>
+    <label class="text sm">Length</label>
+    <p class="text xs">{{meeting ? meeting.duration : ''}} min.</p>
+    <div class="spacer-sm"></div>
+    <label class="text sm">Password</label>
+    <p class="text xs">{{meeting ? meeting.password : ''}}</p>
+    <div class="spacer-sm"></div>
+    <label class="text sm">Guests</label>
+    <ul style="list-style-type: none; padding: 0; margin: 0;" *ngIf="meeting">
+        <li *ngFor="let guestEmail of meeting.guests" class="text xs">{{guestEmail}}</li>
+    </ul>
+    <div class="spacer-lg"></div>
+    <div class="horizontalContainerSpaceBetween">
+        <button class="btnPrimary" (click)="onEnterEditMode()">Edit</button>
+        <button class="btnPrimary">Start</button>
+    </div>
+</div>

@@ -1,0 +1,53 @@
+<form class="narrowVerticalContainer" [formGroup]="editMeetingForm" #ngForm="ngForm" *ngIf="!succeeded">
+    <div class="horizontalContainerSpaceBetween">
+        <h1 class="formHeader">Edit</h1>
+        <button class="btnDanger">Delete</button>
+    </div>
+    <div class="spacer-lg"></div>
+
+    <label class="formLabel">Title</label>
+    <input type="text" name="title" id="title" formControlName="title" class="formInput" />
+    <div class="formFieldErrorContainer">
+        <small
+            class="formFieldError">{{(!editMeetingForm.get('title')?.valid && (ngForm.submitted || editMeetingForm.get('title')?.dirty || editMeetingForm.get('title')?.touched)) ? 'Please enter a meeting title.' : ''}}</small>
+    </div>
+    <div class="spacer-sm"></div>
+
+    <label class="formLabel">Date and time</label>
+    <div style="display: flex;">
+        <input type="datetime-local" name="startDateTime" id="startDateTime" formControlName="startDateTime"
+            class="formInput" />
+        <label class="formLabel">{{dateTimeService.timeZoneShort}}</label>
+    </div>
+    <div class="formFieldErrorContainer">
+        <small
+            class="formFieldError">{{(!editMeetingForm.get('startDateTime')?.valid && (ngForm.submitted || editMeetingForm.get('startDateTime')?.dirty || editMeetingForm.get('startDateTime')?.touched)) ? 'Please enter a valid date-time.' : ''}}</small>
+    </div>
+    <div class="spacer-sm"></div>
+
+    <label class="formLabel">Duration</label>
+    <div style="display: flex;">
+        <input type="number" step=5 name="duration" id="duration" formControlName="duration" class="formInput" /><label
+            class="formLabel">min</label>
+    </div>
+    <div class="formFieldErrorContainer">
+        <small
+            class="formFieldError">{{(!editMeetingForm.get('duration')?.valid && (ngForm.submitted || editMeetingForm.get('duration')?.dirty || editMeetingForm.get('duration')?.touched)) ? 'Please enter a meeting duration (5-120 minutes)' : ''}}</small>
+    </div>
+    <div class="spacer-lg"></div>
+
+    <div class="horizontalContainerSpaceBetween">
+        <button class="btnPrimary" (click)="onEnterViewMode($event)">Back</button>
+        <button class="btnPrimary" type="submit" (click)="onSubmit($event)">Save</button>
+    </div>
+</form>
+<form class="form" [formGroup]="editMeetingForm" #ngForm="ngForm" *ngIf="succeeded">
+    <h1 class="formHeader">Edit Meeting</h1>
+    <div class="spacer-lg"></div>
+    <p>Success! The meeting was update and your guests have been notified.</p>
+    <div class="spacer-lg"></div>
+    <div class="horizontalContainerCentered">
+        <button class="btnPrimary" (click)="onEnterViewMode($event)">Ok</button>
+    </div>
+</form>
+<app-loading-wheel-overlay *ngIf="isLoading"></app-loading-wheel-overlay>

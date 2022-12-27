@@ -11,12 +11,12 @@ export class Meeting {
         public ownerId:string
     ) {}
 
-    getTime() {
+    public getTime() {
         const startDT = DateTime.fromISO(this.startDateTime);
         return startDT.toFormat('h:mm a');
     }
 
-    getDate() {
+    public getDate() {
         const startDT = DateTime.fromISO(this.startDateTime);
         return startDT.toFormat('MM/dd/yyyy');
     }

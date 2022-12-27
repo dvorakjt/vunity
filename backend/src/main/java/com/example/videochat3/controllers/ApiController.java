@@ -14,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 
 import com.aventrix.jnanoid.jnanoid.*;
 
-import org.apache.catalina.connector.Response;
 import org.passay.*;
 
 import org.springframework.http.HttpStatus;
@@ -196,6 +195,17 @@ public class ApiController {
         return ResponseEntity.ok().body(meeting);
     }
 
+    @GetMapping("/api/users/meeting")
+    public ResponseEntity getMeeting(Principal principal, @RequestParam String meetingId) {
+        AppUser user = appUserService.findAppUserByEmail(principal.getName());
+        if(user != null) {
+            Meeting meeting = meetingService.getMeeting(meetingId);
+            if(meeting == null) return ResponseEntity.notFound().build();
+            if(!meeting.getOwnerId().equals(user.getId().toString())) return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            return ResponseEntity.ok().body(meeting);
+        } else return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
+
     //get all of a user's meetings, this will eventually change and use indexedDB in the frontend
     @GetMapping("/api/users/meetings")
     public ResponseEntity<List<Meeting>> getMeetings(Principal principal, @RequestParam Long startDate, @RequestParam Long endDate) {
@@ -212,16 +222,16 @@ public class ApiController {
     public ResponseEntity updateMeeting(@RequestBody MeetingUpdateDTO meetingUpdateDTO, Principal principal) {
         Meeting m = meetingService.getMeeting(meetingUpdateDTO.getId());
         AppUser user = appUserService.findAppUserByEmail(principal.getName());
-        System.out.println("we are here");
-        if(!m.getOwnerId().equals(user.getId().toString())) {
-            System.out.println("forbidden");
-            return new ResponseEntity("Forbidden.", HttpStatus.FORBIDDEN);
-        } else {
-            DateFormat DFormat = DateFormat.getDateTimeInstance(
-                DateFormat.LONG, DateFormat.LONG,
-                Locale.getDefault());
-            //email guests that the meeting has been canceled, then
-            for(String guest : m.getGuests()) {
+
+        if(m == null || user == null) return ResponseEntity.notFound().build();
+        
+        if(!m.getOwnerId().equals(user.getId().toString())) return new ResponseEntity("Forbidden.", HttpStatus.FORBIDDEN);
+
+        DateFormat DFormat = DateFormat.getDateTimeInstance(
+            DateFormat.LONG, DateFormat.LONG,
+            Locale.getDefault());
+        //email guests that the meeting has been canceled, then
+        for(String guest : m.getGuests()) {
             String messageBody = 
             "Dear Sia Guest,\n\n" +
             user.getName() + " has updated a meeting you were invited to.\n\nOld meeting details:\n\n" +
@@ -231,53 +241,49 @@ public class ApiController {
             "New meeting details:\n\n" +
             meetingUpdateDTO.getTitle() + "\n" +
             "Scheduled for: " + DFormat.format(new Date(meetingUpdateDTO.getStartDateTime())) + "\n" +
-            "Length: " + meetingUpdateDTO.getDuration() + " minutes\n" +
-            "Password: " + meetingUpdateDTO.getPassword() + "\n\n" + 
-            "To join this meeting, visit:\n\n" + 
-            "http://localhost:4200/joinmeeting?id=" + m.getId() + "\n\n" +
-            "And enter the password listed above.\n\n" +
+            "Length: " + meetingUpdateDTO.getDuration() + " minutes\n\n" +
             "Thank you,\n" +
             "The Sia Team";
             EmailDetails emailDetails = new EmailDetails(guest, messageBody, "Updated Sia Meeting Invitation", "");
             this.emailService.sendSimpleMail(emailDetails);
         }
-            //email users that the meeting has been update
-            meetingService.updateMeeting(
-                meetingUpdateDTO.getTitle(),
-                meetingUpdateDTO.getPassword(), 
-                meetingUpdateDTO.getDuration(), 
-                new Date(meetingUpdateDTO.getStartDateTime()), 
-                meetingUpdateDTO.getId()
-            );
-            return ResponseEntity.ok().build();
-        }
+        //email users that the meeting has been update
+        meetingService.updateMeeting(
+            meetingUpdateDTO.getTitle(),
+            meetingUpdateDTO.getDuration(), 
+            new Date(meetingUpdateDTO.getStartDateTime()), 
+            meetingUpdateDTO.getId()
+        );
+        return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/api/users/delete_meeting") 
     public ResponseEntity deleteMeeting(Principal principal, @RequestParam String id) {
         Meeting m = meetingService.getMeeting(id);
         AppUser user = appUserService.findAppUserByEmail(principal.getName());
-        if(!m.getOwnerId().equals(user.getId().toString())) {
+
+        if(m == null || user == null) return ResponseEntity.notFound().build();
+
+        if(!m.getOwnerId().equals(user.getId().toString()))
             return new ResponseEntity("Forbidden.", HttpStatus.FORBIDDEN);
-        } else {
-            DateFormat DFormat = DateFormat.getDateTimeInstance(
-            DateFormat.LONG, DateFormat.LONG,
-            Locale.getDefault());
-            //email guests that the meeting has been canceled, then
-            for(String guest : m.getGuests()) {
-                String messageBody = 
-                "Dear Sia Guest,\n\n" +
-                user.getName() + " has canceled the following meeting:\n\n" +
-                m.getTitle() + "\n" +
-                "Scheduled for " + DFormat.format(m.getStartDateTime()) + "\n\n" +
-                "Thank you,\n" +
-                "The Sia Team";
-                EmailDetails emailDetails = new EmailDetails(guest, messageBody, "Meeting Canceled", "");
-                this.emailService.sendSimpleMail(emailDetails);
-            }
-            meetingService.deleteMeetingById(id);
-            return ResponseEntity.ok().build();
+        
+        DateFormat DFormat = DateFormat.getDateTimeInstance(
+        DateFormat.LONG, DateFormat.LONG,
+        Locale.getDefault());
+        //email guests that the meeting has been canceled, then
+        for(String guest : m.getGuests()) {
+            String messageBody = 
+            "Dear Sia Guest,\n\n" +
+            user.getName() + " has canceled the following meeting:\n\n" +
+            m.getTitle() + "\n" +
+            "Scheduled for " + DFormat.format(m.getStartDateTime()) + "\n\n" +
+            "Thank you,\n" +
+            "The Sia Team";
+            EmailDetails emailDetails = new EmailDetails(guest, messageBody, "Meeting Canceled", "");
+            this.emailService.sendSimpleMail(emailDetails);
         }
+        meetingService.deleteMeetingById(id);
+        return ResponseEntity.ok().build();
     }
 
     //create host token

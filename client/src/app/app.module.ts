@@ -21,15 +21,24 @@ import { MediaSettingsModalComponent } from './media-settings-modal/media-settin
 import { VideoComponent } from './video/video.component';
 import { CalendarComponent } from './calendar/calendar.component';
 import { DateComponent } from './calendar/date/date.component';
-import { UpcomingMeetingsComponent } from './pages/upcoming-meetings/upcoming-meetings.component';
-import { NewMeetingComponent } from './pages/new-meeting/new-meeting.component';
-import { ViewMeetingComponent } from './pages/view-meeting/view-meeting.component';
-import { EditMeetingComponent } from './pages/edit-meeting/edit-meeting.component';
+import { UpcomingMeetingsComponent } from './components/upcoming-meetings/upcoming-meetings.component';
 import { ForgotPasswordComponent } from './pages/forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './pages/reset-password/reset-password.component';
 import { NavbarComponent } from './components/navbar/navbar.component';
 import { RECAPTCHA_V3_SITE_KEY, RecaptchaV3Module } from "ng-recaptcha";
 import { environment } from '../environments/environment';
+import { ViewAndEditMeetingComponent } from './components/view-and-edit-meeting/view-and-edit-meeting.component';
+import { PeerThumnailsComponent } from './components/peer-thumnails/peer-thumnails.component';
+import { ChatMessagesComponent } from './components/chat-messages/chat-messages.component';
+import { SpeakerViewComponent } from './components/speaker-view/speaker-view.component';
+import { ActiveMeetingToolbarComponent } from './components/active-meeting-toolbar/active-meeting-toolbar.component';
+import { NewMeetingComponent } from './components/new-meeting/new-meeting.component';
+import { NewMeetingPageComponent } from './pages/new-meeting-page/new-meeting-page.component';
+import { ViewAndEditMeetingPageComponent } from './pages/view-and-edit-meeting-page/view-and-edit-meeting-page.component';
+import { CalendarPageComponent } from './pages/calendar-page/calendar-page.component';
+import { ViewMeetingComponent } from './components/view-meeting/view-meeting.component';
+import { EditMeetingComponent } from './components/edit-meeting/edit-meeting.component';
+import { UpcomingMeetingsPageComponent } from './pages/upcoming-meetings-page/upcoming-meetings-page.component';
 
 @NgModule({
   declarations: [
@@ -50,12 +59,21 @@ import { environment } from '../environments/environment';
     CalendarComponent,
     DateComponent,
     UpcomingMeetingsComponent,
-    NewMeetingComponent,
-    ViewMeetingComponent,
-    EditMeetingComponent,
     ForgotPasswordComponent,
     ResetPasswordComponent,
     NavbarComponent,
+    ViewAndEditMeetingComponent,
+    PeerThumnailsComponent,
+    ChatMessagesComponent,
+    SpeakerViewComponent,
+    ActiveMeetingToolbarComponent,
+    NewMeetingComponent,
+    NewMeetingPageComponent,
+    ViewAndEditMeetingPageComponent,
+    CalendarPageComponent,
+    ViewMeetingComponent,
+    EditMeetingComponent,
+    UpcomingMeetingsPageComponent
   ],
   imports: [
     BrowserModule,

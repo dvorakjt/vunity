@@ -17,17 +17,20 @@ public class RecaptchaManager {
     private String secret;
 
     public boolean verifyRecaptchaToken(String token) {
-        String uri = "https://www.google.com/recaptcha/api/siteverify?secret=" + this.secret + "&response=" + token;
-        RestTemplate recaptchaTokenTemplate = new RestTemplate();
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<String> req = new HttpEntity<String>("", headers);
-        String recaptchaResult = recaptchaTokenTemplate.postForObject(uri, req, String.class);
-        JSONObject jsonObject = new JSONObject(recaptchaResult);
-        if(jsonObject.keySet().contains("score")) {
-            Double score = jsonObject.getDouble("score");
-            if(score > 0.5) return true;
-            else return false;
-        } else return false;
+
+        return true;
+
+        // String uri = "https://www.google.com/recaptcha/api/siteverify?secret=" + this.secret + "&response=" + token;
+        // RestTemplate recaptchaTokenTemplate = new RestTemplate();
+        // HttpHeaders headers = new HttpHeaders();
+        // headers.setContentType(MediaType.APPLICATION_JSON);
+        // HttpEntity<String> req = new HttpEntity<String>("", headers);
+        // String recaptchaResult = recaptchaTokenTemplate.postForObject(uri, req, String.class);
+        // JSONObject jsonObject = new JSONObject(recaptchaResult);
+        // if(jsonObject.keySet().contains("score")) {
+        //     Double score = jsonObject.getDouble("score");
+        //     if(score > 0.5) return true;
+        //     else return false;
+        // } else return false;
     }
 }

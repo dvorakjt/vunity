@@ -1,0 +1,14 @@
+.meetingList {
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+}
+
+.meetingListItem {
+    box-sizing: border-box;
+    margin-left: 16px;
+    margin-right: 16px;
+    padding-bottom: 16px;
+    padding-top: 16px;
+    border-bottom: 1px solid #343434;
+}
