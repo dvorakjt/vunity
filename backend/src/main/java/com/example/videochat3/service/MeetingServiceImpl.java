@@ -1,6 +1,7 @@
 package com.example.videochat3.service;
 
 import com.example.videochat3.domain.Meeting;
+import com.example.videochat3.encryption.MeetingPasswordEncoder;
 import com.example.videochat3.repo.MeetingRepo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +19,7 @@ import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.Date;
 
 @Slf4j
@@ -66,12 +68,21 @@ public class MeetingServiceImpl implements MeetingService, UserDetailsService {
 
     @Override
     public List<Meeting> getMeetings(String ownerId, Date startDate, Date endDate) {
-        return meetingRepo.findAllByOwnerIdWithinRange(ownerId, startDate, endDate);
+        return meetingRepo.findAllByOwnerIdWithinRange(ownerId, startDate, endDate).stream().map(m -> {
+            String decodedPassword = ((MeetingPasswordEncoder)this.meetingPasswordEncoder).decode(m.getPassword());
+            Meeting decryptedMeeting = new Meeting(m.getId(), m.getTitle(), decodedPassword, m.getDuration(), m.getStartDateTime(), m.getGuests(), m.getOwnerId());
+            return decryptedMeeting;
+        }).collect(Collectors.toList());
     }
 
     @Override
     public Meeting getMeeting(String meetingId) {
-        return meetingRepo.findMeetingById(meetingId);
+        Meeting m = meetingRepo.findMeetingById(meetingId);
+        if(m != null) {
+            String decodedPassword = ((MeetingPasswordEncoder)this.meetingPasswordEncoder).decode(m.getPassword());
+            Meeting decryptedMeeting = new Meeting(m.getId(), m.getTitle(), decodedPassword, m.getDuration(), m.getStartDateTime(), m.getGuests(), m.getOwnerId());
+            return decryptedMeeting;
+        } else return null;
     }
 
     @Override
