@@ -6,9 +6,8 @@ import { MeetingDTO } from 'src/app/models/meeting-dto.model';
 import { UpcomingMeetings } from 'src/app/types/upcoming-meetings.type';
 import { MeetingsByYearAndMonth } from 'src/app/types/meetings-by-year-and-month.type';
 import { DateTime } from 'luxon';
-
-//probably need ws to trigger some sort of observable, and to restart when closed
-//this service should probably be split into two separate services
+import { MeetingsById } from 'src/app/types/meetings-by-id.type';
+import { MeetingUpdateDTO } from 'src/app/models/meeting-update-dto.model';
 
 @Injectable()
 export class MeetingsService {
@@ -16,14 +15,15 @@ export class MeetingsService {
     //this should somehow update in real time
     //should also be updated when user creates, edits, deletes a meeting
     public upcomingMeetings:UpcomingMeetings = {
-        today : [],
+        today : [], //these could be heaps so when they are modified, the order is preserved
         tomorrow : [],
         laterThisWeek : []
     }
 
     //should be update when user creates, edits, deletes a meeting
-    public meetingsByYearAndMonth:MeetingsByYearAndMonth = {
-    }
+    public meetingsByYearAndMonth:MeetingsByYearAndMonth = {}
+
+    public meetingsById:MeetingsById = {};
 
     private TZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
     
@@ -32,8 +32,6 @@ export class MeetingsService {
     apiCall = new EventEmitter<{success:boolean, message:string}>();
 
     constructor(private authService:AuthService, private http:HttpClient) {
-        console.log(this.TZ);
-        //get the user's meetings as soon as they login
         authService.isAuthenticated.subscribe((isAuthenticated) => {
             if(isAuthenticated) {
                this.loadUpcomingMeetings();
@@ -41,19 +39,22 @@ export class MeetingsService {
         });
     }
 
-    //meeting password is encrypted when it comes back from the db
     //this should search a local hashmap of meetings by id before requesting data from the server
     public getMeetingById(meetingId:string) {
         return new Promise((resolve, reject) => {
-            this.http.get(`/api/users/meeting?meetingId=${meetingId}`).subscribe(({
-                next: (responseData) => {   
-                    console.log(responseData);
-                    resolve(responseData as Meeting);
-                },
-                error: (e) => {
-                    reject(e);
-                }
-            }));
+            if(this.meetingsById[meetingId]) resolve(this.meetingsById[meetingId]);
+            else {
+                this.http.get(`/api/users/meeting?meetingId=${meetingId}`).subscribe(({
+                    next: (responseData) => {   
+                        const meeting = responseData as Meeting;
+                        this.addMeetingToMeetingsById(meeting);
+                        resolve(meeting);
+                    },
+                    error: (e) => {
+                        reject(e);
+                    }
+                }));
+            }
         });
     }
 
@@ -79,6 +80,7 @@ export class MeetingsService {
             const theDayAfter = tomorrow.plus({days: 1});
             
             for(let meeting of upcomingMeetings) {
+                this.addMeetingToMeetingsById(meeting);
                 const startDateTime = DateTime.fromISO(meeting.startDateTime);
                 if(startDateTime >= today && startDateTime < tomorrow) this.upcomingMeetings.today.push(meeting);
                 else if(startDateTime >= tomorrow && startDateTime < theDayAfter) this.upcomingMeetings.tomorrow.push(meeting);
@@ -121,6 +123,7 @@ export class MeetingsService {
 
 
     createMeeting(newMeeting:MeetingDTO) {
+        //should add this locally to upcoming meetings, meetings by id, and meetings by month and year, if that month and year exists!
         this.http.post('/api/users/new_meeting', newMeeting).subscribe({
             next: (responseData) => {
                 console.log(responseData);
@@ -132,4 +135,80 @@ export class MeetingsService {
             }
         });
     }
+
+    addMeetingToMeetingsById(meeting:Meeting) {
+        this.meetingsById[meeting.id] = meeting;
+    }
+
+    deleteMeeting(meetingId:string) {
+        return new Promise<void>((resolve, reject) => {
+            this.http.delete(`/api/users/delete_meeting?id=${meetingId}`).subscribe({
+                next: () => {
+                    this.deleteMeetingLocally(meetingId);
+                    this.meetingsModified.emit();
+                    resolve();
+                },
+                error: (error) => {
+                    reject(error.message);
+                }
+            });
+        });
+    }
+
+    deleteMeetingLocally(meetingId:string) {
+        const meeting = this.meetingsById[meetingId];
+        if(meeting) {
+
+            //remove meeting from upcomingMeetings
+            let meetingFoundInUpcomingMeetings = false;
+
+            this.upcomingMeetings.today = this.upcomingMeetings.today.filter((m) => {
+                if(m.id === meetingId) meetingFoundInUpcomingMeetings = true;
+                return m.id != meetingId;
+            });
+            if(!meetingFoundInUpcomingMeetings) this.upcomingMeetings.tomorrow = this.upcomingMeetings.tomorrow.filter((m) => {
+                if(m.id === meetingId) meetingFoundInUpcomingMeetings = true;
+                return m.id != meetingId;
+            });
+            if(!meetingFoundInUpcomingMeetings) this.upcomingMeetings.laterThisWeek = this.upcomingMeetings.laterThisWeek.filter((m) => {
+                return m.id != meetingId;
+            });
+
+            //remove meeting from meetingsByYearAndMonth
+            const meetingDateTime = DateTime.fromISO(meeting.startDateTime);
+            const meetingYear = String(meetingDateTime.year);
+            const meetingMonth = meetingDateTime.monthLong;
+
+            if(this.meetingsByYearAndMonth[meetingYear] && this.meetingsByYearAndMonth[meetingYear][meetingMonth]) {
+                let monthOfMeeting = this.meetingsByYearAndMonth[meetingYear][meetingMonth];
+                monthOfMeeting = monthOfMeeting.filter((m) => {
+                    return m.id != meetingId;
+                });
+            }
+
+            //remove the meeting from meetingsById
+            delete this.meetingsById[meetingId];
+        }
+    }
+
+    updateMeeting(meetingUpdateDTO:MeetingUpdateDTO) {
+        return new Promise<void>((resolve, reject) => {
+            this.http.put('/api/users/update_meeting', meetingUpdateDTO).subscribe({
+                next: () => {
+                    this.updateMeetingLocally(meetingUpdateDTO.id);
+                    this.meetingsModified.emit();
+                    resolve();
+                },
+                error: (error) => {
+                    reject(error.message);
+                }   
+            });
+        });
+    }
+
+    updateMeetingLocally(meetingId:string) {
+        //updates meetingsById and upcomingMeetings always
+        //updates meetingsByYearAndMonth if either the original year and month or the new year and month were already loaded from the server
+    }
+
 }

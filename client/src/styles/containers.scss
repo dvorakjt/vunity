@@ -23,16 +23,31 @@ $navbar-height: 57px;
     // background-color: blue;
 }
 
-.mediumVerticalContainer {
+@mixin verticalContainer {
+    display: flex;
+    flex-direction: column;
+}
+
+@mixin mediumVerticalContainer {
     display: flex;
     flex-direction: column;
     width: 260px;
+    padding: 20px;
+    flex: 1;
+    height: 100%;
+}
+
+@mixin fillParentContainer {
+    min-height: 100%;
+    min-width: 100%;
 }
 
 .narrowVerticalContainer {
     display: flex;
     flex-direction: column;
     width: 180px;
+    flex: 1;
+    height: 100%;
 }
 
 .horizontalContainerCentered {

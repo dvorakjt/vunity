@@ -1,5 +1,6 @@
 <div class="outerScreenContainer">
     <div class="innerScreenContainer">
-        <app-view-and-edit-meeting [meeting]="meeting"></app-view-and-edit-meeting>
+        <app-view-and-edit-meeting [meeting]="meeting"
+            (backButtonClicked)="location.back()"></app-view-and-edit-meeting>
     </div>
 </div>

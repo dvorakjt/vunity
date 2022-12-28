@@ -9,7 +9,7 @@
     </div>
     <div class="spacer-lg"></div>
     <label class="text sm">Date &amp; Time</label>
-    <p class="text xs">{{meeting ? meeting.startDateTime : ''}}</p>
+    <p class="text xs">{{meeting ? getMeetingDateTime() : ''}}</p>
     <div class="spacer-sm"></div>
     <label class="text sm">Length</label>
     <p class="text xs">{{meeting ? meeting.duration : ''}} min.</p>

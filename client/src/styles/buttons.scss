@@ -53,4 +53,8 @@
     background-color: transparent;
     color: white;
     border: none;
+
+    &:hover {
+        cursor: pointer;
+    }
 }

@@ -1,7 +1,8 @@
-<form class="narrowVerticalContainer" [formGroup]="editMeetingForm" #ngForm="ngForm" *ngIf="!succeeded">
+<form class="narrowVerticalContainer" [formGroup]="editMeetingForm" #ngForm="ngForm"
+    *ngIf="!editSucceeded && !deleteSucceeded">
     <div class="horizontalContainerSpaceBetween">
         <h1 class="formHeader">Edit</h1>
-        <button class="btnDanger">Delete</button>
+        <button class="btnDanger" (click)="onDelete()">Delete</button>
     </div>
     <div class="spacer-lg"></div>
 
@@ -38,16 +39,30 @@
 
     <div class="horizontalContainerSpaceBetween">
         <button class="btnPrimary" (click)="onEnterViewMode($event)">Back</button>
-        <button class="btnPrimary" type="submit" (click)="onSubmit($event)">Save</button>
+        <button class="btnPrimary" type="submit" (click)="onSubmit()">Save</button>
     </div>
+
+    <div class="spacer-sm"></div>
+    <p class="formSubmissionError" *ngIf="serverError">{{serverError}}</p>
 </form>
-<form class="form" [formGroup]="editMeetingForm" #ngForm="ngForm" *ngIf="succeeded">
+<form class="form" [formGroup]="editMeetingForm" #ngForm="ngForm" *ngIf="editSucceeded">
     <h1 class="formHeader">Edit Meeting</h1>
     <div class="spacer-lg"></div>
-    <p>Success! The meeting was update and your guests have been notified.</p>
+    <p style="text-align: center;">Success! The meeting was update and your guests have been notified.</p>
     <div class="spacer-lg"></div>
     <div class="horizontalContainerCentered">
+        <!-- this button will go back to the view mode -->
         <button class="btnPrimary" (click)="onEnterViewMode($event)">Ok</button>
+    </div>
+</form>
+<form class="form" [formGroup]="editMeetingForm" #ngForm="ngForm" *ngIf="deleteSucceeded">
+    <h1 class="formHeader">Edit Meeting</h1>
+    <div class="spacer-lg"></div>
+    <p style="text-align: center;">Success. The meeting was deleted and your guests have been notified.</p>
+    <div class="spacer-lg"></div>
+    <!-- this button will trigger a goBack event -->
+    <div class="horizontalContainerCentered">
+        <button class="btnPrimary" (click)="goBack.emit()">Ok</button>
     </div>
 </form>
 <app-loading-wheel-overlay *ngIf="isLoading"></app-loading-wheel-overlay>
