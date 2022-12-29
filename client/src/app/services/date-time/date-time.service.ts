@@ -17,8 +17,6 @@ export class DateTimeService {
 
     getTimeInMillis(startDTStr:string) {
         const startDT = DateTime.fromISO(startDTStr);
-        console.log(startDT.toLocaleString(DateTime.DATETIME_MED));
-        console.log(startDT.zoneName);
         return startDT.toMillis();
     }
 

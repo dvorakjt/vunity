@@ -1,12 +1,16 @@
-<form class="narrowVerticalContainer" [formGroup]="editMeetingForm" #ngForm="ngForm"
-    *ngIf="!editSucceeded && !deleteSucceeded">
+<form [formGroup]="editMeetingForm" #ngForm="ngForm" *ngIf="!editSucceeded && !deleteSucceeded">
     <div class="horizontalContainerSpaceBetween">
-        <h1 class="formHeader">Edit</h1>
-        <button class="btnDanger" (click)="onDelete()">Delete</button>
+        <button class="btnTransparent" (click)="onEnterViewMode($event)"><fa-icon [icon]="faAngleLeft"
+                [size]="'lg'"></fa-icon></button>
+        <h1 class="text md" style="max-width: 132px; word-wrap: break-word; text-align: center;">
+            Edit
+        </h1>
+        <span style="min-width: 22.41px;"></span>
     </div>
     <div class="spacer-lg"></div>
 
     <label class="formLabel">Title</label>
+    <br />
     <input type="text" name="title" id="title" formControlName="title" class="formInput" />
     <div class="formFieldErrorContainer">
         <small
@@ -37,15 +41,15 @@
     </div>
     <div class="spacer-lg"></div>
 
-    <div class="horizontalContainerSpaceBetween">
-        <button class="btnPrimary" (click)="onEnterViewMode($event)">Back</button>
+    <div class="horizontalContainerFlexEnd">
+        <button class="btnDanger" (click)="onDelete()" style="margin-right: 6px;">Delete</button>
         <button class="btnPrimary" type="submit" (click)="onSubmit()">Save</button>
     </div>
 
     <div class="spacer-sm"></div>
     <p class="formSubmissionError" *ngIf="serverError">{{serverError}}</p>
 </form>
-<form class="form" [formGroup]="editMeetingForm" #ngForm="ngForm" *ngIf="editSucceeded">
+<form [formGroup]="editMeetingForm" #ngForm="ngForm" *ngIf="editSucceeded">
     <h1 class="formHeader">Edit Meeting</h1>
     <div class="spacer-lg"></div>
     <p style="text-align: center;">Success! The meeting was update and your guests have been notified.</p>
@@ -55,7 +59,7 @@
         <button class="btnPrimary" (click)="onEnterViewMode($event)">Ok</button>
     </div>
 </form>
-<form class="form" [formGroup]="editMeetingForm" #ngForm="ngForm" *ngIf="deleteSucceeded">
+<form [formGroup]="editMeetingForm" #ngForm="ngForm" *ngIf="deleteSucceeded">
     <h1 class="formHeader">Edit Meeting</h1>
     <div class="spacer-lg"></div>
     <p style="text-align: center;">Success. The meeting was deleted and your guests have been notified.</p>

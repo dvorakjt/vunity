@@ -1,8 +1,8 @@
 export class MeetingDTO {
-    title?:string;
-    startDateTime?:number;
-    duration?:number;
-    password?:string;
+    title:string;
+    startDateTime:number;
+    duration:number;
+    password:string;
 
     constructor(title:string, startDateTime:number, duration:number, password:string, public guests:string[]) {
         this.title = title;

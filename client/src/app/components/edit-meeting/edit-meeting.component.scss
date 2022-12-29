@@ -1,0 +1,6 @@
+@use '../../../styles/containers.scss';
+
+:host {
+    @include containers.verticalContainer();
+    min-height: containers.$screen-height;
+}

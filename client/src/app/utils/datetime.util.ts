@@ -14,7 +14,7 @@ export function getTimezoneOffsetString() {
     return `${sign}${offsetHours}:${offsetMinutes}`;
 }
 
-export function getMonth(month:number) {
+export function getMonthStr(month:number) {
     const months = [
         'January',
         'February',
@@ -29,7 +29,7 @@ export function getMonth(month:number) {
         'November',
         'December'
     ]
-    return months[month];
+    return months[month - 1];
 }
 
 export function getNextMonthAndYear(month:number, year:number) {

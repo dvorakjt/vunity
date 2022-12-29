@@ -10,6 +10,7 @@ import { AuthGuard } from './services/auth/auth-guard.service';
 import { NoAuthGuard } from './services/auth/no-auth-guard.service';
 import { UpcomingMeetingsPageComponent } from './pages/upcoming-meetings-page/upcoming-meetings-page.component';
 import { ViewAndEditMeetingPageComponent } from './pages/view-and-edit-meeting-page/view-and-edit-meeting-page.component';
+import { NewMeetingPageComponent } from './pages/new-meeting-page/new-meeting-page.component';
 
 const routes: Routes = [
   {
@@ -39,6 +40,11 @@ const routes: Routes = [
   {
     path: "upcomingmeetings",
     component: UpcomingMeetingsPageComponent,
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'newmeeting',
+    component: NewMeetingPageComponent,
     canActivate: [AuthGuard]
   },
   {

@@ -1,62 +1,60 @@
-<div class="mediumVerticalContainer">
-    <h1 class="text md">Upcoming Meetings</h1>
-    <div class="spacer-lg"></div>
-    <h2 class="text ms">Today</h2>
-    <ul class="meetingList">
-        <li *ngFor="let meeting of meetingsService.upcomingMeetings.today" class="meetingListItem">
-            <h3 class="text sm">{{meeting.title}}</h3>
-            <div class="spacer-md"></div>
-            <p class="text xs">meeting date</p>
-            <div class="spacer-xs"></div>
-            <p class="text sm">{{meeting.getTime() + " | " + meeting.getDate() + " " + dateTimeService.timeZoneShort}}
-            </p>
-            <div class="spacer-sm"></div>
-            <p class="text xs">meeting length</p>
-            <div class="spacer-xs"></div>
-            <p class="text sm">{{meeting.duration}} minutes</p>
-            <div class="horizontalContainerFlexEnd">
-                <button class="btnPrimary" (click)="onMeetingSelected(meeting)">Details</button>
-            </div>
-        </li>
-    </ul>
-    <div class="spacer-lg"></div>
+<h1 class="text md">Upcoming Meetings</h1>
+<div class="spacer-lg"></div>
+<h2 class="text ms">Today</h2>
+<ul class="meetingList">
+    <li *ngFor="let meeting of meetingsService.upcomingMeetings.today" class="meetingListItem">
+        <h3 class="text sm">{{meeting.title}}</h3>
+        <div class="spacer-md"></div>
+        <p class="text xs">meeting date</p>
+        <div class="spacer-xs"></div>
+        <p class="text sm">{{meeting.getTime() + " | " + meeting.getDate() + " " + dateTimeService.timeZoneShort}}
+        </p>
+        <div class="spacer-sm"></div>
+        <p class="text xs">meeting length</p>
+        <div class="spacer-xs"></div>
+        <p class="text sm">{{meeting.duration}} minutes</p>
+        <div class="horizontalContainerFlexEnd">
+            <button class="btnPrimary" (click)="onMeetingSelected(meeting)">Details</button>
+        </div>
+    </li>
+</ul>
+<div class="spacer-lg"></div>
 
-    <h2 class="text ms">Tomorrow</h2>
-    <ul class="meetingList">
-        <li *ngFor="let meeting of meetingsService.upcomingMeetings.tomorrow" class="meetingListItem">
-            <h3 class="text sm">{{meeting.title}}</h3>
-            <div class="spacer-md"></div>
-            <p class="text xs">meeting date</p>
-            <div class="spacer-xs"></div>
-            <p class="text sm">{{meeting.getTime() + " | " + meeting.getDate() + " " + dateTimeService.timeZoneShort}}
-            </p>
-            <div class="spacer-sm"></div>
-            <p class="text xs">meeting length</p>
-            <div class="spacer-xs"></div>
-            <p class="text sm">{{meeting.duration}} minutes</p>
-            <div class="horizontalContainerFlexEnd">
-                <button class="btnPrimary" (click)="onMeetingSelected(meeting)">Details</button>
-            </div>
-        </li>
-    </ul>
-    <div class="spacer-lg"></div>
+<h2 class="text ms">Tomorrow</h2>
+<ul class="meetingList">
+    <li *ngFor="let meeting of meetingsService.upcomingMeetings.tomorrow" class="meetingListItem">
+        <h3 class="text sm">{{meeting.title}}</h3>
+        <div class="spacer-md"></div>
+        <p class="text xs">meeting date</p>
+        <div class="spacer-xs"></div>
+        <p class="text sm">{{meeting.getTime() + " | " + meeting.getDate() + " " + dateTimeService.timeZoneShort}}
+        </p>
+        <div class="spacer-sm"></div>
+        <p class="text xs">meeting length</p>
+        <div class="spacer-xs"></div>
+        <p class="text sm">{{meeting.duration}} minutes</p>
+        <div class="horizontalContainerFlexEnd">
+            <button class="btnPrimary" (click)="onMeetingSelected(meeting)">Details</button>
+        </div>
+    </li>
+</ul>
+<div class="spacer-lg"></div>
 
-    <h2 class="text ms">Later This Week</h2>
-    <ul class="meetingList">
-        <li *ngFor="let meeting of meetingsService.upcomingMeetings.laterThisWeek" class="meetingListItem">
-            <h3 class="text sm">{{meeting.title}}</h3>
-            <div class="spacer-md"></div>
-            <p class="text xs">meeting date</p>
-            <div class="spacer-xs"></div>
-            <p class="text sm">{{meeting.getTime() + " | " + meeting.getDate() + " " + dateTimeService.timeZoneShort}}
-            </p>
-            <div class="spacer-sm"></div>
-            <p class="text xs">meeting length</p>
-            <div class="spacer-xs"></div>
-            <p class="text sm">{{meeting.duration}} minutes</p>
-            <div class="horizontalContainerFlexEnd">
-                <button class="btnPrimary" (click)="onMeetingSelected(meeting)">Details</button>
-            </div>
-        </li>
-    </ul>
-</div>
+<h2 class="text ms">Later This Week</h2>
+<ul class="meetingList">
+    <li *ngFor="let meeting of meetingsService.upcomingMeetings.laterThisWeek" class="meetingListItem">
+        <h3 class="text sm">{{meeting.title}}</h3>
+        <div class="spacer-md"></div>
+        <p class="text xs">meeting date</p>
+        <div class="spacer-xs"></div>
+        <p class="text sm">{{meeting.getTime() + " | " + meeting.getDate() + " " + dateTimeService.timeZoneShort}}
+        </p>
+        <div class="spacer-sm"></div>
+        <p class="text xs">meeting length</p>
+        <div class="spacer-xs"></div>
+        <p class="text sm">{{meeting.duration}} minutes</p>
+        <div class="horizontalContainerFlexEnd">
+            <button class="btnPrimary" (click)="onMeetingSelected(meeting)">Details</button>
+        </div>
+    </li>
+</ul>

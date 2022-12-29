@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { DateTime } from 'luxon';
+import { faAngleLeft } from '@fortawesome/free-solid-svg-icons';
 import { MeetingUpdateDTO } from 'src/app/models/meeting-update-dto.model';
 import { Meeting } from 'src/app/models/meeting.model';
 import { DateTimeService } from 'src/app/services/date-time/date-time.service';
@@ -27,6 +28,9 @@ export class EditMeetingComponent implements OnChanges {
 
   @Output() viewModeActivated = new EventEmitter<void>();
   @Output() goBack = new EventEmitter<void>();
+
+
+  faAngleLeft = faAngleLeft;
 
   constructor(public dateTimeService:DateTimeService, private meetingsService:MeetingsService) {}
 
@@ -66,15 +70,12 @@ export class EditMeetingComponent implements OnChanges {
       this.meeting
     ) {
       try {
-        console.log(this.editMeetingForm.value.startDateTime);
-        const startDTMillis = this.dateTimeService.getTimeInMillis(this.editMeetingForm.value.startDateTime);
-        const updateDTO = new MeetingUpdateDTO(
+        await this.meetingsService.updateMeeting(
           this.meeting.id, 
           this.editMeetingForm.value.title,
-          startDTMillis,
+          this.editMeetingForm.value.startDateTime,
           this.editMeetingForm.value.duration
         );
-        await this.meetingsService.updateMeeting(updateDTO);
         this.editSucceeded = true;
         this.isLoading = false;
       } catch(e) {

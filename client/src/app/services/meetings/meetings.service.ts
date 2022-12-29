@@ -1,5 +1,5 @@
 import { EventEmitter, Injectable } from '@angular/core';
-import {HttpClient, HttpHeaders} from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import {AuthService} from '../auth/auth.service';
 import { Meeting } from 'src/app/models/meeting.model';
 import { MeetingDTO } from 'src/app/models/meeting-dto.model';
@@ -8,6 +8,7 @@ import { MeetingsByYearAndMonth } from 'src/app/types/meetings-by-year-and-month
 import { DateTime } from 'luxon';
 import { MeetingsById } from 'src/app/types/meetings-by-id.type';
 import { MeetingUpdateDTO } from 'src/app/models/meeting-update-dto.model';
+import { getMonthStr } from 'src/app/utils/datetime.util';
 
 @Injectable()
 export class MeetingsService {
@@ -24,8 +25,6 @@ export class MeetingsService {
     public meetingsByYearAndMonth:MeetingsByYearAndMonth = {}
 
     public meetingsById:MeetingsById = {};
-
-    private TZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
     
     meetingsModified = new EventEmitter<Meeting[]>();
 
@@ -35,6 +34,12 @@ export class MeetingsService {
         authService.isAuthenticated.subscribe((isAuthenticated) => {
             if(isAuthenticated) {
                this.loadUpcomingMeetings();
+               this.loadMeetingsByMonthAndYear(12, 2022).then((res) => {
+                console.log(res);
+                console.log(this.meetingsByYearAndMonth);
+               }).catch((e) => {
+                console.log(e);
+               });
             }
         });
     }
@@ -65,17 +70,13 @@ export class MeetingsService {
         const endDateMillis = nextWeek.toMillis();
         this.http.get(`/api/users/meetings?startDate=${startDateMillis}&endDate=${endDateMillis}`).subscribe((responseData) => {
 
+            this.upcomingMeetings.today = [];
+            this.upcomingMeetings.tomorrow = [];
+            this.upcomingMeetings.laterThisWeek = [];
                 
-            const upcomingMeetings = (responseData as any[]).map((data:any) => {
+            const upcomingMeetings = this.sortMeetings((responseData as any[]).map((data:any) => {
               return new Meeting(data.id, data.title, data.password, data.duration, data.startDateTime, data.guests, data.ownerId);
-            }).sort((a, b) => {
-                const startDT_A = DateTime.fromISO(a.startDateTime);
-                const startDT_B = DateTime.fromISO(b.startDateTime);
-                if(startDT_A < startDT_B) return -1;
-                else if(startDT_A > startDT_B) return 1;
-                else return 0;
-            });
-
+            }));
             const tomorrow = today.plus({days: 1});
             const theDayAfter = tomorrow.plus({days: 1});
             
@@ -93,26 +94,48 @@ export class MeetingsService {
         });
     }
 
+    private sortMeetings(meetings:Meeting[]) {
+        return meetings.sort((a, b) => {
+            const startDT_A = DateTime.fromISO(a.startDateTime);
+            const startDT_B = DateTime.fromISO(b.startDateTime);
+            if(startDT_A < startDT_B) return -1;
+            else if(startDT_A > startDT_B) return 1;
+            else return 0;
+        });
+    }   
+
     //need guards for years and months greater than 4 and 2 digits long and outside the acceptable range
     public loadMeetingsByMonthAndYear(month:number, year:number) {
 
+        console.log("loading meetings by month and year");
+
         return new Promise<Meeting[]>((resolve, reject) => {
-           
+
+            const yearStr = String(year);
+            const monthStr = getMonthStr(month);
+            
+            if(this.meetingsByYearAndMonth[yearStr] && this.meetingsByYearAndMonth[yearStr][monthStr]) {
+                resolve(this.meetingsByYearAndMonth[yearStr][monthStr]);
+            }
+
             const monthDT = DateTime.fromObject({year, month, day: 1, hour: 0, minute: 0, second: 0, millisecond: 0});
             const startDateMillis = monthDT.toMillis();
             const endDateMillis = monthDT.plus({months: 1}).toMillis();
 
             this.http.get(`/api/users/meetings?startDate=${startDateMillis}&endDate=${endDateMillis}`).subscribe((responseData) => {
                 
-                resolve((responseData as any[]).map((data:any) => {
+                const meetings = (responseData as any[]).map((data:any) => {
                     return new Meeting(data.id, data.title, data.password, data.duration, data.startDateTime, data.guests, data.ownerId);
-                  }).sort((a, b) => {
-                    const startDT_A = DateTime.fromISO(a.startDateTime);
-                    const startDT_B = DateTime.fromISO(b.startDateTime);
-                    if(startDT_A < startDT_B) return -1;
-                    else if(startDT_A > startDT_B) return 1;
-                    else return 0;
-                }));
+                });
+
+                if(!this.meetingsByYearAndMonth[yearStr]) {
+                    this.meetingsByYearAndMonth[yearStr] = {};
+                }
+                if(!this.meetingsByYearAndMonth[yearStr][monthStr]) {
+                    this.meetingsByYearAndMonth[yearStr][monthStr] = meetings;
+                }
+
+                resolve(meetings);
 
                 //this.meetingsModified.emit();
             }, (error) => {
@@ -122,11 +145,26 @@ export class MeetingsService {
     }
 
 
-    createMeeting(newMeeting:MeetingDTO) {
+    createMeeting(newMeetingDTO:MeetingDTO) {
         //should add this locally to upcoming meetings, meetings by id, and meetings by month and year, if that month and year exists!
-        this.http.post('/api/users/new_meeting', newMeeting).subscribe({
-            next: (responseData) => {
-                console.log(responseData);
+        this.http.post('/api/users/new_meeting', newMeetingDTO).subscribe({
+            next: (responseData:any) => {
+                const newMeeting = new Meeting(
+                    responseData.id, 
+                    responseData.title, 
+                    newMeetingDTO.password, 
+                    responseData.duration, 
+                    responseData.startDateTime, 
+                    responseData.guests, 
+                    responseData.ownerId
+                );
+
+                this.addMeetingToMeetingsById(newMeeting);
+                this.addMeetingToUpcomingMeetings(newMeeting);
+                this.addMeetingToMeetingsByYearAndMonth(newMeeting);
+
+                //update meetings by id and by month and year
+
                 this.meetingsModified.emit();
                 this.apiCall.emit({success:true, message:"succeeded"});
             },
@@ -138,6 +176,33 @@ export class MeetingsService {
 
     addMeetingToMeetingsById(meeting:Meeting) {
         this.meetingsById[meeting.id] = meeting;
+    }
+
+    addMeetingToUpcomingMeetings(meeting:Meeting) {
+        const today = DateTime.now().startOf('day');
+        const tomorrow = today.plus({days: 1});
+        const theDayAfter = tomorrow.plus({days: 1});
+        const nextWeek = today.plus({days: 7});
+        const meetingDateTime = DateTime.fromISO(meeting.startDateTime);
+        if(meetingDateTime >= today && meetingDateTime < tomorrow) {
+            this.upcomingMeetings.today.push(meeting);
+            this.upcomingMeetings.today = this.sortMeetings(this.upcomingMeetings.today);
+        } else if(meetingDateTime >= tomorrow && meetingDateTime < theDayAfter) {
+            this.upcomingMeetings.tomorrow.push(meeting);
+            this.upcomingMeetings.tomorrow = this.sortMeetings(this.upcomingMeetings.tomorrow);
+        } else if(meetingDateTime >= theDayAfter && meetingDateTime < nextWeek) {
+            this.upcomingMeetings.laterThisWeek.push(meeting);
+            this.upcomingMeetings.laterThisWeek = this.sortMeetings(this.upcomingMeetings.laterThisWeek);
+        }
+    }
+
+    addMeetingToMeetingsByYearAndMonth(meeting:Meeting) {
+        const meetingDateTime = DateTime.fromISO(meeting.startDateTime);
+        const year = String(meetingDateTime.year);
+        const month = meetingDateTime.monthLong;
+        if(this.meetingsByYearAndMonth[year] && this.meetingsByYearAndMonth[year][month]) {
+            this.meetingsByYearAndMonth[year][month].push(meeting);
+        }
     }
 
     deleteMeeting(meetingId:string) {
@@ -191,11 +256,13 @@ export class MeetingsService {
         }
     }
 
-    updateMeeting(meetingUpdateDTO:MeetingUpdateDTO) {
+    updateMeeting(id:string, title:string, startDateTime:string, duration:number) {
         return new Promise<void>((resolve, reject) => {
+            const startDTMillis = DateTime.fromISO(startDateTime).toMillis();
+            const meetingUpdateDTO = new MeetingUpdateDTO(id, title, startDTMillis, duration);
             this.http.put('/api/users/update_meeting', meetingUpdateDTO).subscribe({
                 next: () => {
-                    this.updateMeetingLocally(meetingUpdateDTO.id);
+                    this.updateMeetingLocally(id, title, startDateTime, duration);
                     this.meetingsModified.emit();
                     resolve();
                 },
@@ -206,9 +273,44 @@ export class MeetingsService {
         });
     }
 
-    updateMeetingLocally(meetingId:string) {
-        //updates meetingsById and upcomingMeetings always
-        //updates meetingsByYearAndMonth if either the original year and month or the new year and month were already loaded from the server
+    updateMeetingLocally(id:string, title:string, startDateTime:string, duration:number) {
+        const originalMeeting = this.meetingsById[id];
+        if(originalMeeting) {
+            //if the meeting's starting time changed, update it in upcoming meetings and meetingsByYearAndMonth
+            if(startDateTime != originalMeeting.startDateTime) {
+
+                //reload upcoming meetings
+                this.loadUpcomingMeetings();
+
+                //update meetingsByMonthAndYear
+                const originalStartDateTime = DateTime.fromISO(originalMeeting.startDateTime);
+                const newStartDateTime = DateTime.fromISO(startDateTime);
+
+                const originalYear = String(originalStartDateTime.year);
+                const originalMonth = originalStartDateTime.monthLong;
+                const newYear = String(newStartDateTime.year);
+                const newMonth = newStartDateTime.monthLong;
+
+                if(originalYear != newYear || originalMonth != newMonth) {
+                    //remove the old reference to the meeting if it has been loaded by loadMeetingsByYearAndMonth (via the calendar)
+                    if(this.meetingsByYearAndMonth[originalYear] && this.meetingsByYearAndMonth[originalYear][originalMonth]) {
+                        this.meetingsByYearAndMonth[originalYear][originalMonth] = this.meetingsByYearAndMonth[originalYear][originalMonth].filter((m) => {
+                            return m.id != id;
+                        });
+                    }
+                    //add the reference to the updated meeting to the correct year and month if that year and month has already been loaded
+                    if(this.meetingsByYearAndMonth[newYear] && this.meetingsByYearAndMonth[newYear][newMonth]) {
+                        this.meetingsByYearAndMonth[newYear][newMonth].push(originalMeeting);
+                    }
+                }
+            }
+
+            //update the values in the originalMeeting object
+            originalMeeting.title = title;
+            originalMeeting.startDateTime = startDateTime;
+            originalMeeting.duration = duration;
+
+        }
     }
 
 }
