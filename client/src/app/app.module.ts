@@ -19,8 +19,7 @@ import { ActiveMeetingComponent } from './active-meeting/active-meeting.componen
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { MediaSettingsModalComponent } from './media-settings-modal/media-settings-modal.component';
 import { VideoComponent } from './video/video.component';
-import { CalendarComponent } from './calendar/calendar.component';
-import { DateComponent } from './calendar/date/date.component';
+import { CalendarComponent } from './components/calendar/calendar.component';
 import { UpcomingMeetingsComponent } from './components/upcoming-meetings/upcoming-meetings.component';
 import { ForgotPasswordComponent } from './pages/forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './pages/reset-password/reset-password.component';
@@ -39,6 +38,9 @@ import { CalendarPageComponent } from './pages/calendar-page/calendar-page.compo
 import { ViewMeetingComponent } from './components/view-meeting/view-meeting.component';
 import { EditMeetingComponent } from './components/edit-meeting/edit-meeting.component';
 import { UpcomingMeetingsPageComponent } from './pages/upcoming-meetings-page/upcoming-meetings-page.component';
+import { CalendarDateComponent } from './components/calendar/calendar-date/calendar-date.component';
+import { DateViewComponent } from './components/date-view/date-view.component';
+import { ViewDatePageComponent } from './pages/view-date-page/view-date-page.component';
 
 @NgModule({
   declarations: [
@@ -57,7 +59,6 @@ import { UpcomingMeetingsPageComponent } from './pages/upcoming-meetings-page/up
     MediaSettingsModalComponent,
     VideoComponent,
     CalendarComponent,
-    DateComponent,
     UpcomingMeetingsComponent,
     ForgotPasswordComponent,
     ResetPasswordComponent,
@@ -73,7 +74,10 @@ import { UpcomingMeetingsPageComponent } from './pages/upcoming-meetings-page/up
     CalendarPageComponent,
     ViewMeetingComponent,
     EditMeetingComponent,
-    UpcomingMeetingsPageComponent
+    UpcomingMeetingsPageComponent,
+    CalendarDateComponent,
+    DateViewComponent,
+    ViewDatePageComponent
   ],
   imports: [
     BrowserModule,

@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-new-meeting-page',
@@ -7,4 +8,10 @@ import { Component } from '@angular/core';
 })
 export class NewMeetingPageComponent {
 
+  date;
+
+  constructor(private route:ActivatedRoute) {
+    this.date = this.route.snapshot.queryParamMap.get('date');
+    console.log(this.date);
+  }
 }

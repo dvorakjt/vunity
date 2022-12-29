@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { faRefresh } from '@fortawesome/free-solid-svg-icons';
 import { faAdd } from '@fortawesome/free-solid-svg-icons';
@@ -7,21 +7,25 @@ import { DateTimeService } from 'src/app/services/date-time/date-time.service';
 import { MeetingsService } from 'src/app/services/meetings/meetings.service';
 import * as password from 'secure-random-password';
 import { MeetingDTO } from 'src/app/models/meeting-dto.model';
+import { DateTime } from 'luxon';
 
 @Component({
   selector: 'app-new-meeting',
   templateUrl: './new-meeting.component.html',
   styleUrls: ['./new-meeting.component.scss']
 })
-export class NewMeetingComponent {
+export class NewMeetingComponent implements OnInit {
+
+  @Input() date:any;
+
   succeeded = false;
   isLoading = false;
 
   newMeetingForm = new FormGroup({
     'title': new FormControl(null, [Validators.required]),
-    'startDateTime': new FormControl(null, [Validators.required]),
+    'startDateTime': new FormControl('', [Validators.required]),
     'duration': new FormControl(null, [Validators.required, Validators.pattern(/\d+/), Validators.min(5), Validators.max(120)]),
-    'password': new FormControl(this.getRandomPassword(), [Validators.required, Validators.minLength(8), Validators.maxLength(60)])
+    'password': new FormControl('', [Validators.required, Validators.minLength(8), Validators.maxLength(60)])
   });
 
   guestEmail = '';
@@ -34,7 +38,25 @@ export class NewMeetingComponent {
   faAdd = faAdd;
   faClose = faClose;
 
-  constructor(private meetingsService:MeetingsService, public dateTimeService:DateTimeService) {}
+  constructor(private meetingsService:MeetingsService, public dateTimeService:DateTimeService) {
+  }
+
+  ngOnInit(): void {
+    this.newMeetingForm.setValue({
+      title: null,
+      startDateTime: this.setDefaultDate(),
+      duration: null,
+      password: this.getRandomPassword()
+    });
+  }
+  
+
+  setDefaultDate() {
+    console.log(this.date);
+    if(typeof this.date === 'string' && DateTime.fromISO(this.date).isValid) {
+        return this.date + "T12:00";
+    } else return '';
+  }
 
   getRandomPassword() {
     return password.randomPassword({

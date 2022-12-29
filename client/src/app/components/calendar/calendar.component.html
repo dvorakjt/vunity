@@ -1,1 +1,25 @@
-<p>calendar works!</p>
+<div class="calendarContainer">
+    <div class="calendarControlBar">
+        <h2>{{currentMonthName + ", " + currentYear}}</h2>
+        <input type="month" class="monthInput " [(ngModel)]="selectedMonth" (input)="onSelectMonth()" />
+    </div>
+    <div class="calendar">
+        <div class="calendarHeader">Sun</div>
+        <div class="calendarHeader">Mon</div>
+        <div class="calendarHeader">Tue</div>
+        <div class="calendarHeader">Wed</div>
+        <div class="calendarHeader">Thurs</div>
+        <div class="calendarHeader">Fri</div>
+        <div class="calendarHeader">Sat</div>
+        <div class="calendarDate" *ngFor="let date of previousMonthDays" class="previousOrNextMonthDate"></div>
+        <app-calendar-date class="calendarDate thisMonth" *ngFor="let date of days; let i = index" [meetings]="date"
+            [date]="i + 1" (dateSelected)="onDateSelected($event)"></app-calendar-date>
+        <div class="calendarDate" *ngFor="let date of nextMonthDays" class="previousOrNextMonthDate"></div>
+    </div>
+    <div class="horizontalContainerSpaceBetween">
+        <button (click)="onGotoPreviousMonth()" class="btnTransparent" style="padding: 8px;"><fa-icon
+                [icon]="faAngleLeft"></fa-icon></button>
+        <button (click)="onGotoNextMonth()" class="btnTransparent" style="padding: 8px;"><fa-icon
+                [icon]="faAngleRight"></fa-icon></button>
+    </div>
+</div>

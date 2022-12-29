@@ -1,4 +1,6 @@
 import { Component } from '@angular/core';
+import { Router } from '@angular/router';
+import { SelectedDate } from 'src/app/types/selected-date.type';
 
 @Component({
   selector: 'app-calendar-page',
@@ -6,5 +8,9 @@ import { Component } from '@angular/core';
   styleUrls: ['./calendar-page.component.scss']
 })
 export class CalendarPageComponent {
+  constructor(private router:Router) {}
 
+  onDateSelected(event:SelectedDate) {
+    this.router.navigate(['/viewdate']);
+  }
 }

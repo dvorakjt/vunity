@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { SelectedDate } from '../types/selected-date.type';
 
 @Component({
   selector: 'app-dashboard',
@@ -12,4 +13,7 @@ export class DashboardComponent implements OnInit {
   ngOnInit(): void {
   }
 
+  onDateSelected(event:SelectedDate) {
+    console.log(event);
+  }
 }
