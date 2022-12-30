@@ -46,11 +46,11 @@ button {
     background-color: colors.$danger;
 
     &:hover {
-        background-color: colors.$brand-primary-tint;
+        background-color: colors.$danger-tint;
     }
 
     &:active {
-        background-color: colors.$brand-primary-shade;
+        background-color: colors.$danger-shade;
     }
 }
 

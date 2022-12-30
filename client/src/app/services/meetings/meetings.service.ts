@@ -34,7 +34,8 @@ export class MeetingsService {
         authService.isAuthenticated.subscribe((isAuthenticated) => {
             if(isAuthenticated) {
                this.loadUpcomingMeetings();
-               this.loadMeetingsByMonthAndYear(12, 2022).then((res) => {
+               const now = DateTime.now();
+               this.loadMeetingsByMonthAndYear(now.month, now.year).then((res) => {
                 console.log(res);
                 console.log(this.meetingsByYearAndMonth);
                }).catch((e) => {

@@ -11,10 +11,15 @@ import { MeetingsService } from 'src/app/services/meetings/meetings.service';
 export class UpcomingMeetingsComponent {
   
   @Output() meetingSelected = new EventEmitter<Meeting>();
+  @Output() newMeetingButtonClicked = new EventEmitter<void>();
 
   constructor(public meetingsService:MeetingsService, public dateTimeService:DateTimeService) {}
 
   onMeetingSelected(meeting:Meeting) {
     this.meetingSelected.emit(meeting);
+  }
+
+  onNewMeeting() {
+    this.newMeetingButtonClicked.emit();
   }
 }

@@ -10,7 +10,7 @@
 
     &:hover {
         cursor: pointer;
-        background-color: #292929;
+        background-color: colors.$dark-green-2;
     }
 }
 
@@ -32,7 +32,8 @@
     background-color: colors.$brand-primary;
     border-radius: 3px;
     font-size: 10px;
-    color: colors.$dark-gray-1;
+    color: black;
+    font-weight: bold;
 }
 
 .hide {

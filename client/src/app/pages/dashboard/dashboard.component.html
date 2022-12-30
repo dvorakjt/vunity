@@ -1,1 +1,21 @@
-<p>dashboard works!</p>
+<div class="dashboardContainer">
+    <div class="upcomingMeetingsContainer">
+        <app-upcoming-meetings (newMeetingButtonClicked)="onShowNewMeetingModal()"
+            (meetingSelected)="onViewMeeting($event)"></app-upcoming-meetings>
+    </div>
+    <div class="calendarContainer">
+        <app-calendar (dateSelected)="onViewDate()"></app-calendar>
+    </div>
+</div>
+<div class="modalContainer" *ngIf="modalToShow != modals.None">
+    <div class="modal">
+        <button class="btnTransparent closeBtn" (click)="onCloseModal()"><fa-icon [icon]="faTimes"
+                [size]="'xl'"></fa-icon></button>
+        <app-new-meeting *ngIf="modalToShow === modals.NewMeeting" [date]="dateToCreateMeetingOn"></app-new-meeting>
+        <app-view-and-edit-meeting *ngIf="modalToShow === modals.ViewAndEditMeeting" [meeting]="selectedMeeting"
+            [showBackButton]="false"></app-view-and-edit-meeting>
+        <app-date-view *ngIf="modalToShow === modals.ViewDate" [showBackButton]="false"
+            (addMeetingButtonClicked)="onCreateMeetingFromCalendar($event)"
+            (meetingSelected)="onViewMeeting($event)"></app-date-view>
+    </div>
+</div>

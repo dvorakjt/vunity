@@ -10,8 +10,7 @@ import { LoginComponent } from './pages/login/login.component';
 import { JoinMeetingComponent } from './join-meeting/join-meeting.component';
 import { LoadingWheelComponent } from './shared/loading-wheel/loading-wheel.component';
 import { LoadingWheelOverlayComponent } from './shared/loading-wheel-overlay/loading-wheel-overlay.component';
-import { DashboardComponent } from './dashboard/dashboard.component';
-import { CreateMeetingComponent } from './dashboard/create-meeting/create-meeting.component';
+import { DashboardComponent } from './pages/dashboard/dashboard.component';
 import { MeetingsListComponent } from './dashboard/meetings-list/meetings-list.component';
 import { MeetingDetailComponent } from './dashboard/meeting-detail/meeting-detail.component';
 import { ModalComponent } from './shared/modal/modal.component';
@@ -51,7 +50,6 @@ import { ViewDatePageComponent } from './pages/view-date-page/view-date-page.com
     LoadingWheelComponent,
     LoadingWheelOverlayComponent,
     DashboardComponent,
-    CreateMeetingComponent,
     MeetingsListComponent,
     MeetingDetailComponent,
     ModalComponent,

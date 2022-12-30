@@ -15,5 +15,9 @@ export class UpcomingMeetingsPageComponent {
     this.router.navigateByUrl(`/meeting?id=${meeting.id}`);
   }
   
+  onNewMeeting() {
+    this.router.navigateByUrl('/newmeeting');
+  }
+
 }
 

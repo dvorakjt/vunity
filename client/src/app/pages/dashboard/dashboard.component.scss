@@ -1,0 +1,56 @@
+@use '../../../styles/colors.scss';
+@use '../../../styles/animations.scss';
+
+.dashboardContainer {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+}
+
+.upcomingMeetingsContainer {
+    margin-right: 0px;
+    padding-top: 8px;
+}
+
+.calendarContainer {
+    margin-left: 20px;
+    margin-right: 20px;
+}
+
+.modalContainer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    //background-color: colors.$dark-green-0-translucent;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    @include animations.fade-in(250ms);
+}
+
+.modal {
+    position: relative;
+    height: 592px;
+    background-color: colors.$dark-green-1;
+    border-radius: 3.5px;
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+    @include animations.translate-up(250ms);
+    box-shadow: 16px 16px 16px black;
+    border: 1px solid black;
+}
+
+.closeBtn {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 8px 12px 8px 12px;
+
+    &:hover {
+        background-color: colors.$dark-green-2;
+    }
+}
