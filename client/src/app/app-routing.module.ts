@@ -13,6 +13,8 @@ import { ViewAndEditMeetingPageComponent } from './pages/view-and-edit-meeting-p
 import { NewMeetingPageComponent } from './pages/new-meeting-page/new-meeting-page.component';
 import { CalendarPageComponent } from './pages/calendar-page/calendar-page.component';
 import { ViewDatePageComponent } from './pages/view-date-page/view-date-page.component';
+import { LargeScreenGuard } from './services/view-guards/LargeScreenGuard.service';
+import { SmallScreenGuard } from './services/view-guards/SmallScreenGuard.service';
 
 const routes: Routes = [
   {
@@ -37,38 +39,38 @@ const routes: Routes = [
   {
     path: "dashboard",
     component: DashboardComponent,
-    canActivate: [AuthGuard]
+    canActivate: [AuthGuard, LargeScreenGuard]
   },
   {
     path: "upcomingmeetings",
     component: UpcomingMeetingsPageComponent,
-    canActivate: [AuthGuard]
+    canActivate: [AuthGuard, SmallScreenGuard]
   },
   {
     path: "calendar",
     component: CalendarPageComponent,
-    canActivate: [AuthGuard]
+    canActivate: [AuthGuard, SmallScreenGuard]
   },
   {
     path: "viewdate",
     component: ViewDatePageComponent,
-    canActivate: [AuthGuard]
+    canActivate: [AuthGuard, SmallScreenGuard]
   },
   {
     path: 'newmeeting',
     component: NewMeetingPageComponent,
-    canActivate: [AuthGuard]
+    canActivate: [AuthGuard, SmallScreenGuard]
   },
   {
     path: "meeting",
     component: ViewAndEditMeetingPageComponent,
-    canActivate: [AuthGuard]
+    canActivate: [AuthGuard, SmallScreenGuard]
   }
 ];
 
 @NgModule({
   imports: [RouterModule.forRoot(routes)],
   exports: [RouterModule],
-  providers: [AuthGuard, NoAuthGuard]
+  providers: [AuthGuard, NoAuthGuard, LargeScreenGuard, SmallScreenGuard]
 })
 export class AppRoutingModule { }

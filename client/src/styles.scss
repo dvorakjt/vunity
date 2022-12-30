@@ -8,11 +8,13 @@
 @use 'styles/links';
 @use 'styles/fonts';
 
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400&display=swap');
+
 body {
     margin: 0;
     padding: 0;
     background-color: colors.$dark-gray-1;
-    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    font-family: 'Montserrat', 'andale mono', sans-serif, 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans';
     min-height: 100%;
     -webkit-font-smoothing: antialiased;
     -moz-font-smoothing: antialiased;

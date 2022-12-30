@@ -1,0 +1,113 @@
+@use '../../../styles/colors.scss';
+
+.navbar {
+    background-color: colors.$brand-primary;
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+    ul {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+        li {
+            display: inline-block;
+            a {
+                display: inline-block;
+                padding: 18px;
+                color: colors.$dark-gray-1;
+                text-decoration: none;
+                font-size: 16px;
+                font-weight: bold;
+            }
+            a:hover {
+                background-color: colors.$brand-primary-shade;
+            }
+        }
+    }
+}
+
+.navbar-text {
+    display: inline-block;
+    padding: 18px;
+    color: colors.$dark-gray-1;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: bold;
+    user-select: none;
+}
+
+.navbar-highlightable-text:hover {
+    background-color: colors.$brand-primary-shade;
+    cursor: pointer;
+}
+
+.hamburger {
+    display: none;
+    color: colors.$dark-gray-1;
+}
+
+.tabletMenu {
+    display: none;
+}
+
+.mobileMenu {
+    display: none;
+}
+
+@media screen and (max-width:820px){
+    .navbar {
+        justify-content: flex-end;
+    }
+
+    .desktopMenu {
+        display: none;
+    }
+
+    .hamburger {
+        display: initial;
+    }
+
+    .tabletMenu {
+        display: flex;
+        flex-direction: column;
+        position: absolute;
+        top: 100%;
+        right: 0;
+        background-color: colors.$brand-primary;
+        z-index: 1000;
+
+        li {
+            width: 100%;
+
+            a {
+                width: 100%;
+                box-sizing: border-box;
+            }
+        }
+    }
+}
+
+@media screen and (max-width: 540px) {
+    .tabletMenu {
+        display: none;
+    }
+
+    .mobileMenu {
+        display: flex;
+        flex-direction: column;
+        position: absolute;
+        top: 100%;
+        right: 0;
+        background-color: colors.$brand-primary;
+        z-index: 1000;
+
+        li {
+            width: 100%;
+
+            a {
+                width: 100%;
+                box-sizing: border-box;
+            }
+        }
+    }
+}

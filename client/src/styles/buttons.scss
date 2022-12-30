@@ -1,4 +1,10 @@
 @use 'colors';
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400&display=swap');
+
+button {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: bold;
+}
 
 @mixin btn {
     width: fit-content;
@@ -18,7 +24,6 @@
     transition: all 100ms ease-in-out;
 
     font-size: 14px;
-    font-weight: 400;
 }
 
 .btnPrimary {

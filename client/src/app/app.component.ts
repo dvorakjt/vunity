@@ -4,6 +4,7 @@ import { AuthInterceptor } from './services/auth/auth-interceptor.service';
 import { MeetingsService } from './services/meetings/meetings.service';
 import { MeetingStatus } from './constants/meeting-status';
 import { ActiveMeetingService } from './services/active-meeting/active-meeting.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-root',
@@ -25,7 +26,18 @@ export class AppComponent implements OnInit {
     } else return true;
   }
 
-  constructor(public authService:AuthService, public authInterceptor:AuthInterceptor, public meetingsService:MeetingsService, public activeMeetingService:ActiveMeetingService) {}
+  constructor(
+    public authService:AuthService, 
+    public authInterceptor:AuthInterceptor, 
+    public meetingsService:MeetingsService, 
+    public activeMeetingService:ActiveMeetingService,
+    private router:Router
+  ) {
+    // window.addEventListener('resize', () => {
+    //   if(window.innerWidth )
+    //   if(router.url.includes('/dashboard'))
+    // });
+  }
   
   ngOnInit(): void {
     this.activeMeetingService.meetingStatusChanged.subscribe({
