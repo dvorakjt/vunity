@@ -1,7 +1,6 @@
 <app-navbar></app-navbar>
-<!-- The routed views render in the <router-outlet>-->
-<app-loading-wheel-overlay *ngIf="authService.isLoading"></app-loading-wheel-overlay>
 <router-outlet *ngIf="!showActiveMeeting; else activeMeeting"></router-outlet>
+<app-loading-wheel-overlay *ngIf="authService.isLoading || loadingService.isLoading"></app-loading-wheel-overlay>
 <ng-template #activeMeeting>
   <app-active-meeting></app-active-meeting>
 </ng-template>

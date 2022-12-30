@@ -6,6 +6,7 @@ import { MeetingUpdateDTO } from 'src/app/models/meeting-update-dto.model';
 import { Meeting } from 'src/app/models/meeting.model';
 import { DateTimeService } from 'src/app/services/date-time/date-time.service';
 import { MeetingsService } from 'src/app/services/meetings/meetings.service';
+import { LoadingService } from 'src/app/services/loading/loading.service';
 
 @Component({
   selector: 'app-edit-meeting',
@@ -15,7 +16,6 @@ import { MeetingsService } from 'src/app/services/meetings/meetings.service';
 export class EditMeetingComponent implements OnChanges {
   editSucceeded = false;
   deleteSucceeded = false;
-  isLoading = false;
   serverError = '';
   
   @Input() meeting?:Meeting;
@@ -32,7 +32,11 @@ export class EditMeetingComponent implements OnChanges {
 
   faAngleLeft = faAngleLeft;
 
-  constructor(public dateTimeService:DateTimeService, private meetingsService:MeetingsService) {}
+  constructor(
+    public dateTimeService:DateTimeService, 
+    private meetingsService:MeetingsService,
+    public loadingService:LoadingService
+  ) {}
 
   ngOnChanges(changes: SimpleChanges): void {
     if(this.meeting) {
@@ -48,14 +52,14 @@ export class EditMeetingComponent implements OnChanges {
     if(this.meeting) {
       const confirmDelete = window.confirm("Are you sure you would like to permanently delete this meeting?");
       if(confirmDelete) {
-        this.isLoading = true;
+        this.loadingService.isLoading = true;
           try {
             await this.meetingsService.deleteMeeting(this.meeting.id);
             this.deleteSucceeded = true;
-            this.isLoading = false;
+            this.loadingService.isLoading = false;
           } catch(e) {
             this.serverError = 'There was a problem deleting the meeting.';
-            this.isLoading = false;
+            this.loadingService.isLoading = false;
           }
       }
     }
@@ -77,10 +81,10 @@ export class EditMeetingComponent implements OnChanges {
           this.editMeetingForm.value.duration
         );
         this.editSucceeded = true;
-        this.isLoading = false;
+        this.loadingService.isLoading = false;
       } catch(e) {
         this.serverError = 'There was a problem updating the meeting.';
-        this.isLoading = false;
+        this.loadingService.isLoading = false;
       }
     }
   }

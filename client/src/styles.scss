@@ -34,15 +34,16 @@ h1, h2, h3, h4, h5, h6, p {
 
 /* Track */
 ::-webkit-scrollbar-track {
-    background: #f1f1f1;
+    background: colors.$dark-green-1;
 }
 
 /* Handle */
 ::-webkit-scrollbar-thumb {
-    background: #888;
+    border-radius: 3.5px;
+    background: colors.$brand-primary-shade;
 }
 
 /* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
-    background: #555;
+    background: colors.$brand-primary-tint;
 }

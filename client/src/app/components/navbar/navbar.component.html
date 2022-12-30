@@ -1,43 +1,48 @@
-<nav class="navbar">
-    <ul class="desktopMenu">
-        <li><a routerLink="/" routerLinkActive="active" ariaCurrentWhenActive="page"
-                *ngIf="!authService.activeUser">Home</a></li>
-        <li *ngIf="!authService.activeUser"><a routerLink="/login" routerLinkActive="active"
-                ariaCurrentWhenActive="page">Login</a></li>
-        <li *ngIf="authService.activeUser"><a routerLink="/dashboard" routerLinkActive="active"
-                ariaCurrentWhenActive="page">Dashboard</a></li>
-        <li><a>Join a Meeting</a></li>
-    </ul>
-    <ul *ngIf="authService.activeUser" class="desktopMenu">
-        <li><span class="navbar-text">Welcome, {{authService.activeUser.name}}</span></li>
-        <li><span class="navbar-text navbar-highlightable-text" (click)="authService.logout()">Logout</span></li>
-    </ul>
-    <button class="hamburger btnTransparent" (click)="menuOpen = !menuOpen" style="padding: 8px;"><fa-icon
-            [icon]="faBars" [size]="'2xl'"></fa-icon></button>
-    <ul class="tabletMenu" *ngIf="menuOpen" (click)="menuOpen = false">
-        <li><a routerLink="/" routerLinkActive="active" ariaCurrentWhenActive="page"
-                *ngIf="!authService.activeUser">Home</a></li>
-        <li *ngIf="!authService.activeUser"><a routerLink="/login" routerLinkActive="active"
-                ariaCurrentWhenActive="page">Login</a></li>
-        <li *ngIf="authService.activeUser"><a routerLink="/dashboard" routerLinkActive="active"
-                ariaCurrentWhenActive="page">Dashboard</a></li>
-        <li><a>Join a Meeting</a></li>
-        <li><span class="navbar-text navbar-highlightable-text" (click)="authService.logout()"
-                style="width: 100%; box-sizing: border-box;">Logout</span></li>
-    </ul>
-    <ul class="mobileMenu" *ngIf="menuOpen" (click)="menuOpen = false">
-        <li><a routerLink="/" routerLinkActive="active" ariaCurrentWhenActive="page"
-                *ngIf="!authService.activeUser">Home</a></li>
-        <li *ngIf="!authService.activeUser"><a routerLink="/login" routerLinkActive="active"
-                ariaCurrentWhenActive="page">Login</a></li>
-        <li *ngIf="authService.activeUser"><a routerLink="/upcomingmeetings" routerLinkActive="active"
-                ariaCurrentWhenActive="page">Upcoming Meetings</a></li>
-        <li *ngIf="authService.activeUser"><a routerLink="/calendar" routerLinkActive="active"
-                ariaCurrentWhenActive="page">Calendar</a></li>
-        <li *ngIf="authService.activeUser"><a routerLink="/newmeeting" routerLinkActive="active"
-                ariaCurrentWhenActive="page">New Meeting</a></li>
-        <li><a>Join a Meeting</a></li>
-        <li><span class="navbar-text navbar-highlightable-text" style="width: 100%; box-sizing: border-box;"
-                (click)="authService.logout()">Logout</span></li>
-    </ul>
+<nav [ngClass]="{
+        navbar: true,
+        spaceBetween: showDesktopMenu(),
+        flexEnd: !showDesktopMenu()
+}">
+        <ul class="desktopMenu" *ngIf="showDesktopMenu()">
+                <li><a routerLink="/" routerLinkActive="active" ariaCurrentWhenActive="page"
+                                *ngIf="!authService.activeUser">Home</a></li>
+                <li *ngIf="!authService.activeUser"><a routerLink="/login" routerLinkActive="active"
+                                ariaCurrentWhenActive="page">Login</a></li>
+                <li *ngIf="authService.activeUser"><a routerLink="/dashboard" routerLinkActive="active"
+                                ariaCurrentWhenActive="page">Dashboard</a></li>
+                <li><a>Join a Meeting</a></li>
+        </ul>
+        <ul *ngIf="authService.activeUser && showDesktopMenu()" class="desktopMenu">
+                <li><span class="navbar-text">Welcome, {{authService.activeUser.name}}</span></li>
+                <li><span class="navbar-text navbar-highlightable-text" (click)="authService.logout()">Logout</span>
+                </li>
+        </ul>
+        <button class="hamburger btnTransparent" (click)="menuOpen = !menuOpen" style="padding: 8px;"
+                *ngIf="!showDesktopMenu()"><fa-icon [icon]="faBars" [size]="'2xl'"></fa-icon></button>
+        <ul class="tabletMenu" *ngIf="menuOpen && showTabletMenu()" (click)="menuOpen = false">
+                <li><a routerLink="/" routerLinkActive="active" ariaCurrentWhenActive="page"
+                                *ngIf="!authService.activeUser">Home</a></li>
+                <li *ngIf="!authService.activeUser"><a routerLink="/login" routerLinkActive="active"
+                                ariaCurrentWhenActive="page">Login</a></li>
+                <li *ngIf="authService.activeUser"><a routerLink="/dashboard" routerLinkActive="active"
+                                ariaCurrentWhenActive="page">Dashboard</a></li>
+                <li><a>Join a Meeting</a></li>
+                <li><span class="navbar-text navbar-highlightable-text" (click)="authService.logout()"
+                                style="width: 100%; box-sizing: border-box;">Logout</span></li>
+        </ul>
+        <ul class="mobileMenu" *ngIf="menuOpen && showMobileMenu()" (click)="menuOpen = false">
+                <li><a routerLink="/" routerLinkActive="active" ariaCurrentWhenActive="page"
+                                *ngIf="!authService.activeUser">Home</a></li>
+                <li *ngIf="!authService.activeUser"><a routerLink="/login" routerLinkActive="active"
+                                ariaCurrentWhenActive="page">Login</a></li>
+                <li *ngIf="authService.activeUser"><a routerLink="/upcomingmeetings" routerLinkActive="active"
+                                ariaCurrentWhenActive="page">Upcoming Meetings</a></li>
+                <li *ngIf="authService.activeUser"><a routerLink="/calendar" routerLinkActive="active"
+                                ariaCurrentWhenActive="page">Calendar</a></li>
+                <li *ngIf="authService.activeUser"><a routerLink="/newmeeting" routerLinkActive="active"
+                                ariaCurrentWhenActive="page">New Meeting</a></li>
+                <li><a>Join a Meeting</a></li>
+                <li><span class="navbar-text navbar-highlightable-text" style="width: 100%; box-sizing: border-box;"
+                                (click)="authService.logout()">Logout</span></li>
+        </ul>
 </nav>

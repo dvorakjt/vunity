@@ -3,15 +3,9 @@
 @mixin calendarCell {
     width: 100px;
 
-    @media screen and (max-width: 768px) {
+    @media screen and (max-width: 1024px) {
         & {
-            width: 72px;
-        }
-    }
-
-    @media screen and (max-width: 540px) {
-        & {
-            width: 45px;
+            width: 40px;
         }
     }
 
@@ -63,7 +57,7 @@
     background-color: colors.$dark-green-0;
 }
 
-@media screen and (max-width: 540px) {
+@media screen and (max-width: 1024px) {
     .monthInput {
         position: initial;
     }

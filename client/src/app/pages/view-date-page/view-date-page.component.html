@@ -1,4 +1,6 @@
-<div class="screenContainer">
-    <app-date-view (meetingSelected)="onMeetingSelected($event)" (backButtonClicked)="onGoBack()"
-        (addMeetingButtonClicked)="onAddMeeting($event)"></app-date-view>
+<div class="outerScreenContainer">
+    <div class="innerScreenContainerAlignToTop">
+        <app-date-view (meetingSelected)="onMeetingSelected($event)" (backButtonClicked)="onGoBack()"
+            (addMeetingButtonClicked)="onAddMeeting($event)"></app-date-view>
+    </div>
 </div>

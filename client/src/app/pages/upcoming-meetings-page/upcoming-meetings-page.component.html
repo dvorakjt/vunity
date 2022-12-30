@@ -1,4 +1,6 @@
-<div class="screenContainer">
-    <app-upcoming-meetings (meetingSelected)="onMeetingSelected($event)"
-        (newMeetingButtonClicked)="onNewMeeting()"></app-upcoming-meetings>
+<div class="outerScreenContainer">
+    <div class="innerScreenContainerAlignToTop">
+        <app-upcoming-meetings (meetingSelected)="onMeetingSelected($event)"
+            (newMeetingButtonClicked)="onNewMeeting()"></app-upcoming-meetings>
+    </div>
 </div>

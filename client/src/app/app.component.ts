@@ -5,6 +5,7 @@ import { MeetingsService } from './services/meetings/meetings.service';
 import { MeetingStatus } from './constants/meeting-status';
 import { ActiveMeetingService } from './services/active-meeting/active-meeting.service';
 import { Router } from '@angular/router';
+import { LoadingService } from './services/loading/loading.service';
 
 @Component({
   selector: 'app-root',
@@ -31,12 +32,8 @@ export class AppComponent implements OnInit {
     public authInterceptor:AuthInterceptor, 
     public meetingsService:MeetingsService, 
     public activeMeetingService:ActiveMeetingService,
-    private router:Router
+    public loadingService:LoadingService
   ) {
-    // window.addEventListener('resize', () => {
-    //   if(window.innerWidth )
-    //   if(router.url.includes('/dashboard'))
-    // });
   }
   
   ngOnInit(): void {

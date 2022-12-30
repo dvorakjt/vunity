@@ -1,16 +1,22 @@
 @use '../../../styles/colors.scss';
 @use '../../../styles/animations.scss';
+@use '../../../styles/containers.scss';
 
 .dashboardContainer {
-    width: 100vw;
-    height: 100vh;
+    height: containers.$screen-height;
     display: flex;
     justify-content: center;
 }
 
 .upcomingMeetingsContainer {
     margin-right: 0px;
-    padding-top: 8px;
+    margin-top: 40px;
+    padding: 0px 20px 20px 20px;
+    width: 260px;
+    box-sizing: border-box;
+    max-height: calc(100% - 80px);
+    overflow-y: scroll;
+    direction: rtl;
 }
 
 .calendarContainer {
@@ -22,7 +28,7 @@
     position: absolute;
     top: 0;
     left: 0;
-    width: 100vw;
+    width: 100%;
     height: 100vh;
     //background-color: colors.$dark-green-0-translucent;
     display: flex;
@@ -33,12 +39,19 @@
 
 .modal {
     position: relative;
-    height: 592px;
+    height: fit-content;
+    max-height: calc(containers.$screen-height - 80px);
+    min-height: 180px;
+    width: 260px;
+    max-width: 260px;
+    overflow-y: scroll;
     background-color: colors.$dark-green-1;
     border-radius: 3.5px;
     display: flex;
-    justify-content: center;
-    padding: 20px;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 32px;
+    padding-left: 14px;
     @include animations.translate-up(250ms);
     box-shadow: 16px 16px 16px black;
     border: 1px solid black;

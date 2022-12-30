@@ -8,6 +8,7 @@ import { MeetingsService } from 'src/app/services/meetings/meetings.service';
 import * as password from 'secure-random-password';
 import { MeetingDTO } from 'src/app/models/meeting-dto.model';
 import { DateTime } from 'luxon';
+import { LoadingService } from 'src/app/services/loading/loading.service';
 
 @Component({
   selector: 'app-new-meeting',
@@ -19,7 +20,6 @@ export class NewMeetingComponent implements OnInit {
   @Input() date:any;
 
   succeeded = false;
-  isLoading = false;
 
   newMeetingForm = new FormGroup({
     'title': new FormControl(null, [Validators.required]),
@@ -38,8 +38,11 @@ export class NewMeetingComponent implements OnInit {
   faAdd = faAdd;
   faClose = faClose;
 
-  constructor(private meetingsService:MeetingsService, public dateTimeService:DateTimeService) {
-  }
+  constructor(
+    private meetingsService:MeetingsService, 
+    public dateTimeService:DateTimeService,
+    private loadingService:LoadingService
+  ) {}
 
   ngOnInit(): void {
     this.newMeetingForm.setValue({
@@ -94,21 +97,21 @@ export class NewMeetingComponent implements OnInit {
       this.newMeetingForm.value.password &&
       this.newMeetingForm.value.startDateTime
     ) {
-      this.isLoading = true;
+      this.loadingService.isLoading = true;
 
       const startDateTimeMillis = this.dateTimeService.getTimeInMillis(this.newMeetingForm.value.startDateTime);
 
       const meetingDTO = new MeetingDTO(this.newMeetingForm.value.title, startDateTimeMillis, this.newMeetingForm.value.duration, this.newMeetingForm.value.password, Array.from(this.guests));
       
-      this.isLoading = true;
+      this.loadingService.isLoading = true;
 
       this.meetingsService.apiCall.subscribe({
         next: () => {
-          this.isLoading = false;
+          this.loadingService.isLoading = false;
           this.succeeded = true;
         },
         error: () => {
-          this.isLoading = false;
+          this.loadingService.isLoading = false;
           this.serverError = 'There was a problem creating the meeting.';
         }
       })
