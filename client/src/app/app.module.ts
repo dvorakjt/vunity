@@ -7,7 +7,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { HomeComponent } from './home/home.component';
 import { LoginComponent } from './pages/login/login.component';
-import { JoinMeetingComponent } from './join-meeting/join-meeting.component';
+import { JoinMeetingComponent } from './components/join-meeting/join-meeting.component';
 import { LoadingWheelComponent } from './shared/loading-wheel/loading-wheel.component';
 import { LoadingWheelOverlayComponent } from './shared/loading-wheel-overlay/loading-wheel-overlay.component';
 import { DashboardComponent } from './pages/dashboard/dashboard.component';
@@ -40,6 +40,12 @@ import { UpcomingMeetingsPageComponent } from './pages/upcoming-meetings-page/up
 import { CalendarDateComponent } from './components/calendar/calendar-date/calendar-date.component';
 import { DateViewComponent } from './components/date-view/date-view.component';
 import { ViewDatePageComponent } from './pages/view-date-page/view-date-page.component';
+import { GetUsernameComponent } from './components/get-username/get-username.component';
+import { AwaitingHostComponent } from './components/awaiting-host/awaiting-host.component';
+import { JoinMeetingPageComponent } from './pages/join-meeting-page/join-meeting-page.component';
+import { StartMeetingPageComponent } from './pages/start-meeting-page/start-meeting-page.component';
+import { AwaitingUserMediaComponent } from './components/awaiting-user-media/awaiting-user-media.component';
+import { GetUserMediaSettingsComponent } from './components/get-user-media-settings/get-user-media-settings.component';
 
 @NgModule({
   declarations: [
@@ -75,7 +81,13 @@ import { ViewDatePageComponent } from './pages/view-date-page/view-date-page.com
     UpcomingMeetingsPageComponent,
     CalendarDateComponent,
     DateViewComponent,
-    ViewDatePageComponent
+    ViewDatePageComponent,
+    GetUsernameComponent,
+    AwaitingHostComponent,
+    JoinMeetingPageComponent,
+    StartMeetingPageComponent,
+    AwaitingUserMediaComponent,
+    GetUserMediaSettingsComponent
   ],
   imports: [
     BrowserModule,

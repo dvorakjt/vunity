@@ -2,17 +2,15 @@
     <div class="modal" *ngIf="modalToShow==='authentication'">
         <h3>Join a Meeting</h3>
         <label for="meetingId">Meeting ID</label>
-        <input type="meetingId" name="meetingId" id="meetingId" [(ngModel)]="meetingId"
-            (input)="this.meetingIdErrorMessage = '' " />
+        <input type="meetingId" name="meetingId" id="meetingId" (input)="this.meetingIdErrorMessage = '' " />
         <small class="error">{{meetingIdErrorMessage}}</small>
         <br />
         <label for="password">Password</label>
-        <input type="password" name="password" id="password" [(ngModel)]="password"
-            (input)="this.passwordErrorMessage = '' " />
+        <input type="password" name="password" id="password" (input)="this.passwordErrorMessage = '' " />
         <small class="error">{{passwordErrorMessage}}</small>
         <br />
         <div class="loading-wheel-container" *ngIf="isLoading">
-            <app-loading-wheel [size]="'xs'"></app-loading-wheel><small class="loading-text">loading...</small>
+
         </div>
         <div class="btn-container">
             <button class="btn btn-primary" (click)="onCancel()" [disabled]="isLoading">Cancel</button>
@@ -24,11 +22,10 @@
     <div class="modal" *ngIf="modalToShow==='username'">
         <h3>What should we call you?</h3>
         <label for="username">Name to display</label>
-        <input type="text" name="username" id="username" [(ngModel)]="username" />
+        <input type="text" name="username" id="username" />
         <small class="error">{{usernameErrorMessage}}</small>
         <br />
         <div class="loading-wheel-container" *ngIf="isLoading">
-            <app-loading-wheel [size]="'xs'"></app-loading-wheel><small class="loading-text">loading...</small>
         </div>
         <div class="btn-container">
             <button class="btn btn-primary" (click)="onCancel()" [disabled]="isLoading">Cancel</button>
@@ -39,4 +36,3 @@
         <h3>Select Your Camera and Microphone Settings</h3>
     </div>
 </div>
-<app-media-settings-modal *ngIf="modalToShow==='media'" (closeModal)="onCloseSelf()"></app-media-settings-modal>

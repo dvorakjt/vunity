@@ -1,0 +1,21 @@
+<form class="form">
+    <h1 class="formHeader">Join a Meeting</h1>
+    <div class="spacer-lg"></div>
+    <label for="meetingId" class="formLabel">Meeting ID</label>
+    <input type="text" name="meetingId" id="meetingId" class="formInput" [(ngModel)]="meetingId" />
+    <div class="formFieldErrorContainer">
+        <small class="formFieldError" *ngIf="meetingIdErrorMessage">{{meetingIdErrorMessage}}</small>
+    </div>
+    <div class="spacer-sm"></div>
+    <label for="password" class="formLabel">Password</label>
+    <input type="password" name="password" id="password" class="formInput" [(ngModel)]="password" />
+    <div class="formFieldErrorContainer">
+        <small class="formFieldError" *ngIf="passwordErrorMessage">{{passwordErrorMessage}}</small>
+    </div>
+    <div class="spacer-lg"></div>
+    <div class="horizontalContainerCentered">
+        <button class="btnPrimary" (click)="onAuthenticateToMeeting()">Join</button>
+    </div>
+    <div class="spacer-lg"></div>
+    <p class="formSubmissionError">{{serverErrorMessage}}</p>
+</form>

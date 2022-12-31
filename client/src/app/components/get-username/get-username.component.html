@@ -1,0 +1,16 @@
+<form class="form">
+    <h1 class="formHeader">Successfully Authenticated!</h1>
+    <div class="spacer-lg"></div>
+    <label for="meetingId" class="formLabel">What should we call you?</label>
+    <input type="text" name="meetingId" id="meetingId" class="formInput" placeholder="enter your name..."
+        [(ngModel)]="username" />
+    <div class="formFieldErrorContainer">
+        <small class="formFieldError" *ngIf="true">{{usernameErrorMessage}}</small>
+    </div>
+    <div class="spacer-lg"></div>
+    <div class="horizontalContainerCentered">
+        <button class="btnPrimary" (click)="onSubmit()">Next</button>
+    </div>
+    <div class="spacer-lg"></div>
+    <p class="formSubmissionError">{{formSubmissionError}}</p>
+</form>

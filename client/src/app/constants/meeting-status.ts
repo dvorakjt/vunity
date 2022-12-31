@@ -1,6 +1,5 @@
 export enum MeetingStatus {
     NotInMeeting = 0,
-    Authenticating,
     AwaitingUsernameInput,
     AwaitingMedia,
     AwaitingMediaSettings,

@@ -1,0 +1,14 @@
+<div class="outerScreenContainer">
+    <div class="innerScreenContainerCenterContent">
+        <app-join-meeting
+            *ngIf="activeMeetingService.meetingStatus === meetingStatuses.NotInMeeting"></app-join-meeting>
+        <app-get-username
+            *ngIf="activeMeetingService.meetingStatus === meetingStatuses.AwaitingUsernameInput"></app-get-username>
+        <app-awaiting-user-media
+            *ngIf="activeMeetingService.meetingStatus === meetingStatuses.AwaitingMedia"></app-awaiting-user-media>
+        <app-get-user-media-settings
+            *ngIf="activeMeetingService.meetingStatus === meetingStatuses.AwaitingMediaSettings"></app-get-user-media-settings>
+        <app-awaiting-host
+            *ngIf="activeMeetingService.meetingStatus === meetingStatuses.WaitingForHost"></app-awaiting-host>
+    </div>
+</div>

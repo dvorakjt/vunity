@@ -15,6 +15,8 @@ import { ScreenViewer } from 'src/app/models/screen-viewer.model';
 import { ScreenViewerMap } from 'src/app/types/screen-viewer-map.type';
 import { ScreenSharingPeer } from 'src/app/models/screen-sharing-peer.model';
 import { LocalScreenSharingPeer } from 'src/app/models/local-screen-sharing-peer.model';
+import { GuestAuthError } from './errors/guest-auth-error';
+import { HostAuthError } from './errors/host-auth-error';
 
 declare var SockJS: any;
 declare var Stomp: any;
@@ -43,28 +45,27 @@ export class ActiveMeetingService {
 
     public meetingStatus: MeetingStatus = MeetingStatus.NotInMeeting;
     public meetingStatusChanged = new EventEmitter<MeetingStatus>(); 
+    public errorEmitter = new EventEmitter<Error>();
 
     constructor(private authService: AuthService, private http: HttpClient) {
     }
 
     authenticateAsGuest(meetingId:string, password:string) {
         if(this.meetingStatus === MeetingStatus.NotInMeeting) {
-            this.updateMeetingStatus(MeetingStatus.Authenticating);
             this.http.post(`/api/meeting/join?meetingId=${meetingId}&password=${password}`, {}).subscribe({
                 next: (responseData: any) => {
                     this.authToken = responseData.access_token;
                     this.updateMeetingStatus(MeetingStatus.AwaitingUsernameInput);
                 },
                 error: (e) => {
-                    this.handleError(e);
+                    this.handleError(new GuestAuthError('Failed to join meeting. Please check the id and password.'));
                 }
             });
-        } else this.handleError(new Error("Already in meeting"));
+        } else this.handleError(new GuestAuthError('Already in a meeting.'));
     }
 
     authenticateAsHost(meetingId:string) {
         if(this.meetingStatus === MeetingStatus.NotInMeeting) {
-            this.updateMeetingStatus(MeetingStatus.Authenticating);
             if (this.authService.access_token) {
                 const headers = new HttpHeaders({
                     'Authorization': this.authService.getAuthorizationHeader()
@@ -77,21 +78,23 @@ export class ActiveMeetingService {
                             this.authToken = responseData.access_token;
                             this.createLocalPeer(this.authService.activeUser.name);
                             this.updateMeetingStatus(MeetingStatus.AwaitingMedia);
-                        } else this.handleError(new Error("No active user."));
+                            this.getLocalMedia();
+                        } else this.handleError(new HostAuthError("No active user."));
                     },
                     error: (e) => {
-                        this.handleError(e);
+                        this.handleError(new HostAuthError('Insufficicent permissions.'));
                     }
                 });
             } else {
-                this.handleError(new Error("No access token."));
+                this.handleError(new HostAuthError("No access token."));
             }
-        } else this.handleError(new Error("Already in meeting"));
+        } else this.handleError(new HostAuthError("Already in meeting"));
     }
 
     public setLocalPeerUsername(username:string) {
         this.createLocalPeer(username);
         this.updateMeetingStatus(MeetingStatus.AwaitingMedia);
+        this.getLocalMedia();
     }
 
     private createLocalPeer(username:string) {
@@ -118,7 +121,6 @@ export class ActiveMeetingService {
     }
 
     public getLocalMedia() {
-        console.log(this.localPeer);
         if(this.localPeer) {
             this.localPeer.getMedia().then(() => {
                 this.updateMeetingStatus(MeetingStatus.AwaitingMediaSettings);
@@ -355,7 +357,7 @@ export class ActiveMeetingService {
                 this.createScreenShareOffer(peerId);
             });
         } catch(e) {
-            this.handleError(e);
+            this.handleError(new Error('screen share error'));
             this.sendOverWebSocket({intent: 'stopSharingScreen'});
         }
     }
@@ -534,7 +536,7 @@ export class ActiveMeetingService {
                 });
             }
             this.websocketConnection.onerror = (e) => {
-                this.handleError(e);
+                this.handleError(new Error('websocket error'));
             }
         }
     }
@@ -578,7 +580,8 @@ export class ActiveMeetingService {
         }
     }
 
-    private handleError(e:any) {
+    private handleError(e:Error) {
         console.log(e);
+        this.errorEmitter.emit(e);
     }
 }

@@ -1,0 +1,8 @@
+<div class="outerScreenContainer">
+    <div class="innerScreenContainerCenterContent">
+        <app-awaiting-user-media
+            *ngIf="activeMeetingService.meetingStatus === meetingStatuses.AwaitingMedia"></app-awaiting-user-media>
+        <app-get-user-media-settings
+            *ngIf="activeMeetingService.meetingStatus === meetingStatuses.AwaitingMediaSettings"></app-get-user-media-settings>
+    </div>
+</div>

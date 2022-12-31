@@ -1,0 +1,22 @@
+<form class="form" style="width: fit-content;">
+    <app-video [peer]="activeMeetingService.localPeer" [size]="videoSize" [muted]="true"></app-video>
+    <label class="formLabel">Join with camera on?</label>
+    <label class="formLabel"><input type="radio" id="yes" name="cameraEnabled" value="yes"
+            (input)="activeMeetingService.setLocalVideoEnabled(true)"
+            [checked]="activeMeetingService.localPeer?.videoEnabled">Yes</label>
+    <label class="formLabel"><input type="radio" id="no" name="cameraEnabled" value="no"
+            (input)="activeMeetingService.setLocalVideoEnabled(false)"
+            [checked]="!activeMeetingService.localPeer?.videoEnabled">No</label>
+    <label class="formLabel">Join with microphone on?</label>
+    <label class="formLabel"><input type="radio" id="yes" name="audioEnabled" value="yes"
+            (input)="activeMeetingService.setLocalAudioEnabled(true)"
+            [checked]="activeMeetingService.localPeer?.audioEnabled">Yes</label>
+    <label class="formLabel"><input type="radio" id="no" name="audioEnabled" value="no"
+            (input)="activeMeetingService.setLocalAudioEnabled(false)"
+            [checked]="!activeMeetingService.localPeer?.audioEnabled">No</label>
+    <div class="horizontalContainerFlexEnd">
+        <button class="btnDanger" style="margin-right: 6px;" (click)="onCancel()">Cancel</button>
+        <button class="btnPrimary" (click)="onContinue()">{{activeMeetingService.isHost ? "Open" :
+            "Join"}}</button>
+    </div>
+</form>

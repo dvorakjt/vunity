@@ -15,6 +15,8 @@ import { CalendarPageComponent } from './pages/calendar-page/calendar-page.compo
 import { ViewDatePageComponent } from './pages/view-date-page/view-date-page.component';
 import { LargeScreenGuard } from './services/view-guards/LargeScreenGuard.service';
 import { SmallScreenGuard } from './services/view-guards/SmallScreenGuard.service';
+import { JoinMeetingPageComponent } from './pages/join-meeting-page/join-meeting-page.component';
+import { StartMeetingPageComponent } from './pages/start-meeting-page/start-meeting-page.component';
 
 const routes: Routes = [
   {
@@ -65,6 +67,15 @@ const routes: Routes = [
     path: "meeting",
     component: ViewAndEditMeetingPageComponent,
     canActivate: [AuthGuard, SmallScreenGuard]
+  },
+  {
+    path: "joinmeeting",
+    component: JoinMeetingPageComponent,
+  },
+  {
+    path: 'startmeeting',
+    component: StartMeetingPageComponent,
+    canActivate: [AuthGuard]
   }
 ];
 
