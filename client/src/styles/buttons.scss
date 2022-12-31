@@ -40,6 +40,20 @@ button {
     }
 }
 
+.btnSecondary {
+    @include btn;
+
+    background-color: colors.$brand-secondary;
+
+    &:hover {
+        background-color: colors.$brand-secondary-tint;
+    }
+
+    &:active {
+        background-color: colors.$brand-secondary-shade;
+    }
+}
+
 .btnDanger {
     @include btn;
 

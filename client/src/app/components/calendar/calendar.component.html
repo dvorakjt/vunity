@@ -13,7 +13,8 @@
         <div class="calendarHeader">Sat</div>
         <div class="calendarDate" *ngFor="let date of previousMonthDays" class="previousOrNextMonthDate"></div>
         <app-calendar-date class="calendarDate thisMonth" *ngFor="let date of days; let i = index" [meetings]="date"
-            [date]="i + 1" (dateSelected)="onDateSelected($event)"></app-calendar-date>
+            [date]="i + 1" (dateSelected)="onDateSelected($event)"
+            [highlighted]="today.year == currentYear && today.month == currentMonth && today.day == i + 1"></app-calendar-date>
         <div class="calendarDate" *ngFor="let date of nextMonthDays" class="previousOrNextMonthDate"></div>
     </div>
     <div class="horizontalContainerSpaceBetween">

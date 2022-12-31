@@ -9,6 +9,7 @@ import { SelectedDate } from 'src/app/types/selected-date.type';
 })
 export class CalendarDateComponent {
   @Input() date:number = 1;
+  @Input() highlighted = false;
   @Input() meetings:Meeting[] = [];
 
   @Output() dateSelected = new EventEmitter<SelectedDate>();
@@ -19,4 +20,6 @@ export class CalendarDateComponent {
       meetings: this.meetings
     });
   }
+
+  
 }

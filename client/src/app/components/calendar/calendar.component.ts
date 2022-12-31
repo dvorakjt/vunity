@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output, ChangeDetectorRef } from '@angular/core';
 import { DateTime } from 'luxon';
 import { faAngleLeft } from '@fortawesome/free-solid-svg-icons';
 import { faAngleRight } from '@fortawesome/free-solid-svg-icons';
@@ -14,12 +14,13 @@ import { ViewDateService } from 'src/app/services/view-date/view-date.service';
   styleUrls: ['./calendar.component.scss']
 })
 export class CalendarComponent implements OnInit {
-  public currentMonth = DateTime.now().month;
-  public currentYear = DateTime.now().year;
-  public currentMonthName = DateTime.now().monthLong;
+  public today = DateTime.now();
+  public currentMonth = this.today.month;
+  public currentYear = this.today.year;
+  public currentMonthName = this.today.monthLong;
   public days = this.initializeDays(this.currentMonth, this.currentYear);
-  public previousMonthDays = this.getPreviousMonthDays(DateTime.now());
-  public nextMonthDays = this.getNextMonthDays(DateTime.now());
+  public previousMonthDays = this.getPreviousMonthDays(this.today);
+  public nextMonthDays = this.getNextMonthDays(this.today);
   public selectedMonth = `${this.currentYear}-${this.currentMonth.toString().padStart(2, '0')}`;
 
   @Output() dateSelected = new EventEmitter<SelectedDate>();
@@ -27,13 +28,23 @@ export class CalendarComponent implements OnInit {
   faAngleLeft = faAngleLeft;
   faAngleRight = faAngleRight;
 
-  constructor(private auth:AuthService, private meetingsService:MeetingsService, private viewDateService:ViewDateService) {}
+  constructor(
+    private auth:AuthService, 
+    private meetingsService:MeetingsService, 
+    private viewDateService:ViewDateService,
+    private changeDetection:ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
+    this.populateDays(this.currentMonth, this.currentYear, this.days);
+    this.meetingsService.meetingsModified.subscribe(() => {
+    this.days = this.initializeDays(this.currentMonth, this.currentYear);
     this.populateDays(this.currentMonth, this.currentYear, this.days).then(() => {
+      console.log('populating days');
       console.log(this.days);
     }).catch((e) => {
       console.log(e);
+    });
     });
   }
 

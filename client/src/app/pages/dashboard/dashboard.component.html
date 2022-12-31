@@ -13,7 +13,7 @@
                 [size]="'xl'"></fa-icon></button>
         <app-new-meeting *ngIf="modalToShow === modals.NewMeeting" [date]="dateToCreateMeetingOn"></app-new-meeting>
         <app-view-and-edit-meeting *ngIf="modalToShow === modals.ViewAndEditMeeting" [meeting]="selectedMeeting"
-            [showBackButton]="false"></app-view-and-edit-meeting>
+            [showBackButton]="false" (backButtonClicked)="onCloseModal()"></app-view-and-edit-meeting>
         <app-date-view *ngIf="modalToShow === modals.ViewDate" [showBackButton]="false"
             (addMeetingButtonClicked)="onCreateMeetingFromCalendar($event)"
             (meetingSelected)="onViewMeeting($event)"></app-date-view>

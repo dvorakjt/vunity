@@ -1,4 +1,6 @@
-<div class="calendarDate" (click)="onClick()">
+<div class="calendarDate" [ngClass]="{
+    highlighted : highlighted
+}" (click)="onClick()">
     <ul class="meetingsList">
         <small style="text-align: center;">{{date}}</small>
         <li class="meeting" *ngFor="let meeting of meetings">

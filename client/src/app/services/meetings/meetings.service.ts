@@ -247,7 +247,8 @@ export class MeetingsService {
 
             if(this.meetingsByYearAndMonth[meetingYear] && this.meetingsByYearAndMonth[meetingYear][meetingMonth]) {
                 let monthOfMeeting = this.meetingsByYearAndMonth[meetingYear][meetingMonth];
-                monthOfMeeting = monthOfMeeting.filter((m) => {
+                this.meetingsByYearAndMonth[meetingYear][meetingMonth] = monthOfMeeting.filter((m) => {
+                    console.log('filtering');
                     return m.id != meetingId;
                 });
             }

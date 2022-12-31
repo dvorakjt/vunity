@@ -14,6 +14,10 @@
     }
 }
 
+.highlighted {
+    outline: 2px solid colors.$brand-secondary;
+}
+
 .meetingsList {
     list-style-type: none;
     margin: 0;
@@ -29,7 +33,7 @@
     height: 12px;
     box-sizing: border-box;
     margin: 2px;
-    background-color: colors.$brand-primary;
+    background-color: colors.$brand-secondary;
     border-radius: 3px;
     font-size: 10px;
     color: black;

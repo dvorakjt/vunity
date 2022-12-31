@@ -30,7 +30,7 @@
     left: 0;
     width: 100%;
     height: 100vh;
-    //background-color: colors.$dark-green-0-translucent;
+    background-color: colors.$dark-green-0-translucent;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -45,7 +45,7 @@
     width: 260px;
     max-width: 260px;
     overflow-y: scroll;
-    background-color: colors.$dark-green-1;
+    background-color: colors.$dark-green-2;
     border-radius: 3.5px;
     display: flex;
     flex-direction: column;
@@ -53,17 +53,21 @@
     padding-top: 32px;
     padding-left: 14px;
     @include animations.translate-up(250ms);
-    box-shadow: 16px 16px 16px black;
-    border: 1px solid black;
+
+    &::-webkit-scrollbar-track {
+        background: colors.$dark-green-2;
+        border-top-right-radius: 3.5px;
+        border-bottom-right-radius: 3.5px;
+    }
 }
 
 .closeBtn {
     position: absolute;
     top: 0;
     right: 0;
-    padding: 8px 12px 8px 12px;
+    padding: 6px 10px 6px 10px;
 
     &:hover {
-        background-color: colors.$dark-green-2;
+        background-color: colors.$dark-green-1;
     }
 }
