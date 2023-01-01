@@ -1,6 +1,6 @@
 <div class="outerThumbnailsContainer" #outerThumbnailsContainer>
-
-    <div class="innerThumbnailsContainer" #innerThumbnailsContainer>
+    <div class="innerThumbnailsContainer" #innerThumbnailsContainer (mousedown)="onScrollThumbnails()"
+        (mouseup)="onStopScrollThumbnails()">
         <app-video [peer]="activeMeetingService.localPeer" [muted]="true"></app-video>
         <app-video [peer]="activeMeetingService.localPeer" [muted]="true"></app-video>
         <app-video [peer]="activeMeetingService.localPeer" [muted]="true"></app-video>
@@ -11,5 +11,10 @@
             [muted]="false"></app-video>
 
     </div>
-    <button class="scrollBtnUp" *ngIf="showScrollButtons">Up</button>
+    <button class="scrollBtnUp" *ngIf="showScrollButtons && showScrollUp" (mousedown)="onScrollUp()"
+        (mouseup)="onStopScrollUp()" (mouseleave)="onStopScrollUp()"><fa-icon [icon]="faAngleUp"
+            [size]="'xl'"></fa-icon></button>
+    <button class="scrollBtnDown" *ngIf="showScrollButtons && showScrollDown" (mousedown)="onScrollDown()"
+        (mouseup)="onStopScrollDown()" (mouseleave)="onStopScrollDown()"><fa-icon [icon]="faAngleDown"
+            [size]="'xl'"></fa-icon></button>
 </div>

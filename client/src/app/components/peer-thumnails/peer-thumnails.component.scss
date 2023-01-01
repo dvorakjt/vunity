@@ -1,5 +1,20 @@
 @use '../../../styles/colors.scss';
 
+
+@mixin scrollBtn {
+    width: 200px;
+    height: 40px;
+    background-color: transparent;
+    color: white;
+    position: absolute;
+    border: none;
+
+    &:hover {
+        outline: 2px solid colors.$brand-primary-tint;
+        cursor: pointer;
+    }
+}
+
 .outerThumbnailsContainer {
     max-height: calc(100vh - 8px);
     overflow-y: hidden;
@@ -9,14 +24,20 @@
 .innerThumbnailsContainer {
     display: flex;
     flex-direction: column;
+    max-height: calc(100vh - 8px);
+    overflow-y: hidden;
 }
 
 .scrollBtnUp {
-    width: 200px;
-    height: 20px;
-    background-image: linear-gradient(black, transparent);
-    color: white;
-    position: absolute;
+    @include scrollBtn();
     top: 0;
     left: 0;
+    background-image: linear-gradient(black, 75%, transparent);
+}
+
+.scrollBtnDown {
+    @include scrollBtn();
+    bottom: 0;
+    left: 0;
+    background-image: linear-gradient(transparent, 25%, black);
 }
