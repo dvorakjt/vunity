@@ -17,7 +17,7 @@ import { ModalComponent } from './shared/modal/modal.component';
 import { ActiveMeetingComponent } from './active-meeting/active-meeting.component';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { MediaSettingsModalComponent } from './media-settings-modal/media-settings-modal.component';
-import { VideoComponent } from './video/video.component';
+import { VideoComponent } from './components/video/video.component';
 import { CalendarComponent } from './components/calendar/calendar.component';
 import { UpcomingMeetingsComponent } from './components/upcoming-meetings/upcoming-meetings.component';
 import { ForgotPasswordComponent } from './pages/forgot-password/forgot-password.component';
@@ -46,6 +46,7 @@ import { JoinMeetingPageComponent } from './pages/join-meeting-page/join-meeting
 import { StartMeetingPageComponent } from './pages/start-meeting-page/start-meeting-page.component';
 import { AwaitingUserMediaComponent } from './components/awaiting-user-media/awaiting-user-media.component';
 import { GetUserMediaSettingsComponent } from './components/get-user-media-settings/get-user-media-settings.component';
+import { ActiveMeetingPageComponent } from './pages/active-meeting-page/active-meeting-page.component';
 
 @NgModule({
   declarations: [
@@ -87,7 +88,8 @@ import { GetUserMediaSettingsComponent } from './components/get-user-media-setti
     JoinMeetingPageComponent,
     StartMeetingPageComponent,
     AwaitingUserMediaComponent,
-    GetUserMediaSettingsComponent
+    GetUserMediaSettingsComponent,
+    ActiveMeetingPageComponent
   ],
   imports: [
     BrowserModule,

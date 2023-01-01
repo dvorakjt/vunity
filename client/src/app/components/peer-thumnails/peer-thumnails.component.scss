@@ -1,0 +1,22 @@
+@use '../../../styles/colors.scss';
+
+.outerThumbnailsContainer {
+    max-height: calc(100vh - 8px);
+    overflow-y: hidden;
+    position: relative;
+}
+
+.innerThumbnailsContainer {
+    display: flex;
+    flex-direction: column;
+}
+
+.scrollBtnUp {
+    width: 200px;
+    height: 20px;
+    background-image: linear-gradient(black, transparent);
+    color: white;
+    position: absolute;
+    top: 0;
+    left: 0;
+}

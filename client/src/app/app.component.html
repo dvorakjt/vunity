@@ -1,7 +1,7 @@
-<app-navbar></app-navbar>
+<app-navbar *ngIf="!showActiveMeeting"></app-navbar>
 <router-outlet *ngIf="!showActiveMeeting; else activeMeeting"></router-outlet>
 <app-loading-wheel-overlay *ngIf="authService.isLoading || loadingService.isLoading"></app-loading-wheel-overlay>
 <ng-template #activeMeeting>
-  <app-active-meeting></app-active-meeting>
+  <app-active-meeting-page></app-active-meeting-page>
 </ng-template>
 <app-join-meeting *ngIf="joinMeetingModalOpen" (closeModal)="joinMeetingModalOpen = false"></app-join-meeting>

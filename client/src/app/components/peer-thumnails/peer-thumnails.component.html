@@ -1,1 +1,15 @@
-<p>peer-thumnails works!</p>
+<div class="outerThumbnailsContainer" #outerThumbnailsContainer>
+
+    <div class="innerThumbnailsContainer" #innerThumbnailsContainer>
+        <app-video [peer]="activeMeetingService.localPeer" [muted]="true"></app-video>
+        <app-video [peer]="activeMeetingService.localPeer" [muted]="true"></app-video>
+        <app-video [peer]="activeMeetingService.localPeer" [muted]="true"></app-video>
+        <app-video [peer]="activeMeetingService.localPeer" [muted]="true"></app-video>
+        <app-video [peer]="activeMeetingService.localPeer" [muted]="true"></app-video>
+        <app-video [peer]="activeMeetingService.localPeer" [muted]="true"></app-video>
+        <app-video *ngFor="let remotePeer of activeMeetingService.remotePeerList" [peer]="remotePeer"
+            [muted]="false"></app-video>
+
+    </div>
+    <button class="scrollBtnUp" *ngIf="showScrollButtons">Up</button>
+</div>

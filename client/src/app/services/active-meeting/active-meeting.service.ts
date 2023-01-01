@@ -52,7 +52,10 @@ export class ActiveMeetingService {
 
     authenticateAsGuest(meetingId:string, password:string) {
         if(this.meetingStatus === MeetingStatus.NotInMeeting) {
-            this.http.post(`/api/meeting/join?meetingId=${meetingId}&password=${password}`, {}).subscribe({
+            this.http.post('/api/meeting/join', {
+                meetingId,
+                password
+            }).subscribe({
                 next: (responseData: any) => {
                     this.authToken = responseData.access_token;
                     this.updateMeetingStatus(MeetingStatus.AwaitingUsernameInput);

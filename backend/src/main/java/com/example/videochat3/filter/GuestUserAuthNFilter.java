@@ -1,5 +1,6 @@
 package com.example.videochat3.filter;
 
+import com.example.videochat3.DTO.GuestAuthDTO;
 import com.example.videochat3.tokens.UserTokenManager;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -27,9 +28,15 @@ public class GuestUserAuthNFilter extends UsernamePasswordAuthenticationFilter {
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
-        String meetingId = request.getParameter("meetingId");
-        String password = request.getParameter("password");
-        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(meetingId, password);
+        GuestAuthDTO credentials;
+        ObjectMapper objectMapper = new ObjectMapper();
+        UsernamePasswordAuthenticationToken authToken;
+        try {
+            credentials = objectMapper.readValue(request.getReader(), GuestAuthDTO.class);
+            authToken = new UsernamePasswordAuthenticationToken(credentials.getMeetingId(), credentials.getPassword());
+        } catch(Exception e) {
+            authToken = new UsernamePasswordAuthenticationToken("", "");
+        }
         return authenticationManager.authenticate(authToken);
     }
 

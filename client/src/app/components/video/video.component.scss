@@ -1,0 +1,110 @@
+.videoContainerThumbnail {
+    width: 200px;
+    height: 150px;
+    position: relative;
+}
+
+.videoThumbnail {
+    width: 200px;
+    height: 150px;
+    object-fit: contain;
+}
+
+.videoBannerThumbnail {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #121212;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+}
+
+// modal
+.videoContainerModal {
+    width: 400px;
+    height: fit-content;
+    position: relative;
+}
+
+.videoModal {
+    width: 400px;
+    height: auto;
+}
+
+.videoBannerModal {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #121212;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+}
+
+// speaker
+.videoContainerSpeaker {
+    position: absolute;
+    top: 0;
+    left: 214px;
+    background-color: #0d0d0d;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: calc(100vh - 80px);
+    width: calc(100vw - 534px);
+}
+
+.videoSpeaker {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+}
+
+.videoBannerSpeaker {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #121212;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+}
+
+.outline {
+    box-sizing: border-box;
+    border: 3px solid aqua;
+    width: 100%;
+    height: calc(100% - 1px);
+    background-color: transparent;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.microphone-icon {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    color: white;
+    background-color: #121212;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.hide {
+    display: none;
+}
