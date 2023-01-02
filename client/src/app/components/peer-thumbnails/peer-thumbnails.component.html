@@ -1,32 +1,26 @@
 <div class="outerThumbnailsContainer" #outerThumbnailsContainer>
     <div class="innerThumbnailsContainer" #innerThumbnailsContainer (mousedown)="onScrollWithMouse()"
         (mouseup)="onStopScrollWithMouse()">
-        <app-video [peer]="activeMeetingService.localPeer" [muted]="true"></app-video>
-        <app-video [peer]="activeMeetingService.localPeer" [muted]="true"></app-video>
-        <app-video [peer]="activeMeetingService.localPeer" [muted]="true"></app-video>
-        <app-video [peer]="activeMeetingService.localPeer" [muted]="true"></app-video>
-        <app-video [peer]="activeMeetingService.localPeer" [muted]="true"></app-video>
-        <app-video [peer]="activeMeetingService.localPeer" [muted]="true"></app-video>
-        <app-video [peer]="activeMeetingService.localPeer" [muted]="true"></app-video>
-        <app-video [peer]="activeMeetingService.localPeer" [muted]="true"></app-video>
-        <app-video [peer]="activeMeetingService.localPeer" [muted]="true"></app-video>
-        <app-video [peer]="activeMeetingService.localPeer" [muted]="true"></app-video>
-        <app-video [peer]="activeMeetingService.localPeer" [muted]="true"></app-video>
-        <app-video [peer]="activeMeetingService.localPeer" [muted]="true"></app-video>
-        <app-video [peer]="activeMeetingService.localPeer" [muted]="true"></app-video>
-        <app-video [peer]="activeMeetingService.localPeer" [muted]="true"></app-video>
-        <app-video [peer]="activeMeetingService.localPeer" [muted]="true"></app-video>
-        <app-video [peer]="activeMeetingService.localPeer" [muted]="true"></app-video>
-        <app-video [peer]="activeMeetingService.localPeer" [muted]="true"></app-video>
-        <app-video [peer]="activeMeetingService.localPeer" [muted]="true"></app-video>
-        <app-video [peer]="activeMeetingService.localPeer" [muted]="true"></app-video>
-        <app-video [peer]="activeMeetingService.localPeer" [muted]="true"></app-video>
-        <app-video [peer]="activeMeetingService.localPeer" [muted]="true"></app-video>
-        <app-video [peer]="activeMeetingService.localPeer" [muted]="true"></app-video>
-        <app-video [peer]="activeMeetingService.localPeer" [muted]="true"></app-video>
-        <app-video [peer]="activeMeetingService.localPeer" [muted]="true"></app-video>
+        <div class="thumbnail"></div>
+        <div class="thumbnail"></div>
+        <div class="thumbnail"></div>
+        <div class="thumbnail"></div>
+        <div class="thumbnail"></div>
+        <div class="thumbnail"></div>
+        <div class="thumbnail"></div>
+        <div class="thumbnail"></div>
+        <div class="thumbnail"></div>
+        <div class="thumbnail"></div>
+        <div class="thumbnail"></div>
+        <div class="thumbnail"></div>
+        <div class="thumbnail"></div>
+        <div class="thumbnail"></div>
+        <div class="thumbnail"></div>
+        <div class="thumbnail"></div>
+        <div class="thumbnail"></div>
+        <!-- <app-video [peer]="activeMeetingService.localPeer" [muted]="true"></app-video>
         <app-video *ngFor="let remotePeer of activeMeetingService.remotePeerList" [peer]="remotePeer"
-            [muted]="false"></app-video>
+            [muted]="false"></app-video> -->
 
     </div>
     <button class="scrollBtnUp" *ngIf="showScrollButtons && showScrollUp" (mousedown)="onScrollUp()"

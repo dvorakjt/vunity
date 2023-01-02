@@ -60,33 +60,132 @@
     background-color: #009A22;
     display: flex;
 
-    
     .peerThumbnailsContainer {
         min-height: 100%;
-        width: 180px;
+        width: 540px;
     }
  
     .speakerAndToolsContainer {
         display: flex;
         flex-direction: column;
         min-height: 100%;
-        width: calc(100vw - 280px);
+        width: calc(100vw - 840px);
     }
 
     .speakerViewContainer {
         width: 100%;
-        min-height: calc((100vw - 280px) / 1.3);
+        min-height: calc((100vw - 840px) / 1.3);
     }
 
     .toolsContainer {
         width: 100%;
-        height: calc(100vh - ((100vw - 280px) / 1.3));
+        height: calc(100vh - ((100vw - 840px) / 1.3));
     }
 
 
     .chatContainer {
         min-height: 100%;
-        width: 200px;
+        width: 300px;
+    }
+
+}
+
+@media screen and (max-width: 1920px) and (orientation: landscape) {
+    .activeMeetingScreenContainerTabletHorizontalAndDesktop {
+
+        .peerThumbnailsContainer {
+            min-height: 100%;
+            width: 400px;
+        }
+     
+        .speakerAndToolsContainer {
+            display: flex;
+            flex-direction: column;
+            min-height: 100%;
+            width: calc(100vw - 700px);
+        }
+    
+        .speakerViewContainer {
+            width: 100%;
+            min-height: calc((100vw - 700px) / 1.3);
+        }
+    
+        .toolsContainer {
+            width: 100%;
+            height: calc(100vh - ((100vw - 700px) / 1.3));
+        }
+    
+    
+        .chatContainer {
+            min-height: 100%;
+            width: 300px;
+        }
+    }
+}
+
+@media screen and (max-width: 1536px) and (orientation: landscape) {
+    .activeMeetingScreenContainerTabletHorizontalAndDesktop {
+
+        .peerThumbnailsContainer {
+            min-height: 100%;
+            width: 240px;
+        }
+     
+        .speakerAndToolsContainer {
+            display: flex;
+            flex-direction: column;
+            min-height: 100%;
+            width: calc(100vw - 480px);
+        }
+    
+        .speakerViewContainer {
+            width: 100%;
+            min-height: calc((100vw - 480px) / 1.3);
+        }
+    
+        .toolsContainer {
+            width: 100%;
+            height: calc(100vh - ((100vw - 480px) / 1.3));
+        }
+    
+    
+        .chatContainer {
+            min-height: 100%;
+            width: 240px;
+        }
+    }
+}
+
+@media screen and (max-width: 1024px) and (orientation: landscape) {
+    .activeMeetingScreenContainerTabletHorizontalAndDesktop {
+
+        .peerThumbnailsContainer {
+            min-height: 100%;
+            width: 180px;
+        }
+     
+        .speakerAndToolsContainer {
+            display: flex;
+            flex-direction: column;
+            min-height: 100%;
+            width: calc(100vw - 360px);
+        }
+    
+        .speakerViewContainer {
+            width: 100%;
+            min-height: calc((100vw - 360px) / 1.3);
+        }
+    
+        .toolsContainer {
+            width: 100%;
+            height: calc(100vh - ((100vw - 360px) / 1.3));
+        }
+    
+    
+        .chatContainer {
+            min-height: 100%;
+            width: 180px;
+        }
     }
 }
 
