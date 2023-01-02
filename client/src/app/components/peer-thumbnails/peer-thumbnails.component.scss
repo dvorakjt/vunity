@@ -1,8 +1,26 @@
 @use '../../../styles/colors.scss';
 
+:host {
+    height: 100%;
+    max-height: 100%;
+}
+
+@mixin gridStyleView {
+    display: grid;
+    grid-template-columns: 180px 180px;
+    grid-auto-rows: 135px;
+    gap: 0;
+}
+
+@mixin columnStyleView {
+    display: flex;
+    flex-direction: column;
+    width: fit-content;
+}
+
 
 @mixin scrollBtn {
-    width: 200px;
+    width: 100%;
     height: 40px;
     background-color: transparent;
     color: white;
@@ -16,15 +34,18 @@
 }
 
 .outerThumbnailsContainer {
-    max-height: calc(100vh - 8px);
+    height: 100%;
+    max-height: 100%;
     overflow-y: hidden;
     position: relative;
+    width: fit-content;
+    background-color: colors.$dark-green-0;
 }
 
 .innerThumbnailsContainer {
-    display: flex;
-    flex-direction: column;
-    max-height: calc(100vh - 8px);
+    @include gridStyleView();
+    height: 100%;
+    max-height: 100%;
     overflow-y: hidden;
 }
 

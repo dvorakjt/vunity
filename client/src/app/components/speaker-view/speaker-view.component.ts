@@ -1,4 +1,6 @@
 import { Component } from '@angular/core';
+import { ActiveMeetingService } from 'src/app/services/active-meeting/active-meeting.service';
+import { VideoSize } from '../video/video-sizes';
 
 @Component({
   selector: 'app-speaker-view',
@@ -7,4 +9,7 @@ import { Component } from '@angular/core';
 })
 export class SpeakerViewComponent {
 
+  videoSize = VideoSize.Speaker;
+
+  constructor(public activeMeetingService:ActiveMeetingService) {}
 }

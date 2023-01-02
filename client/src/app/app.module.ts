@@ -26,7 +26,7 @@ import { NavbarComponent } from './components/navbar/navbar.component';
 import { RECAPTCHA_V3_SITE_KEY, RecaptchaV3Module } from "ng-recaptcha";
 import { environment } from '../environments/environment';
 import { ViewAndEditMeetingComponent } from './components/view-and-edit-meeting/view-and-edit-meeting.component';
-import { PeerThumnailsComponent } from './components/peer-thumnails/peer-thumnails.component';
+import { PeerThumbnailsComponent } from './components/peer-thumbnails/peer-thumbnails.component';
 import { ChatMessagesComponent } from './components/chat-messages/chat-messages.component';
 import { SpeakerViewComponent } from './components/speaker-view/speaker-view.component';
 import { ActiveMeetingToolbarComponent } from './components/active-meeting-toolbar/active-meeting-toolbar.component';
@@ -69,7 +69,7 @@ import { ActiveMeetingPageComponent } from './pages/active-meeting-page/active-m
     ResetPasswordComponent,
     NavbarComponent,
     ViewAndEditMeetingComponent,
-    PeerThumnailsComponent,
+    PeerThumbnailsComponent,
     ChatMessagesComponent,
     SpeakerViewComponent,
     ActiveMeetingToolbarComponent,

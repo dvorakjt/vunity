@@ -1,14 +1,14 @@
-import { AfterViewInit, Component, ElementRef, OnChanges, OnDestroy, OnInit, SimpleChanges, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnChanges, OnDestroy, SimpleChanges, ViewChild } from '@angular/core';
 import { ActiveMeetingService } from 'src/app/services/active-meeting/active-meeting.service';
 import { faAngleUp } from '@fortawesome/free-solid-svg-icons';
 import { faAngleDown } from '@fortawesome/free-solid-svg-icons';
 
 @Component({
-  selector: 'app-peer-thumnails',
-  templateUrl: './peer-thumnails.component.html',
-  styleUrls: ['./peer-thumnails.component.scss']
+  selector: 'app-peer-thumbnails',
+  templateUrl: './peer-thumbnails.component.html',
+  styleUrls: ['./peer-thumbnails.component.scss']
 })
-export class PeerThumnailsComponent implements AfterViewInit, OnChanges, OnDestroy{
+export class PeerThumbnailsComponent implements AfterViewInit, OnChanges, OnDestroy{
 
   scrollUpInterval?:any;
   scrollDownInterval?:any;
@@ -49,11 +49,11 @@ export class PeerThumnailsComponent implements AfterViewInit, OnChanges, OnDestr
     });
   }
 
-  onScrollThumbnails() {
+  onScrollWithMouse() {
     this.scrollThumbnailsWithMouse = true;
   }
 
-  onStopScrollThumbnails() {
+  onStopScrollWithMouse() {
     this.scrollThumbnailsWithMouse = false;
   }
 

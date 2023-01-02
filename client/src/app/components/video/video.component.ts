@@ -1,5 +1,5 @@
 import { Component, Input, ChangeDetectorRef, OnInit } from '@angular/core';
-import { VideoSize } from '../../shared/video/video-sizes';
+import { VideoSize } from './video-sizes';
 import { faMicrophone } from '@fortawesome/free-solid-svg-icons';
 import { faMicrophoneSlash } from '@fortawesome/free-solid-svg-icons';
 import { Peer } from '../../models/peer.model';

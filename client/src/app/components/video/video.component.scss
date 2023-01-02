@@ -1,13 +1,11 @@
 .videoContainerThumbnail {
-    width: 200px;
-    height: 150px;
+    width: 180px;
+    height: 135px;
     position: relative;
 }
 
 .videoThumbnail {
-    width: 200px;
-    height: 150px;
-    object-fit: contain;
+    width: 180px;
 }
 
 .videoBannerThumbnail {
@@ -50,15 +48,13 @@
 
 // speaker
 .videoContainerSpeaker {
-    position: absolute;
-    top: 0;
-    left: 214px;
+    position: relative;
     background-color: #0d0d0d;
     display: flex;
     justify-content: center;
     align-items: center;
-    height: calc(100vh - 80px);
-    width: calc(100vw - 534px);
+    width: 100%;
+    height: fit-content;
 }
 
 .videoSpeaker {

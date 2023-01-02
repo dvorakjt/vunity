@@ -1,0 +1,19 @@
+@use '../../../styles/colors.scss';
+
+:host {
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    box-sizing: border-box;
+    height: 100%;
+    width: 100%;
+}
+
+.toolbar-button {
+    background-color: colors.$dark-green-2;
+    border: none;
+    border-radius: 20px;
+    height: 40px;
+    width: 60px;
+    color: white;
+}
