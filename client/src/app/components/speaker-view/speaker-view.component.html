@@ -1,1 +1,2 @@
-<app-video [peer]="activeMeetingService.localPeer" [muted]="true" [size]="videoSize"></app-video>
+<app-video [peer]="activeMeetingService.screenSharingPeer || activeMeetingService.speakingPeer" [muted]="true"
+    [size]="videoSize"></app-video>

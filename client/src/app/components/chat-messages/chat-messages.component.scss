@@ -1,0 +1,109 @@
+@use '../../../styles/colors.scss';
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400&display=swap');
+
+:host {
+    height: 100%;
+    min-height: 100%;
+    max-height: 100%;
+    min-width: 100%;
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.messagesContainer {
+    min-width: 100%;
+    max-width: 100%;
+    height: calc(100% - 60px);
+    min-height: calc(100% - 60px);
+    max-height: calc(100% - 60px);
+    overflow-y: scroll;
+    overflow-x: hidden;
+}
+
+.message {
+    opacity: 0;
+    background-color: colors.$brand-secondary;
+    border-radius: 5px;
+    color: white;
+    width: calc(100% - 75px);
+    margin-left: 5px;
+    margin-top: 24px;
+    margin-bottom: 8px;
+    padding: 10px;
+    box-sizing: border-box;
+    animation: message 250ms ease-in-out 1 forwards;
+    position: relative;
+
+    .sender-name-text {
+        position: absolute;
+        color: gray;
+        top: -16px;
+        left: 0px;
+        font-style: italic;
+    }
+
+    span {
+        max-width: 200px;
+        overflow: hidden;
+        overflow-wrap: break-word;
+    }
+}
+
+.ownMessage {
+    background-color: colors.$brand-primary;
+    margin-left: 70px;
+    margin-right: 5px;
+    width: calc(100% - 75px);
+    padding: 10px;
+
+    .sender-name-text {
+        left: auto;
+        right: 0px;
+    }
+}
+
+.newMessageInputContainer {
+    width: 100%;
+    height: 60px;
+    display: flex;
+    
+    textarea {
+        background-color: colors.$dark-green-0;
+        color: white;
+        resize: none;
+        width: calc(100% - 72px);
+        height: 60px;
+        margin: 0;
+        padding: 0;
+        border: none;
+        box-sizing: border-box;
+        border: 2px solid colors.$brand-primary;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 14px;
+    }
+
+    button {
+        width: 72px;
+        height: 60px;
+        margin: 0;
+        padding: 0;
+        border-radius: 0 !important;
+
+        &:active {
+            transform: none;
+        }
+    }
+}
+
+@keyframes message {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0px);
+    }
+}

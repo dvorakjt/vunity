@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { faUsers } from '@fortawesome/free-solid-svg-icons';
 import { faMicrophone } from '@fortawesome/free-solid-svg-icons';
 import { faMicrophoneSlash } from '@fortawesome/free-solid-svg-icons';
 import { faVideo } from '@fortawesome/free-solid-svg-icons';
@@ -15,12 +16,19 @@ import { ActiveMeetingService } from 'src/app/services/active-meeting/active-mee
   styleUrls: ['./active-meeting-toolbar.component.scss']
 })
 export class ActiveMeetingToolbarComponent {
+  @Input() isMobile = false;
+  
+  showChat = false;
+
+  @Output() showChatChanged = new EventEmitter<boolean>();
+  @Output() showSettingsButtonClicked = new EventEmitter<void>();
 
   faMicrophone = faMicrophone;
   faMicrophoneSlash = faMicrophoneSlash;
   faVideo = faVideo;
   faVideoSlash = faVideoSlash;
   faCog = faCog;
+  faUsers = faUsers;
   faMessage = faMessage;
   faDesktop = faDesktop;
   faSignOut = faSignOut;
@@ -41,5 +49,14 @@ export class ActiveMeetingToolbarComponent {
       if(this.activeMeetingService.isHost) this.activeMeetingService.close();
       else this.activeMeetingService.leave();
     } 
+  }
+
+  onToggleChatMenu() {
+    this.showChat = !this.showChat;
+    this.showChatChanged.emit(this.showChat);
+  }
+
+  onOpenSettingsMenu() {
+    this.showSettingsButtonClicked.emit();
   }
 }

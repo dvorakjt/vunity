@@ -47,6 +47,8 @@ export class ActiveMeetingService {
     public meetingStatusChanged = new EventEmitter<MeetingStatus>(); 
     public errorEmitter = new EventEmitter<Error>();
 
+    public remotePeerJoinedOrLeft = new EventEmitter<void>();
+
     constructor(private authService: AuthService, private http: HttpClient) {
     }
 
@@ -263,6 +265,7 @@ export class ActiveMeetingService {
                 const remotePeer = remotePeerPartial.openConnection(this.localPeer.stream);
                 this.remotePeerList.push(remotePeer);
                 this.remotePeersById[remotePeer.sessionId] = remotePeer;
+                this.remotePeerJoinedOrLeft.emit();
                 this.subscribeToRemotePeerEvents(remotePeer);
                 remotePeer.createOffer();
             }
@@ -278,6 +281,7 @@ export class ActiveMeetingService {
             const remotePeer = RemotePeer.createRemoteConnectionFromOffer(initiatingPeerId, initiatingPeerUsername, connection, offer, this.localPeer.stream);
             this.remotePeerList.push(remotePeer);
             this.remotePeersById[remotePeer.sessionId] = remotePeer;
+            this.remotePeerJoinedOrLeft.emit();
             this.subscribeToRemotePeerEvents(remotePeer);
             remotePeer.createAnswer();
         }
@@ -482,8 +486,7 @@ export class ActiveMeetingService {
             return peer.sessionId !== remotePeerId;
         });
         delete this.remotePeersById[remotePeerId];
-        console.log(this.remotePeerList);
-        console.log(this.remotePeersById);
+        this.remotePeerJoinedOrLeft.emit();
     }
 
     private handleMeetingClosure() {

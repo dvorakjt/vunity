@@ -9,11 +9,28 @@
     width: 100%;
 }
 
-.toolbar-button {
+.toolbarButton {
     background-color: colors.$dark-green-2;
     border: none;
-    border-radius: 20px;
-    height: 40px;
-    width: 60px;
+    border-radius: 30px;
+    height: 60px;
+    width: 90px;
     color: white;
+
+    &:hover {
+        cursor: pointer;
+    }
+}
+
+.toolbarButtonMobile {
+    background-color: colors.$dark-green-2;
+    border: none;
+    border-radius: 18px;
+    height: 36px;
+    width: 54px;
+    color: white;
+
+    &:hover {
+        cursor: pointer;
+    }
 }

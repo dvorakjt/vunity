@@ -8,7 +8,7 @@ import { VideoSize } from 'src/app/shared/video/video-sizes';
   styleUrls: ['./get-user-media-settings.component.scss']
 })
 export class GetUserMediaSettingsComponent {
-  videoSize = VideoSize.Modal;
+  videoSize = VideoSize.Speaker;
 
   constructor(public activeMeetingService:ActiveMeetingService) {}
 

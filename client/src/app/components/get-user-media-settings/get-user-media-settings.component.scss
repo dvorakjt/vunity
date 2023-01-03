@@ -1,0 +1,13 @@
+.userMediaForm {
+    max-width: 100vw;
+    padding: 20px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+}
+
+.videoContainer {
+    box-sizing: border-box;
+    width: 600px;
+    max-width: 100%;
+}

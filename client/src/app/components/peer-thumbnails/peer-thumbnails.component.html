@@ -1,32 +1,26 @@
 <div class="outerThumbnailsContainer" #outerThumbnailsContainer>
-    <div class="innerThumbnailsContainer" #innerThumbnailsContainer (mousedown)="onScrollWithMouse()"
-        (mouseup)="onStopScrollWithMouse()">
-        <div class="thumbnail"></div>
-        <div class="thumbnail"></div>
-        <div class="thumbnail"></div>
-        <div class="thumbnail"></div>
-        <div class="thumbnail"></div>
-        <div class="thumbnail"></div>
-        <div class="thumbnail"></div>
-        <div class="thumbnail"></div>
-        <div class="thumbnail"></div>
-        <div class="thumbnail"></div>
-        <div class="thumbnail"></div>
-        <div class="thumbnail"></div>
-        <div class="thumbnail"></div>
-        <div class="thumbnail"></div>
-        <div class="thumbnail"></div>
-        <div class="thumbnail"></div>
-        <div class="thumbnail"></div>
-        <!-- <app-video [peer]="activeMeetingService.localPeer" [muted]="true"></app-video>
-        <app-video *ngFor="let remotePeer of activeMeetingService.remotePeerList" [peer]="remotePeer"
-            [muted]="false"></app-video> -->
-
+    <div [ngClass]="{
+        innerThumbnailsContainer : true,
+        oneCol : displaySetting === 'oneCol',
+        twoCols : displaySetting === 'twoCols',
+        threeCols : displaySetting === 'threeCols'
+    }" [ngStyle]="{gridAutoRows: rowHeight + 'px'}" #innerThumbnailsContainer>
+        <div class="thumbnail"
+            [ngStyle]="{minHeight: rowHeight + 'px', maxHeight: rowHeight + 'px', height: rowHeight + 'px'}">
+            <app-video [peer]="activeMeetingService.localPeer" [muted]="true"></app-video>
+        </div>
+        <div class="thumbnail"
+            [ngStyle]="{minHeight: rowHeight + 'px', maxHeight: rowHeight + 'px', height: rowHeight + 'px'}"
+            *ngFor="let remotePeer of activeMeetingService.remotePeerList">
+            <app-video [peer]="remotePeer" [muted]="false"></app-video>
+        </div>
     </div>
     <button class="scrollBtnUp" *ngIf="showScrollButtons && showScrollUp" (mousedown)="onScrollUp()"
-        (mouseup)="onStopScrollUp()" (mouseleave)="onStopScrollUp()"><fa-icon [icon]="faAngleUp"
-            [size]="'xl'"></fa-icon></button>
+        (mouseup)="onStopScrollUp()" (mouseleave)="onStopScrollUp()" (touchstart)="onScrollUp()"
+        (touchend)="onStopScrollUp()" (touchcancel)="onStopScrollUp()">
+        <fa-icon [icon]="faAngleUp" [size]="'xl'"></fa-icon></button>
     <button class="scrollBtnDown" *ngIf="showScrollButtons && showScrollDown" (mousedown)="onScrollDown()"
-        (mouseup)="onStopScrollDown()" (mouseleave)="onStopScrollDown()"><fa-icon [icon]="faAngleDown"
-            [size]="'xl'"></fa-icon></button>
+        (mouseup)="onStopScrollDown()" (mouseleave)="onStopScrollDown()" (touchstart)="onScrollDown()"
+        (touchend)="onStopScrollDown()" (touchcancel)="onStopScrollDown()">
+        <fa-icon [icon]="faAngleDown" [size]="'xl'"></fa-icon></button>
 </div>

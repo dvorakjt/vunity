@@ -1,28 +1,49 @@
 <div class="activeMeetingScreenContainerMobileVertical">
     <div class="speakerViewContainer"><app-speaker-view></app-speaker-view></div>
-    <div class="peerThumbnailsContainer">Peers</div>
-    <div class="toolsContainer">Tools</div>
+    <div class="peerThumbnailsContainer">
+        <app-peer-thumbnails *ngIf="!showChat"></app-peer-thumbnails>
+        <app-chat-messages *ngIf="showChat"></app-chat-messages>
+    </div>
+    <div class="toolsContainer"><app-active-meeting-toolbar [isMobile]="true" (showChatChanged)="onToggleChat($event)"
+            (showSettingsButtonClicked)="showSettingsModal = true"></app-active-meeting-toolbar></div>
 </div>
 <div class="activeMeetingScreenContainerMobileHorizontal">
     <div class="speakerAndToolsContainer">
         <div class="speakerViewContainer"><app-speaker-view></app-speaker-view></div>
-        <div class="toolsContainer">Tools</div>
+        <div class="toolsContainer"><app-active-meeting-toolbar [isMobile]="true"
+                (showChatChanged)="onToggleChat($event)"
+                (showSettingsButtonClicked)="showSettingsModal = true"></app-active-meeting-toolbar></div>
     </div>
-    <div class="peerThumbnailsContainer">Peers</div>
+    <div class="peerThumbnailsContainer">
+        <app-peer-thumbnails *ngIf="!showChat"></app-peer-thumbnails>
+        <app-chat-messages *ngIf="showChat"></app-chat-messages>
+    </div>
 </div>
 <div class="activeMeetingScreenContainerTabletVertical">
     <div class="speakerViewContainer"><app-speaker-view></app-speaker-view></div>
     <div class="thumbnailsAndChatContainer">
-        <div class="peerThumbnailsContainer">Peers</div>
-        <div class="chatContainer">Chat</div>
+        <div class="peerThumbnailsContainer"><app-peer-thumbnails></app-peer-thumbnails></div>
+        <div class="chatContainer"><app-chat-messages></app-chat-messages></div>
     </div>
-    <div class="toolsContainer">Tools</div>
+    <div class="toolsContainer"><app-active-meeting-toolbar
+            (showSettingsButtonClicked)="showSettingsModal = true"></app-active-meeting-toolbar></div>
 </div>
 <div class="activeMeetingScreenContainerTabletHorizontalAndDesktop">
-    <div class="peerThumbnailsContainer">Peers</div>
+    <div class="peerThumbnailsContainer"><app-peer-thumbnails></app-peer-thumbnails></div>
     <div class="speakerAndToolsContainer">
         <div class="speakerViewContainer"><app-speaker-view></app-speaker-view></div>
-        <div class="toolsContainer">Tools</div>
+        <div class="toolsContainer"><app-active-meeting-toolbar
+                (showSettingsButtonClicked)="showSettingsModal = true"></app-active-meeting-toolbar></div>
     </div>
-    <div class="chatContainer">Chat</div>
+    <div class="chatContainer"><app-chat-messages></app-chat-messages></div>
+</div>
+<div class="modalContainer" *ngIf="showSettingsModal">
+    <div class="modal">
+        <h2>Settings</h2>
+        <label>Microphone Input Level</label>
+        <input type="range" [min]="0" [max]="1.5" [step]="0.1" (change)="onChangeMicLevel($event)"
+            [value]="activeMeetingService.localPeer?.gain" />
+        <br />
+        <button class="btnPrimary" (click)="showSettingsModal = false">Done</button>
+    </div>
 </div>

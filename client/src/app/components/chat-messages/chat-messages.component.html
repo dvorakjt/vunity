@@ -1,1 +1,10 @@
-<p>chat-messages works!</p>
+<div class="messagesContainer" #messagesContainer>
+    <div *ngFor="let message of activeMeetingService.messages" class="message" [ngClass]="{
+        ownMessage : message.from == 'me'
+    }" #messages><span [innerHTML]="replaceLinksWithTags(message.text)"></span><small
+            class="sender-name-text">{{message.from}}</small></div>
+</div>
+<div class="newMessageInputContainer">
+    <textarea [(ngModel)]="newMessage" resize="none" placeholder="Send a message to everyone..."></textarea>
+    <button (click)="onSendMessage()" class="btnPrimary">Send</button>
+</div>
