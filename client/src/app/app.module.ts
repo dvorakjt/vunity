@@ -11,12 +11,8 @@ import { JoinMeetingComponent } from './components/join-meeting/join-meeting.com
 import { LoadingWheelComponent } from './shared/loading-wheel/loading-wheel.component';
 import { LoadingWheelOverlayComponent } from './shared/loading-wheel-overlay/loading-wheel-overlay.component';
 import { DashboardComponent } from './pages/dashboard/dashboard.component';
-import { MeetingsListComponent } from './dashboard/meetings-list/meetings-list.component';
-import { MeetingDetailComponent } from './dashboard/meeting-detail/meeting-detail.component';
 import { ModalComponent } from './shared/modal/modal.component';
-import { ActiveMeetingComponent } from './active-meeting/active-meeting.component';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { MediaSettingsModalComponent } from './media-settings-modal/media-settings-modal.component';
 import { VideoComponent } from './components/video/video.component';
 import { CalendarComponent } from './components/calendar/calendar.component';
 import { UpcomingMeetingsComponent } from './components/upcoming-meetings/upcoming-meetings.component';
@@ -57,11 +53,7 @@ import { ActiveMeetingPageComponent } from './pages/active-meeting-page/active-m
     LoadingWheelComponent,
     LoadingWheelOverlayComponent,
     DashboardComponent,
-    MeetingsListComponent,
-    MeetingDetailComponent,
     ModalComponent,
-    ActiveMeetingComponent,
-    MediaSettingsModalComponent,
     VideoComponent,
     CalendarComponent,
     UpcomingMeetingsComponent,

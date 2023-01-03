@@ -10,7 +10,8 @@
                                 ariaCurrentWhenActive="page">Login</a></li>
                 <li *ngIf="authService.activeUser"><a routerLink="/dashboard" routerLinkActive="active"
                                 ariaCurrentWhenActive="page">Dashboard</a></li>
-                <li><a>Join a Meeting</a></li>
+                <li><a routerLink="/joinmeeting" routerLinkActive="active" ariaCurrentWhenActive="page">Join a
+                                Meeting</a></li>
         </ul>
         <ul *ngIf="authService.activeUser && showDesktopMenu()" class="desktopMenu">
                 <li><span class="navbar-text">Welcome, {{authService.activeUser.name}}</span></li>
@@ -26,7 +27,8 @@
                                 ariaCurrentWhenActive="page">Login</a></li>
                 <li *ngIf="authService.activeUser"><a routerLink="/dashboard" routerLinkActive="active"
                                 ariaCurrentWhenActive="page">Dashboard</a></li>
-                <li><a>Join a Meeting</a></li>
+                <li><a routerLink="/joinmeeting" routerLinkActive="active" ariaCurrentWhenActive="page">Join a
+                                Meeting</a></li>
                 <li><span class="navbar-text navbar-highlightable-text" (click)="authService.logout()"
                                 style="width: 100%; box-sizing: border-box;">Logout</span></li>
         </ul>
@@ -41,7 +43,8 @@
                                 ariaCurrentWhenActive="page">Calendar</a></li>
                 <li *ngIf="authService.activeUser"><a routerLink="/newmeeting" routerLinkActive="active"
                                 ariaCurrentWhenActive="page">New Meeting</a></li>
-                <li><a>Join a Meeting</a></li>
+                <li><a routerLink="/joinmeeting" routerLinkActive="active" ariaCurrentWhenActive="page">Join a
+                                Meeting</a></li>
                 <li><span class="navbar-text navbar-highlightable-text" style="width: 100%; box-sizing: border-box;"
                                 (click)="authService.logout()">Logout</span></li>
         </ul>

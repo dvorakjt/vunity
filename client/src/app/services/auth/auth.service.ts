@@ -95,6 +95,7 @@ export class AuthService {
             const opts = {headers: headers};
             this.http.get('/api/users/userinfo', opts).subscribe({
                 next: (responseData:any) => {
+                    this.hideRecaptcha();
                     subscriber.next(responseData);
                     subscriber.complete();
                 },
@@ -165,6 +166,7 @@ export class AuthService {
 
     logout() {
         this.clearUserData();
+        this.showRecaptcha();
         this.isAuthenticated.next(false);
         this.router.navigate(["/login"]);
     }
@@ -174,5 +176,19 @@ export class AuthService {
         this.access_token = "";
         this.refresh_token = "";
         this.activeUser = undefined;
+    }
+
+    hideRecaptcha() {
+        const recaptcha = document.getElementsByClassName('grecaptcha-badge')[0] as any;
+        if(recaptcha) {
+            recaptcha.style.visibility = 'hidden';
+        }
+    }
+
+    showRecaptcha() {
+        const recaptcha = document.getElementsByClassName('grecaptcha-badge')[0] as any;
+        if(recaptcha) {
+            recaptcha.style.visibility = 'visible';
+        }
     }
 }
