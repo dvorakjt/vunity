@@ -1,5 +1,5 @@
 import { Subject } from "rxjs";
-import * as hark from "hark";
+import hark from "hark";
 import { DataChannelMessage } from "../types/data-channel-message.type";
 import { Peer } from "./peer.model";
 

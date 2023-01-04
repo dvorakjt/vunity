@@ -1,5 +1,5 @@
 import { ReplaySubject, Subject } from "rxjs";
-import * as hark from 'hark';
+import hark from 'hark';
 import { Message } from "./message.model";
 import { Peer } from "./peer.model";
 import { RemotePeerPartial } from "./remote-peer-partial.model";

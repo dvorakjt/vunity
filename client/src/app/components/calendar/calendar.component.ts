@@ -28,23 +28,19 @@ export class CalendarComponent implements OnInit {
   faAngleLeft = faAngleLeft;
   faAngleRight = faAngleRight;
 
-  constructor(
-    private auth:AuthService, 
-    private meetingsService:MeetingsService, 
-    private viewDateService:ViewDateService,
-    private changeDetection:ChangeDetectorRef
+  constructor( 
+    public meetingsService:MeetingsService, 
+    public viewDateService:ViewDateService,
   ) {}
 
   ngOnInit(): void {
     this.populateDays(this.currentMonth, this.currentYear, this.days);
     this.meetingsService.meetingsModified.subscribe(() => {
-    this.days = this.initializeDays(this.currentMonth, this.currentYear);
-    this.populateDays(this.currentMonth, this.currentYear, this.days).then(() => {
-      console.log('populating days');
-      console.log(this.days);
-    }).catch((e) => {
-      console.log(e);
-    });
+      this.days = this.initializeDays(this.currentMonth, this.currentYear);
+      this.populateDays(this.currentMonth, this.currentYear, this.days).then(() => {
+      }).catch((e) => {
+        console.log(e);
+      });
     });
   }
 
@@ -62,7 +58,7 @@ export class CalendarComponent implements OnInit {
     return new Promise<void>(async (resolve, reject) => {
       try {
         const meetingsThisMonth = await this.meetingsService.loadMeetingsByMonthAndYear(month, year);
-        meetingsThisMonth.forEach(meeting => {
+        meetingsThisMonth && meetingsThisMonth.forEach(meeting => {
           const startDateTime = DateTime.fromISO(meeting.startDateTime);
           const day = startDateTime.day;
           days[day - 1].push(meeting);
@@ -83,11 +79,7 @@ export class CalendarComponent implements OnInit {
     this.days = this.initializeDays(this.currentMonth, this.currentYear);
     this.previousMonthDays = this.getPreviousMonthDays(previousMonthDT);
     this.nextMonthDays = this.getNextMonthDays(previousMonthDT);
-    this.populateDays(this.currentMonth, this.currentYear, this.days).then(() => {
-      console.log(this.days);
-    }).catch((e) => {
-      console.log(e);
-    });
+    this.populateDays(this.currentMonth, this.currentYear, this.days);
   }
 
   onGotoNextMonth() {
@@ -115,11 +107,7 @@ export class CalendarComponent implements OnInit {
     this.days = this.initializeDays(this.currentMonth, this.currentYear);
     this.previousMonthDays = this.getPreviousMonthDays(newSelectedMonth);
     this.nextMonthDays = this.getNextMonthDays(newSelectedMonth);
-    this.populateDays(this.currentMonth, this.currentYear, this.days).then(() => {
-      console.log(this.days);
-    }).catch((e) => {
-      console.log(e);
-    });
+    this.populateDays(this.currentMonth, this.currentYear, this.days);
   }
 
   getPreviousMonthDays(dateTime:DateTime) {
