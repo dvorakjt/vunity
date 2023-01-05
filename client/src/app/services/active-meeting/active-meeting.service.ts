@@ -52,11 +52,12 @@ export class ActiveMeetingService {
     constructor(private authService: AuthService, private http: HttpClient) {
     }
 
-    authenticateAsGuest(meetingId:string, password:string) {
+    authenticateAsGuest(meetingId:string, password:string, recaptchaToken:string) {
         if(this.meetingStatus === MeetingStatus.NotInMeeting) {
             this.http.post('/api/meeting/join', {
                 meetingId,
-                password
+                password,
+                recaptchaToken
             }).subscribe({
                 next: (responseData: any) => {
                     this.authToken = responseData.access_token;

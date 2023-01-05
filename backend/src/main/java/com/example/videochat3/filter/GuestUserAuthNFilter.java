@@ -1,6 +1,7 @@
 package com.example.videochat3.filter;
 
 import com.example.videochat3.DTO.GuestAuthDTO;
+import com.example.videochat3.recaptcha.RecaptchaManager;
 import com.example.videochat3.tokens.UserTokenManager;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -21,9 +22,11 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 public class GuestUserAuthNFilter extends UsernamePasswordAuthenticationFilter {
     private final AuthenticationManager authenticationManager;
+    private RecaptchaManager recaptchaManager;
 
-    public GuestUserAuthNFilter(AuthenticationManager authenticationManager) {
+    public GuestUserAuthNFilter(AuthenticationManager authenticationManager, RecaptchaManager recaptchaManager) {
         this.authenticationManager = authenticationManager;
+        this.recaptchaManager = recaptchaManager;
     }
 
     @Override
@@ -33,7 +36,9 @@ public class GuestUserAuthNFilter extends UsernamePasswordAuthenticationFilter {
         UsernamePasswordAuthenticationToken authToken;
         try {
             credentials = objectMapper.readValue(request.getReader(), GuestAuthDTO.class);
-            authToken = new UsernamePasswordAuthenticationToken(credentials.getMeetingId(), credentials.getPassword());
+            if(recaptchaManager.verifyRecaptchaToken(credentials.getRecaptchaToken())) 
+                authToken = new UsernamePasswordAuthenticationToken(credentials.getMeetingId(), credentials.getPassword());
+            else authToken = new UsernamePasswordAuthenticationToken("", "");
         } catch(Exception e) {
             authToken = new UsernamePasswordAuthenticationToken("", "");
         }

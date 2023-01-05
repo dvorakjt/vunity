@@ -1,4 +1,5 @@
 import { Component, OnInit, Input } from '@angular/core';
+import { ReCaptchaV3Service } from 'ng-recaptcha';
 import { MeetingStatus } from 'src/app/constants/meeting-status';
 import { ActiveMeetingService } from 'src/app/services/active-meeting/active-meeting.service';
 import { LoadingService } from 'src/app/services/loading/loading.service';
@@ -17,6 +18,7 @@ export class JoinMeetingComponent implements OnInit {
 
   constructor(
     public activeMeetingService:ActiveMeetingService,
+    public recaptchaV3Service:ReCaptchaV3Service,
     public loadingService:LoadingService
   ) {}
 
@@ -46,11 +48,19 @@ export class JoinMeetingComponent implements OnInit {
     }
     if (!frontendValidationPassed) return;
     this.loadingService.isLoading = true;
-    this.activeMeetingService.meetingStatusChanged.subscribe({
-      next: () => {
-        this.loadingService.isLoading = false;
+    this.recaptchaV3Service.execute('joinmeeting').subscribe({
+      next: (recaptchaToken) => {
+        this.activeMeetingService.meetingStatusChanged.subscribe({
+          next: () => {
+            this.loadingService.isLoading = false;
+          }
+        });
+        this.activeMeetingService.authenticateAsGuest(this.meetingId, this.password, recaptchaToken);
+      },
+      error: () => {
+        this.serverErrorMessage = 'There was a problem with the recaptcha. Please refresh and try again.';
       }
-    });
-    this.activeMeetingService.authenticateAsGuest(this.meetingId, this.password);
+    })
+    
   }
 }

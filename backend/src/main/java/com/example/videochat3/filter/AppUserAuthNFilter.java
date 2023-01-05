@@ -24,6 +24,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Map;
 
+import com.example.videochat3.DTO.UserAuthDTO;
+
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 public class AppUserAuthNFilter extends UsernamePasswordAuthenticationFilter {
@@ -38,12 +40,18 @@ public class AppUserAuthNFilter extends UsernamePasswordAuthenticationFilter {
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
-        String email = request.getParameter("email");
-        String password = request.getParameter("password");
-        String recaptchaToken = request.getParameter("recaptchaToken");
+        UserAuthDTO credentials;
+        ObjectMapper objectMapper = new ObjectMapper();
         UsernamePasswordAuthenticationToken authToken;
-        if(recaptchaManager.verifyRecaptchaToken(recaptchaToken)) authToken = new UsernamePasswordAuthenticationToken(email, password);
-        else authToken = new UsernamePasswordAuthenticationToken("", "");
+        try {
+            credentials = objectMapper.readValue(request.getReader(), UserAuthDTO.class);
+            if(recaptchaManager.verifyRecaptchaToken(credentials.getRecaptchaToken())) 
+                authToken = new UsernamePasswordAuthenticationToken(credentials.getEmail(), credentials.getPassword());
+            else authToken = new UsernamePasswordAuthenticationToken("", "");
+        } catch(Exception e) {
+            authToken = new UsernamePasswordAuthenticationToken("", "");
+        }
+        
         return authenticationManager.authenticate(authToken);
     }
 

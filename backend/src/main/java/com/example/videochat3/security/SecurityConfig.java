@@ -73,6 +73,8 @@ public class SecurityConfig {
         @Qualifier("MeetingPasswordEncoder")
         private final PasswordEncoder meetingPasswordEncoder;
 
+        private final RecaptchaManager recaptchaManager;
+
         @Override
         protected void configure(AuthenticationManagerBuilder auth) throws Exception {
             auth.userDetailsService(guestUserDetailsService).passwordEncoder(meetingPasswordEncoder);
@@ -81,7 +83,7 @@ public class SecurityConfig {
         @Override
         protected void configure(HttpSecurity http) throws Exception {
             log.info("configuring guest user security config.");
-            GuestUserAuthNFilter guestUserAuthNFilter = new GuestUserAuthNFilter(guestAuthManagerBean());
+            GuestUserAuthNFilter guestUserAuthNFilter = new GuestUserAuthNFilter(guestAuthManagerBean(), recaptchaManager);
             guestUserAuthNFilter.setFilterProcessesUrl("/api/meeting/join");
             http.antMatcher("/**").csrf().disable().authorizeRequests()
             .antMatchers("/api/meeting/join", "/socket/**").permitAll().anyRequest().authenticated();
