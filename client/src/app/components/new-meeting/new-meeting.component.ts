@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { faRefresh } from '@fortawesome/free-solid-svg-icons';
 import { faAdd } from '@fortawesome/free-solid-svg-icons';
@@ -22,9 +22,9 @@ export class NewMeetingComponent implements OnInit {
   succeeded = false;
 
   newMeetingForm = new FormGroup({
-    'title': new FormControl(null, [Validators.required]),
+    'title': new FormControl('', [Validators.required]),
     'startDateTime': new FormControl('', [Validators.required]),
-    'duration': new FormControl(null, [Validators.required, Validators.pattern(/\d+/), Validators.min(5), Validators.max(120)]),
+    'duration': new FormControl(0, [Validators.required, Validators.pattern(/\d+/), Validators.min(5), Validators.max(120)]),
     'password': new FormControl('', [Validators.required, Validators.minLength(8), Validators.maxLength(60)])
   });
 
@@ -39,9 +39,9 @@ export class NewMeetingComponent implements OnInit {
   faClose = faClose;
 
   constructor(
-    private meetingsService:MeetingsService, 
+    public meetingsService:MeetingsService, 
     public dateTimeService:DateTimeService,
-    private loadingService:LoadingService
+    public loadingService:LoadingService
   ) {}
 
   ngOnInit(): void {
@@ -53,9 +53,7 @@ export class NewMeetingComponent implements OnInit {
     });
   }
   
-
   setDefaultDate() {
-    console.log(this.date);
     if(typeof this.date === 'string' && DateTime.fromISO(this.date).isValid) {
         return this.date + "T12:00";
     } else return '';
@@ -89,8 +87,6 @@ export class NewMeetingComponent implements OnInit {
 
   onSubmit(event:Event) {
 
-    console.log("button submitted");
-
     if(this.newMeetingForm.valid && 
       this.newMeetingForm.value.title &&
       this.newMeetingForm.value.duration &&
@@ -109,10 +105,12 @@ export class NewMeetingComponent implements OnInit {
         next: () => {
           this.loadingService.isLoading = false;
           this.succeeded = true;
+          this.meetingsService.apiCall.unsubscribe();
         },
         error: () => {
           this.loadingService.isLoading = false;
           this.serverError = 'There was a problem creating the meeting.';
+          this.meetingsService.apiCall.unsubscribe();
         }
       })
       this.meetingsService.createMeeting(meetingDTO);

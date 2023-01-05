@@ -1,5 +1,4 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Message } from 'src/app/models/message.model';
 import { ActiveMeetingService } from 'src/app/services/active-meeting/active-meeting.service';
 import { ActiveMeetingServiceStub } from 'src/app/tests/mocks/ActiveMeetingServiceStub';
 

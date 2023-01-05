@@ -14,12 +14,10 @@ export class JoinMeetingComponent implements OnInit {
   meetingIdErrorMessage = '';
   passwordErrorMessage = '';
   serverErrorMessage = '';
-  username = '';
-  usernameErrorMessage = '';
 
   constructor(
-    private activeMeetingService:ActiveMeetingService,
-    private loadingService:LoadingService
+    public activeMeetingService:ActiveMeetingService,
+    public loadingService:LoadingService
   ) {}
 
   ngOnInit(): void {

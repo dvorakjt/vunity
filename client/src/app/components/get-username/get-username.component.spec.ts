@@ -1,4 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { FormsModule } from '@angular/forms';
+import { ActiveMeetingService } from 'src/app/services/active-meeting/active-meeting.service';
+import { ActiveMeetingServiceStub } from 'src/app/tests/mocks/ActiveMeetingServiceStub';
 
 import { GetUsernameComponent } from './get-username.component';
 
@@ -8,7 +11,9 @@ describe('GetUsernameComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ GetUsernameComponent ]
+      declarations: [ GetUsernameComponent ],
+      imports: [FormsModule],
+      providers: [{provide: ActiveMeetingService, useClass: ActiveMeetingServiceStub}]
     })
     .compileComponents();
 
@@ -20,4 +25,17 @@ describe('GetUsernameComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('should set the usernameErrorMessage when onSubmit is called without a username.', () => {
+    component.onSubmit();
+    expect(component.usernameErrorMessage).toBe('Please enter a name');
+  });
+
+  it('should call activeMeetingService.setLocalPeerUsername when onSubmit is called with a username.', () => {
+    spyOn(component.activeMeetingService, 'setLocalPeerUsername');
+    component.username = 'Mieczyslaw';
+    component.onSubmit();
+    expect(component.activeMeetingService.setLocalPeerUsername).toHaveBeenCalledWith('Mieczyslaw');
+  });
+
 });

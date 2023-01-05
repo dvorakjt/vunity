@@ -1,8 +1,6 @@
 import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { DateTime } from 'luxon';
 import { faAngleLeft } from '@fortawesome/free-solid-svg-icons';
-import { MeetingUpdateDTO } from 'src/app/models/meeting-update-dto.model';
 import { Meeting } from 'src/app/models/meeting.model';
 import { DateTimeService } from 'src/app/services/date-time/date-time.service';
 import { MeetingsService } from 'src/app/services/meetings/meetings.service';
@@ -34,7 +32,7 @@ export class EditMeetingComponent implements OnChanges {
 
   constructor(
     public dateTimeService:DateTimeService, 
-    private meetingsService:MeetingsService,
+    public meetingsService:MeetingsService,
     public loadingService:LoadingService
   ) {}
 

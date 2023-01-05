@@ -1,6 +1,6 @@
 <div class="horizontalContainerSpaceBetween">
-    <button class="btnTransparent" (click)="onGoBack()"><fa-icon [icon]="faAngleLeft" [size]="'lg'"
-            *ngIf="showBackButton"></fa-icon></button>
+    <button class="btnTransparent" (click)="onGoBack()" *ngIf="showBackButton"><fa-icon [icon]="faAngleLeft"
+            [size]="'lg'"></fa-icon></button>
     <p>
         {{viewDateService.selectedDate ? (viewDateService.selectedDate.month + "/" + viewDateService.selectedDate.date + "/" + viewDateService.selectedDate.year) : 'No date was selected'}}
     </p>

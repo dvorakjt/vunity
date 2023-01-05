@@ -1,23 +1,23 @@
 <div [ngClass]="{
-    videoContainerThumbnail : size === sizes.Thumbnail,
-    videoContainerModal : size === sizes.Modal,
-    videoContainerSpeaker : size === sizes.Speaker
+    videoContainerThumbnail : videoSize === sizes.Thumbnail,
+    videoContainerModal : videoSize === sizes.Modal,
+    videoContainerSpeaker : videoSize === sizes.Speaker
 }">
     <video [srcObject]="peer?.stream" autoplay="true" [ngClass]="{
-            videoThumbnail : size === sizes.Thumbnail,
-            videoModal : size === sizes.Modal,
-            videoSpeaker : size === sizes.Speaker
+            videoThumbnail : videoSize === sizes.Thumbnail,
+            videoModal : videoSize === sizes.Modal,
+            videoSpeaker : videoSize === sizes.Speaker
         }" [muted]="muted"></video>
     <div [ngClass]="{
-        videoBannerThumbnail : size === sizes.Thumbnail,
-        videoBannerModal : size === sizes.Modal,
-        videoBannerSpeaker : size === sizes.Speaker,
+        videoBannerThumbnail : videoSize === sizes.Thumbnail,
+        videoBannerModal : videoSize === sizes.Modal,
+        videoBannerSpeaker : videoSize === sizes.Speaker,
         hide : peer?.videoEnabled
     }">
         <h2>{{peer?.username}}</h2>
     </div>
     <fa-icon [icon]="peer?.audioEnabled ? faMicrophone : faMicrophoneSlash" class="microphone-icon"></fa-icon>
     <div class="outline" [ngClass]="{
-        hide : size !== sizes.Thumbnail || !isSpeaking || !peer?.audioEnabled
+        hide : videoSize !== sizes.Thumbnail || !isSpeaking || !peer?.audioEnabled
     }"></div>
 </div>

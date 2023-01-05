@@ -38,7 +38,6 @@ export class NavbarComponent {
         }
         if(target.parentNode) target = target.parentNode as HTMLElement;
       } while(target.parentNode);
-      console.log(clickedNavbar);
       if(!clickedNavbar) this.menuOpen = false;
     });
   }

@@ -11,7 +11,7 @@ export class GetUsernameComponent {
   usernameErrorMessage = '';
   formSubmissionError = '';
 
-  constructor(private activeMeetingService:ActiveMeetingService) {}
+  constructor(public activeMeetingService:ActiveMeetingService) {}
 
   onSubmit() {
     if(!this.username) {

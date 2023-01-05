@@ -170,7 +170,7 @@ export class MeetingsService {
                 this.apiCall.emit({success:true, message:"succeeded"});
             },
             error: (error) => {
-                this.apiCall.emit({success:false, message:error.message});
+                this.apiCall.error(error);
             }
         });
     }
