@@ -20,7 +20,7 @@ export class VideoComponent implements OnInit {
   faMicrophoneSlash = faMicrophoneSlash;
   sizes = VideoSize;
 
-  constructor(private changeDetector:ChangeDetectorRef) {}
+  constructor(public changeDetector:ChangeDetectorRef) {}
 
   ngOnInit(): void {
     if(this.peer) {

@@ -1,4 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ActiveMeetingService } from 'src/app/services/active-meeting/active-meeting.service';
+import { ActiveMeetingServiceStub } from 'src/app/tests/mocks/ActiveMeetingServiceStub';
 
 import { PeerThumbnailsComponent } from './peer-thumbnails.component';
 
@@ -8,7 +10,8 @@ describe('PeerThumnailsComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ PeerThumbnailsComponent ]
+      declarations: [ PeerThumbnailsComponent ],
+      providers: [{provide: ActiveMeetingService, useClass: ActiveMeetingServiceStub}]
     })
     .compileComponents();
 

@@ -70,7 +70,7 @@
         <button class="btnPrimary" type="submit" (click)="onSubmit($event)">Create Meeting</button>
     </div>
 </form>
-<form class="form" [formGroup]="newMeetingForm" #ngForm="ngForm" *ngIf="succeeded">
+<div *ngIf="succeeded">
     <h1 class="formHeader">New Meeting</h1>
     <div class="spacer-lg"></div>
     <p>Success! The meeting was created and invitations were emailed to your guests.</p>
@@ -78,4 +78,4 @@
     <div class="horizontalContainerCentered">
         <button class="btnPrimary" (click)="onResetForm($event)">Ok</button>
     </div>
-</form>
+</div>

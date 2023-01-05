@@ -52,6 +52,7 @@ describe('NavbarComponent', () => {
   });
 
   it('should render the tablet menu when menuOpen is true and showTabletMenu returns true.', () => {
+    spyOn(component, 'showDesktopMenu').and.returnValue(false);
     spyOn(component, 'showTabletMenu').and.returnValue(true);
     component.menuOpen = true;
     fixture.detectChanges();
@@ -83,6 +84,7 @@ describe('NavbarComponent', () => {
   });
 
   it('should render the mobile menu if menuOpen is true & showMobileMenu returns true.', () => {
+    spyOn(component, 'showDesktopMenu').and.returnValue(false);
     spyOn(component, 'showTabletMenu').and.returnValue(false);
     spyOn(component, 'showMobileMenu').and.returnValue(true);
     component.menuOpen = true;
@@ -131,6 +133,7 @@ describe('NavbarComponent', () => {
   it('should set menuOpen to !menuOpen when the hamburger button is clicked.', () => {
     expect(component.menuOpen).toBe(false);
     spyOn(component, 'showDesktopMenu').and.returnValue(false);
+    fixture.detectChanges();
     fixture.nativeElement.getElementsByClassName('hamburger')[0].click();
     expect(component.menuOpen).toBe(true);
   });

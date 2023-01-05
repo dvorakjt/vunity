@@ -20,4 +20,28 @@ describe('ViewAndEditMeetingComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('should render <app-view-meeting/> if !isEditing.', () => {
+    const appViewMeeting = fixture.nativeElement.querySelector('app-view-meeting');
+    expect(appViewMeeting).toBeTruthy();
+  });
+
+  it('should not render <app-edit-meeting/> if !isEditing.', () => {
+    const appEditMeeting = fixture.nativeElement.querySelector('app-edit-meeting');
+    expect(appEditMeeting).toBeFalsy();
+  });
+
+  it('should render <app-edit-meeting/> if isEditing.', () => {
+    component.isEditing = true;
+    fixture.detectChanges();
+    const appEditMeeting = fixture.nativeElement.querySelector('app-edit-meeting');
+    expect(appEditMeeting).toBeTruthy();
+  });
+
+  it('should not render <app-view-meeting/> if isEditing.', () => {
+    component.isEditing = true;
+    fixture.detectChanges();
+    const appViewMeeting = fixture.nativeElement.querySelector('app-view-meeting');
+    expect(appViewMeeting).toBeFalsy();
+  });
 });

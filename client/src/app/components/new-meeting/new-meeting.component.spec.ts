@@ -35,6 +35,16 @@ describe('NewMeetingComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  it('should render the create meeting form if succeeded is false.', () => {
+    expect(fixture.nativeElement.querySelector('form')).toBeTruthy();
+  });
+
+  it('should render the success div if succeeded is true.', () => {
+    component.succeeded = true;
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('p').textContent).toBe('Success! The meeting was created and invitations were emailed to your guests.');
+  });
+
   it('should set a default password on init.', () => {
     spyOn(component, 'getRandomPassword').and.returnValue('mySecretPassword');
     component.ngOnInit();

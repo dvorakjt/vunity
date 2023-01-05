@@ -1,4 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ActiveMeetingService } from 'src/app/services/active-meeting/active-meeting.service';
+import { ActiveMeetingServiceStub } from 'src/app/tests/mocks/ActiveMeetingServiceStub';
 
 import { SpeakerViewComponent } from './speaker-view.component';
 
@@ -8,7 +10,8 @@ describe('SpeakerViewComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ SpeakerViewComponent ]
+      declarations: [ SpeakerViewComponent ],
+      providers: [{provide: ActiveMeetingService, useClass: ActiveMeetingServiceStub}]
     })
     .compileComponents();
 

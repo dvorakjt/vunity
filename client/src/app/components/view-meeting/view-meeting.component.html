@@ -1,6 +1,6 @@
 <div class="horizontalContainerSpaceBetween">
-    <button class="btnTransparent" (click)="onGoBack()"><fa-icon [icon]="faAngleLeft" [size]="'lg'"
-            *ngIf="showBackButton"></fa-icon></button>
+    <button class="btnTransparent" (click)="onGoBack()" *ngIf="showBackButton"><fa-icon [icon]="faAngleLeft"
+            [size]="'lg'"></fa-icon></button>
     <h1 class="text md" [ngStyle]="{
         maxWidth: showBackButton ? '132px' : '100%'
     }" style="flex: 1; word-wrap: break-word; text-align: center;">

@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { ActiveMeetingService } from 'src/app/services/active-meeting/active-meeting.service';
 import { ActiveMeetingServiceStub } from 'src/app/tests/mocks/ActiveMeetingServiceStub';
 import { ActiveMeetingToolbarComponent } from './active-meeting-toolbar.component';
@@ -11,6 +12,7 @@ describe('ActiveMeetingToolbarComponent', () => {
   
     await TestBed.configureTestingModule({
       declarations: [ ActiveMeetingToolbarComponent ],
+      imports: [FontAwesomeModule],
       providers: [{ provide: ActiveMeetingService, useClass: ActiveMeetingServiceStub}]
     })
     .compileComponents();

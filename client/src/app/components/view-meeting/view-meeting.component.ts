@@ -23,8 +23,8 @@ export class ViewMeetingComponent {
   faAngleLeft = faAngleLeft;
 
   constructor(
-    private activeMeetingService:ActiveMeetingService,
-    private loadingService:LoadingService,
+    public activeMeetingService:ActiveMeetingService,
+    public loadingService:LoadingService,
     private router:Router
   ) {}
 
@@ -49,7 +49,6 @@ export class ViewMeetingComponent {
           if(status === MeetingStatus.AwaitingMedia) {
             this.loadingService.isLoading = false;
             //navigate to starting meeting page
-            console.log('should navigate');
             this.router.navigateByUrl('/startmeeting');
           }
         }
