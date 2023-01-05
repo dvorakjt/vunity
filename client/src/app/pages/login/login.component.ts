@@ -14,7 +14,7 @@ export class LoginComponent {
   passwordErrorMessage = '';
   formSubmissionError = '';
 
-  constructor(public authService:AuthService, private recaptchaV3Service:ReCaptchaV3Service) { }
+  constructor(public authService:AuthService, public recaptchaV3Service:ReCaptchaV3Service) { }
 
   onLogin() {
     let failed = false;
@@ -33,7 +33,7 @@ export class LoginComponent {
       failed = true;
     }
     if(failed) return;
-    this.recaptchaV3Service.execute('importantAction')
+    this.recaptchaV3Service.execute('login')
       .subscribe({
         next: (recaptchaToken) => {
           this.authService.login(this.email, this.password, recaptchaToken);

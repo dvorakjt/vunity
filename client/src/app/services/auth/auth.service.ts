@@ -73,14 +73,14 @@ export class AuthService {
                         this.isLoading = false;
                     },
                     error: (error) => {
-                        this.errorMessage = error.message;
+                        this.errorMessage = "Failed to login. Please ensure your credentials are correct.";
                         this.isLoading = false;
                         this.isAuthenticated.next(false);
                     }
                 })
               },
               error: error => {
-                this.errorMessage = error.message;
+                this.errorMessage = "Failed to login. Please ensure your credentials are correct.";
                 this.isLoading = false;
               },
             }
