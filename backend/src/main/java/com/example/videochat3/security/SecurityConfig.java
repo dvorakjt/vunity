@@ -15,9 +15,7 @@ import org.springframework.security.config.annotation.web.WebSecurityConfigurer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import com.example.videochat3.recaptcha.*;
@@ -33,12 +31,14 @@ public class SecurityConfig {
     public static class AppUserSecurityConfig extends WebSecurityConfigurerAdapter {
         @Qualifier("AppUserDetailsService")
         private final UserDetailsService appUserDetailsService;
-        private final BCryptPasswordEncoder bCryptPasswordEncoder;
+
+        @Qualifier("UserPasswordEncoder")
+        private final PasswordEncoder delegatingPasswordEncoder;
         private final RecaptchaManager recaptchaManager;
 
         @Override
         protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-            auth.userDetailsService(appUserDetailsService).passwordEncoder(bCryptPasswordEncoder);
+            auth.userDetailsService(appUserDetailsService).passwordEncoder(delegatingPasswordEncoder);
         }
 
         @Override
