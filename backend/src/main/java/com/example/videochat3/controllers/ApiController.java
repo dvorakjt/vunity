@@ -1,6 +1,7 @@
 package com.example.videochat3.controllers;
 
 import com.example.videochat3.domain.Meeting;
+import com.example.videochat3.filter.ResponseCookieFactory;
 import com.example.videochat3.recaptcha.RecaptchaManager;
 import com.example.videochat3.DTO.MeetingDTO;
 import com.example.videochat3.DTO.MeetingUpdateDTO;
@@ -15,9 +16,10 @@ import lombok.RequiredArgsConstructor;
 import com.aventrix.jnanoid.jnanoid.*;
 
 import org.passay.*;
-
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -43,9 +45,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 
-import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -73,13 +75,20 @@ public class ApiController {
 
     @GetMapping("/api/token/refresh")
     public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String authorizationHeader = request.getHeader(AUTHORIZATION);
-        if(authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+        Cookie[] cookies = request.getCookies();
+        Cookie refreshTokenCookie = null;
+        for(Cookie cookie : cookies) {
+            if(cookie.getName().equals("viunite_refresh_token")) refreshTokenCookie = cookie;
+        }
+        if(refreshTokenCookie != null && refreshTokenCookie.getValue() != null) {
             try {
-                String refresh_token = authorizationHeader.substring("Bearer ".length());
+                String refresh_token = refreshTokenCookie.getValue();
                 Map<String, String> tokens = UserTokenManager.refreshAccessToken(refresh_token, appUserService);
-                response.setContentType(APPLICATION_JSON_VALUE);
-                new ObjectMapper().writeValue(response.getOutputStream(), tokens);
+                // response.setContentType(APPLICATION_JSON_VALUE);
+                // new ObjectMapper().writeValue(response.getOutputStream(), tokens);
+                ResponseCookie newAccessTokenCookie = ResponseCookieFactory.createAccessTokenCookie(tokens.get("access_token"));
+                response.addHeader(HttpHeaders.SET_COOKIE, newAccessTokenCookie.toString());
+                response.setStatus(200);
             } catch (Exception e) {
                 response.setHeader("error", e.getMessage());
                 response.setStatus(403);

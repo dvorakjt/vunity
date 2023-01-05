@@ -7,6 +7,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -16,7 +17,6 @@ import java.util.Map;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
-@Slf4j
 public class AppAuthZFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -27,10 +27,18 @@ public class AppAuthZFilter extends OncePerRequestFilter {
         ) {
             filterChain.doFilter(request, response);
         } else {
-            String authHeader = request.getHeader(AUTHORIZATION);
-            if(authHeader != null && authHeader.startsWith("Bearer ")) {
+            Cookie[] cookies = request.getCookies();
+            Cookie accessTokenCookie = null;
+            for(Cookie cookie : cookies) {
+                if(cookie.getName().equals("viunite_access_token")) {
+                    accessTokenCookie = cookie;
+                }
+            }
+            if(accessTokenCookie != null && accessTokenCookie.getValue() != null) {
+                System.out.println(accessTokenCookie.getName());
+                System.out.println(accessTokenCookie.getValue());
                 try {
-                    UserTokenManager.decodeTokenAndGrantAuthority(authHeader);
+                    UserTokenManager.decodeTokenAndGrantAuthority(accessTokenCookie.getValue());
                     filterChain.doFilter(request, response);
                 } catch (Exception e) {
                     response.setStatus(403);

@@ -75,8 +75,7 @@ public class UserTokenManager {
         return dToken;
     }
 
-    public static void decodeTokenAndGrantAuthority(String authHeader) throws Exception {
-        String token = authHeader.substring("Bearer ".length());
+    public static void decodeTokenAndGrantAuthority(String token) throws Exception {
         JWTVerifier verifier = JWT.require(algorithm).build();
         DecodedJWT decodedJWT = verifier.verify(token);
         String username = decodedJWT.getSubject();
