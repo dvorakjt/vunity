@@ -78,28 +78,17 @@ public class ApiController {
         Cookie[] cookies = request.getCookies();
         Cookie refreshTokenCookie = null;
         for(Cookie cookie : cookies) {
-            if(cookie.getName().equals("viunite_refresh_token")) refreshTokenCookie = cookie;
+            if(cookie.getName().equals("vunite_refresh_token")) refreshTokenCookie = cookie;
         }
         if(refreshTokenCookie != null && refreshTokenCookie.getValue() != null) {
-            try {
-                String refresh_token = refreshTokenCookie.getValue();
-                Map<String, String> tokens = UserTokenManager.refreshAccessToken(refresh_token, appUserService);
-                // response.setContentType(APPLICATION_JSON_VALUE);
-                // new ObjectMapper().writeValue(response.getOutputStream(), tokens);
-                ResponseCookie newAccessTokenCookie = ResponseCookieFactory.createAccessTokenCookie(tokens.get("access_token"));
-                response.addHeader(HttpHeaders.SET_COOKIE, newAccessTokenCookie.toString());
-                response.setStatus(200);
-            } catch (Exception e) {
-                response.setHeader("error", e.getMessage());
-                response.setStatus(403);
-                Map<String, String> error = new HashMap<>();
-                error.put("error_message", e.getMessage());
-                response.setContentType(APPLICATION_JSON_VALUE);
-                new ObjectMapper().writeValue(response.getOutputStream(), error);
-            }
+            String refresh_token = refreshTokenCookie.getValue();
+            Map<String, String> tokens = UserTokenManager.refreshAccessToken(refresh_token, appUserService);
+            ResponseCookie newAccessTokenCookie = ResponseCookieFactory.createAccessTokenCookie(tokens.get("access_token"));
+            response.addHeader(HttpHeaders.SET_COOKIE, newAccessTokenCookie.toString());
+            response.setStatus(200);
         } else {
-            throw new RuntimeException("Refresh token is missing.");
-        }
+          response.setStatus(401);
+        }   
     }
 
     @PostMapping("/api/users/request_password_reset")
@@ -120,11 +109,11 @@ public class ApiController {
 
                 appUserService.setUserPasswordResetCodes(user.getId(), passwordEncoder.encode(passwordResetURI), passwordEncoder.encode(passwordResetCode));
 
-                String messageBody = "Dear Sia User,\n\nSomeone has requested a password reset link for your account. If this wasn't you, no action needs to be taken. " +
+                String messageBody = "Dear Vunity User,\n\nSomeone has requested a password reset link for your account. If this wasn't you, no action needs to be taken. " +
                 "If this was you, please go to the following link:\n\n" +
                 "http://localhost:4200/resetpassword/" + passwordResetURI + "\n\n" +
                 "and enter the following password:\n\n" + passwordResetCode + "\n\n" + 
-                "Thank you.\n\nThe Sia Team";
+                "Thank you.\n\nThe Vunity Team";
 
                 EmailDetails appToUserEmailDetails = new EmailDetails(user.getEmail(), messageBody, "Password Reset Request", "");
                 emailService.sendSimpleMail(appToUserEmailDetails);
@@ -189,7 +178,7 @@ public class ApiController {
         for(String guest : meeting.getGuests()) {
             String messageBody = 
             "Dear " + guest + ",\n\n" +
-            user.getName() + " has invited you to join a Sia video meeting:\n\n" +
+            user.getName() + " has invited you to join a Vunity video meeting:\n\n" +
             meeting.getTitle() + "\n" +
             "Scheduled for " + DFormat.format(meeting.getStartDateTime()) + "\n\n" +
             "To join this meeting, visit:\n\n" + 
@@ -197,8 +186,8 @@ public class ApiController {
             "And enter the password:\n\n" + 
             meetingDTO.getPassword() + "\n\n" +
             "Thank you,\n" +
-            "The Sia Team";
-            EmailDetails emailDetails = new EmailDetails(guest, messageBody, "New Sia Meeting Invitation", "");
+            "The Vunity Team";
+            EmailDetails emailDetails = new EmailDetails(guest, messageBody, "New Vunity Meeting Invitation", "");
             this.emailService.sendSimpleMail(emailDetails);
         }
         return ResponseEntity.ok().body(meeting);
@@ -242,7 +231,7 @@ public class ApiController {
         //email guests that the meeting has been canceled, then
         for(String guest : m.getGuests()) {
             String messageBody = 
-            "Dear Sia Guest,\n\n" +
+            "Dear Vunity Guest,\n\n" +
             user.getName() + " has updated a meeting you were invited to.\n\nOld meeting details:\n\n" +
             m.getTitle() + "\n" +
             "Scheduled for: " + DFormat.format(m.getStartDateTime()) + "\n" +
@@ -252,8 +241,8 @@ public class ApiController {
             "Scheduled for: " + DFormat.format(new Date(meetingUpdateDTO.getStartDateTime())) + "\n" +
             "Length: " + meetingUpdateDTO.getDuration() + " minutes\n\n" +
             "Thank you,\n" +
-            "The Sia Team";
-            EmailDetails emailDetails = new EmailDetails(guest, messageBody, "Updated Sia Meeting Invitation", "");
+            "The Vunity Team";
+            EmailDetails emailDetails = new EmailDetails(guest, messageBody, "Updated Vunity Meeting Invitation", "");
             this.emailService.sendSimpleMail(emailDetails);
         }
         //email users that the meeting has been update
@@ -282,12 +271,12 @@ public class ApiController {
         //email guests that the meeting has been canceled, then
         for(String guest : m.getGuests()) {
             String messageBody = 
-            "Dear Sia Guest,\n\n" +
+            "Dear Vunity Guest,\n\n" +
             user.getName() + " has canceled the following meeting:\n\n" +
             m.getTitle() + "\n" +
             "Scheduled for " + DFormat.format(m.getStartDateTime()) + "\n\n" +
             "Thank you,\n" +
-            "The Sia Team";
+            "The Vunity Team";
             EmailDetails emailDetails = new EmailDetails(guest, messageBody, "Meeting Canceled", "");
             this.emailService.sendSimpleMail(emailDetails);
         }

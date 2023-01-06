@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 public class AppAuthZFilter extends OncePerRequestFilter {
@@ -25,23 +24,24 @@ public class AppAuthZFilter extends OncePerRequestFilter {
           request.getServletPath().startsWith("/api/users/request_password_reset") ||
           request.getServletPath().equals("/api/users/reset_password")
         ) {
+            if(request.getServletPath().equals(("/api/token/refresh"))) {
+                System.out.println("trying to refresh token.");
+            }
             filterChain.doFilter(request, response);
         } else {
             Cookie[] cookies = request.getCookies();
             Cookie accessTokenCookie = null;
             for(Cookie cookie : cookies) {
-                if(cookie.getName().equals("viunite_access_token")) {
+                if(cookie.getName().equals("vunite_access_token")) {
                     accessTokenCookie = cookie;
                 }
             }
             if(accessTokenCookie != null && accessTokenCookie.getValue() != null) {
-                System.out.println(accessTokenCookie.getName());
-                System.out.println(accessTokenCookie.getValue());
                 try {
                     UserTokenManager.decodeTokenAndGrantAuthority(accessTokenCookie.getValue());
                     filterChain.doFilter(request, response);
                 } catch (Exception e) {
-                    response.setStatus(403);
+                    response.setStatus(401);
                     Map<String, String> error = new HashMap<>();
                     error.put("error_message", e.getMessage());
                     response.setContentType(APPLICATION_JSON_VALUE);

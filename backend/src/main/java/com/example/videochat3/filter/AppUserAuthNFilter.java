@@ -57,6 +57,7 @@ public class AppUserAuthNFilter extends UsernamePasswordAuthenticationFilter {
         // new ObjectMapper().writeValue(response.getOutputStream(), tokens);
         ResponseCookie accessTokenCookie = ResponseCookieFactory.createAccessTokenCookie(tokens.get("access_token"));
         ResponseCookie refreshTokenCookie = ResponseCookieFactory.createRefreshTokenCookie(tokens.get("refresh_token"));
+        // response.addHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_CREDENTIALS, "true");
         response.addHeader(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
         response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
         response.setStatus(200);

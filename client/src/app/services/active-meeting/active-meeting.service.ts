@@ -1,5 +1,5 @@
 import { EventEmitter, Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../auth/auth.service';
 import { MeetingStatus } from '../../constants/meeting-status';
 import { Message } from '../../models/message.model';
@@ -72,28 +72,20 @@ export class ActiveMeetingService {
 
     authenticateAsHost(meetingId:string) {
         if(this.meetingStatus === MeetingStatus.NotInMeeting) {
-            if (this.authService.access_token) {
-                const headers = new HttpHeaders({
-                    'Authorization': this.authService.getAuthorizationHeader()
-                });
-                const opts = { headers: headers };
-                this.http.post('/api/users/host_token', { meetingId }, opts).subscribe({
-                    next: (responseData: any) => {
-                        if(this.authService.activeUser) {
-                            this.isHost = true;
-                            this.authToken = responseData.access_token;
-                            this.createLocalPeer(this.authService.activeUser.name);
-                            this.updateMeetingStatus(MeetingStatus.AwaitingMedia);
-                            this.getLocalMedia();
-                        } else this.handleError(new HostAuthError("No active user."));
-                    },
-                    error: (e) => {
-                        this.handleError(new HostAuthError('Insufficicent permissions.'));
-                    }
-                });
-            } else {
-                this.handleError(new HostAuthError("No access token."));
-            }
+            this.http.post('/api/users/host_token', { meetingId }).subscribe({
+                next: (responseData: any) => {
+                    if(this.authService.activeUser) {
+                        this.isHost = true;
+                        this.authToken = responseData.access_token;
+                        this.createLocalPeer(this.authService.activeUser.name);
+                        this.updateMeetingStatus(MeetingStatus.AwaitingMedia);
+                        this.getLocalMedia();
+                    } else this.handleError(new HostAuthError("No active user."));
+                },
+                error: (e) => {
+                    this.handleError(new HostAuthError('Insufficicent permissions.'));
+                }
+            });
         } else this.handleError(new HostAuthError("Already in meeting"));
     }
 
