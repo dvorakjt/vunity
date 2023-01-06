@@ -8,7 +8,8 @@
         <small class="formFieldError" *ngIf="true">{{usernameErrorMessage}}</small>
     </div>
     <div class="spacer-lg"></div>
-    <div class="horizontalContainerCentered">
+    <div class="horizontalContainerSpaceBetween">
+        <button class="btnDanger" style="margin-right: 6px;" (click)="onCancel()">Cancel</button>
         <button class="btnPrimary" (click)="onSubmit()">Next</button>
     </div>
     <div class="spacer-lg"></div>

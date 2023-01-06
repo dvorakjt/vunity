@@ -1,1 +1,14 @@
 @use '../../../styles/containers.scss';
+@use '../../../styles/animations.scss';
+
+.hidden {
+    opacity: 0;
+}
+
+.fadeIn {
+    @include animations.fade-in(250ms);
+}
+
+.fadeOut {
+    @include animations.fade-out(250ms);
+}

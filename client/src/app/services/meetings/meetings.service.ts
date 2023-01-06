@@ -10,7 +10,7 @@ import { MeetingsById } from 'src/app/types/meetings-by-id.type';
 import { MeetingUpdateDTO } from 'src/app/models/meeting-update-dto.model';
 import { getMonthStr } from 'src/app/utils/datetime.util';
 
-@Injectable()
+@Injectable({providedIn: 'root'})
 export class MeetingsService {
 
     //this should somehow update in real time

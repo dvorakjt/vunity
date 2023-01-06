@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { ActiveMeetingService } from 'src/app/services/active-meeting/active-meeting.service';
 
 @Component({
   selector: 'app-awaiting-user-media',
@@ -6,5 +7,7 @@ import { Component } from '@angular/core';
   styleUrls: ['./awaiting-user-media.component.scss']
 })
 export class AwaitingUserMediaComponent {
+  constructor(private activeMeetingService:ActiveMeetingService) {
 
+  }
 }

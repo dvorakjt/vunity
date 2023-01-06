@@ -14,7 +14,7 @@ import { Router } from '@angular/router';
   styleUrls: ['./view-meeting.component.scss']
 })
 export class ViewMeetingComponent {
-  showCopiedInvitationText = false;
+  copyClass = 'hidden';
   hideCopiedInvitationTextTimer?:any;
 
   @Input() meeting?:Meeting;
@@ -29,7 +29,7 @@ export class ViewMeetingComponent {
   constructor(
     public activeMeetingService:ActiveMeetingService,
     public loadingService:LoadingService,
-    private router:Router
+    private router:Router,
   ) {}
 
   onGoBack() {
@@ -72,7 +72,8 @@ export class ViewMeetingComponent {
 
   onCopyLinkToClipboard() {
     if(this.meeting) {
-      if(this.hideCopiedInvitationTextTimer) this.hideCopiedInvitationTextTimer.clearTimeout();
+      if(this.hideCopiedInvitationTextTimer) clearTimeout(this.hideCopiedInvitationTextTimer);
+      console.log('should be copying');
     const invitation = 
 `Dear Guest,
 
@@ -90,9 +91,9 @@ And enter the password:
 ${this.meeting.password}`;
 
       navigator.clipboard.writeText(invitation);
-      this.showCopiedInvitationText = true;
+      this.copyClass = 'fadeIn';
       this.hideCopiedInvitationTextTimer = setTimeout(() => {
-        this.showCopiedInvitationText = false;
+        this.copyClass = 'fadeOut';
       }, 1500)
     }
   }

@@ -20,7 +20,8 @@ import { StartMeetingPageComponent } from './pages/start-meeting-page/start-meet
 const routes: Routes = [
   {
     path: "",
-    component: HomeComponent
+    component: HomeComponent,
+    canActivate: [NoAuthGuard]
   },
   {
     path: "login",
@@ -69,7 +70,7 @@ const routes: Routes = [
   },
   {
     path: "joinmeeting",
-    component: JoinMeetingPageComponent,
+    component: JoinMeetingPageComponent
   },
   {
     path: 'startmeeting',

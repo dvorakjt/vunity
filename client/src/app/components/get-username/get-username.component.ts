@@ -20,4 +20,9 @@ export class GetUsernameComponent {
     }
     this.activeMeetingService.setLocalPeerUsername(this.username);
   }
+
+  onCancel() {
+    this.activeMeetingService.resetMeetingData();
+  }
+
 }

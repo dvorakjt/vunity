@@ -21,7 +21,7 @@ import { HostAuthError } from './errors/host-auth-error';
 declare var SockJS: any;
 declare var Stomp: any;
 
-@Injectable()
+@Injectable({providedIn: 'root'})
 export class ActiveMeetingService {
     private websocketConnection?: WebSocket;
     private websocketStatus = new ReplaySubject<string>(1);
@@ -111,21 +111,31 @@ export class ActiveMeetingService {
         });
         //speaking peer defaults to localPeer
         this.speakingPeer = this.localPeer;
-        this.localPeer.speechEventEmitter.subscribe({
-            next: (isSpeaking) => {
-                if(isSpeaking) this.speakingPeer = this.localPeer;
-            }
-        });
+
+        // DO NOT RESET SPEAKING PEER TO LOCAL PEER AFTER OTHER PEERS HAVE JOINED!
+        // this.localPeer.speechEventEmitter.subscribe({
+        //     next: (isSpeaking) => {
+        //         if(isSpeaking) this.speakingPeer = this.localPeer;
+        //     }
+        // });
     }
 
     public getLocalMedia() {
         if(this.localPeer) {
             this.localPeer.getMedia().then(() => {
-                this.updateMeetingStatus(MeetingStatus.AwaitingMediaSettings);
+                //the user may have cancelled their attempt to join the meeting, so only update the meeting status if 
+                //it is still AwaitingMedia
+                if(this.meetingStatus == MeetingStatus.AwaitingMedia) {
+                    this.updateMeetingStatus(MeetingStatus.AwaitingMediaSettings);
+                }
             }).catch((e) => {
                 this.handleError(e);
+                this.resetMeetingData();
             });
-        } else this.handleError(new Error("No local peer was created"));
+        } else {
+            this.handleError(new Error("No local peer was created"));
+            this.resetMeetingData();
+        }
     }
 
     public setLocalAudioEnabled(audioEnabled:boolean) {
@@ -199,6 +209,8 @@ export class ActiveMeetingService {
         this.resetMeetingData();
     }
 
+   
+
     public resetMeetingData() {
         for(const remotePeer of this.remotePeerList) {
             remotePeer.connection.close();
@@ -246,7 +258,9 @@ export class ActiveMeetingService {
             const remotePeerPartial = new RemotePeerPartial(sessionId, username, new RTCPeerConnection(PEER_CONNECTION_CONFIG));
             this.remotePeerPartials.push(remotePeerPartial);
         }
-        if (data.isOpen) {
+        //make sure that the meeting status is not NotInMeeting, it should have advance beyond this point.
+        //if it is NotInMeeting, that likely means that the user cancelled joining or opening it.
+        if (data.isOpen && this.meetingStatus != MeetingStatus.NotInMeeting) {
             this.updateMeetingStatus(MeetingStatus.InMeeting);
             this.openConnections();
         }
@@ -258,6 +272,7 @@ export class ActiveMeetingService {
                 const remotePeer = remotePeerPartial.openConnection(this.localPeer.stream);
                 this.remotePeerList.push(remotePeer);
                 this.remotePeersById[remotePeer.sessionId] = remotePeer;
+                if(this.speakingPeer == this.localPeer) this.speakingPeer = remotePeer;
                 this.remotePeerJoinedOrLeft.emit();
                 this.subscribeToRemotePeerEvents(remotePeer);
                 remotePeer.createOffer();
@@ -274,6 +289,7 @@ export class ActiveMeetingService {
             const remotePeer = RemotePeer.createRemoteConnectionFromOffer(initiatingPeerId, initiatingPeerUsername, connection, offer, this.localPeer.stream);
             this.remotePeerList.push(remotePeer);
             this.remotePeersById[remotePeer.sessionId] = remotePeer;
+            if(this.speakingPeer == this.localPeer) this.speakingPeer = remotePeer;
             this.remotePeerJoinedOrLeft.emit();
             this.subscribeToRemotePeerEvents(remotePeer);
             remotePeer.createAnswer();

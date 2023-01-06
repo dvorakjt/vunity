@@ -1,4 +1,6 @@
 <div style="display: flex; flex-direction: column; align-items: center;">
     <app-loading-wheel [size]="'md'"></app-loading-wheel>
     <p class="text md" style="text-align: center;">Waiting for the host to open the meeting...</p>
+    <div class="spacer-sm"></div>
+    <button class="btnDanger" style="margin-right: 6px;" (click)="onCancel()">Cancel</button>
 </div>

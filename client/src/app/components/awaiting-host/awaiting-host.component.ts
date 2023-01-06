@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { ActiveMeetingService } from 'src/app/services/active-meeting/active-meeting.service';
 
 @Component({
   selector: 'app-awaiting-host',
@@ -6,5 +7,10 @@ import { Component } from '@angular/core';
   styleUrls: ['./awaiting-host.component.scss']
 })
 export class AwaitingHostComponent {
+  constructor(private activeMeetingService:ActiveMeetingService) {}
+  
+  onCancel() {
+    this.activeMeetingService.resetMeetingData();
+  }
 
 }

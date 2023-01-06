@@ -9,7 +9,6 @@ import { LoadingService } from './services/loading/loading.service';
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
-  providers: [MeetingsService, ActiveMeetingService]
 })
 export class AppComponent implements OnInit {
   title = 'client';
@@ -20,7 +19,7 @@ export class AppComponent implements OnInit {
 
   @HostListener('window:beforeunload', ['$event']) 
   private confirmNavigateAwayIfInMeeting($event:any) {
-    if(this.activeMeetingService.meetingStatus == this.meetingStatuses.InMeeting) {
+    if(this.activeMeetingService.meetingStatus != this.meetingStatuses.NotInMeeting) {
       return confirm();
     } else return true;
   }

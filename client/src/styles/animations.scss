@@ -6,6 +6,14 @@
     animation-fill-mode: forwards;
 }
 
+@mixin fade-out($duration-value) {
+    animation-name: fadeOut;
+    animation-duration: $duration-value;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: 1;
+    animation-fill-mode: forwards;
+}
+
 @mixin translate-up($duration-value) {
     animation-name: translateUp;
     animation-duration: $duration-value;
@@ -20,6 +28,14 @@
         opacity: 0;
     } to {
         opacity: 1;
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    } to {
+        opacity: 0;
     }
 }
 

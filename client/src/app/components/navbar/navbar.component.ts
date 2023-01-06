@@ -2,6 +2,8 @@ import { Component, ChangeDetectorRef } from '@angular/core';
 import { AuthService } from 'src/app/services/auth/auth.service';
 import { faBars } from '@fortawesome/free-solid-svg-icons';
 import { isMobile, isTablet } from 'src/app/utils/deviceDetection';
+import { ActiveMeetingService } from 'src/app/services/active-meeting/active-meeting.service';
+import { MeetingStatus } from 'src/app/constants/meeting-status';
 
 @Component({
   selector: 'app-navbar',
@@ -9,6 +11,7 @@ import { isMobile, isTablet } from 'src/app/utils/deviceDetection';
   styleUrls: ['./navbar.component.scss']
 })
 export class NavbarComponent {
+  notInMeeting = MeetingStatus.NotInMeeting;
 
   showDesktopMenu() {
     return !isMobile() && window.innerWidth > 1024;
@@ -24,7 +27,11 @@ export class NavbarComponent {
   menuOpen=false;
   faBars = faBars;
 
-  constructor(public authService:AuthService, private changeDetector:ChangeDetectorRef) {
+  constructor(
+    public authService:AuthService, 
+    private changeDetector:ChangeDetectorRef,
+    public activeMeetingService:ActiveMeetingService
+  ) {
     window.addEventListener('resize', () => {
       this.changeDetector.detectChanges();
     });
