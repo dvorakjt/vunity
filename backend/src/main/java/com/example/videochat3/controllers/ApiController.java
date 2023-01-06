@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.example.videochat3.tokens.UserTokenManager;
-import com.example.videochat3.DTO.EmailDetails;
+import com.example.videochat3.DTO.SimpleEmail;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -63,7 +63,7 @@ public class ApiController {
     private final PasswordEncoder passwordEncoder;
     private final RecaptchaManager recaptchaManager;
 
-    @GetMapping("/api/users/userinfo")
+    @PostMapping("/api/users/userinfo")
     public ResponseEntity userInfo(Principal principal) {
         String email = principal.getName();
         AppUser user = appUserService.findAppUserByEmail(email);
@@ -73,7 +73,7 @@ public class ApiController {
         return ResponseEntity.ok().body(publicUserInfo);
     }
 
-    @GetMapping("/api/token/refresh")
+    @PostMapping("/api/token/refresh")
     public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
         Cookie[] cookies = request.getCookies();
         Cookie refreshTokenCookie = null;
@@ -115,8 +115,8 @@ public class ApiController {
                 "and enter the following password:\n\n" + passwordResetCode + "\n\n" + 
                 "Thank you.\n\nThe Vunity Team";
 
-                EmailDetails appToUserEmailDetails = new EmailDetails(user.getEmail(), messageBody, "Password Reset Request", "");
-                emailService.sendSimpleMail(appToUserEmailDetails);
+                SimpleEmail appToUserEmailDetails = new SimpleEmail(user.getEmail(), messageBody, "Password Reset Request");
+                emailService.sendSimpleEmail(appToUserEmailDetails);
 
                 return ResponseEntity.ok().build();
             }
@@ -187,13 +187,13 @@ public class ApiController {
             meetingDTO.getPassword() + "\n\n" +
             "Thank you,\n" +
             "The Vunity Team";
-            EmailDetails emailDetails = new EmailDetails(guest, messageBody, "New Vunity Meeting Invitation", "");
-            this.emailService.sendSimpleMail(emailDetails);
+            SimpleEmail emailDetails = new SimpleEmail(guest, messageBody, "New Vunity Meeting Invitation");
+            this.emailService.sendSimpleEmail(emailDetails);
         }
         return ResponseEntity.ok().body(meeting);
     }
 
-    @GetMapping("/api/users/meeting")
+    @PostMapping("/api/users/meeting")
     public ResponseEntity getMeeting(Principal principal, @RequestParam String meetingId) {
         AppUser user = appUserService.findAppUserByEmail(principal.getName());
         if(user != null) {
@@ -205,7 +205,7 @@ public class ApiController {
     }
 
     //get all of a user's meetings, this will eventually change and use indexedDB in the frontend
-    @GetMapping("/api/users/meetings")
+    @PostMapping("/api/users/meetings")
     public ResponseEntity<List<Meeting>> getMeetings(Principal principal, @RequestParam Long startDate, @RequestParam Long endDate) {
         String email = principal.getName();
         AppUser user = appUserService.findAppUserByEmail(email);
@@ -242,8 +242,8 @@ public class ApiController {
             "Length: " + meetingUpdateDTO.getDuration() + " minutes\n\n" +
             "Thank you,\n" +
             "The Vunity Team";
-            EmailDetails emailDetails = new EmailDetails(guest, messageBody, "Updated Vunity Meeting Invitation", "");
-            this.emailService.sendSimpleMail(emailDetails);
+            SimpleEmail emailDetails = new SimpleEmail(guest, messageBody, "Updated Vunity Meeting Invitation");
+            this.emailService.sendSimpleEmail(emailDetails);
         }
         //email users that the meeting has been update
         meetingService.updateMeeting(
@@ -277,8 +277,8 @@ public class ApiController {
             "Scheduled for " + DFormat.format(m.getStartDateTime()) + "\n\n" +
             "Thank you,\n" +
             "The Vunity Team";
-            EmailDetails emailDetails = new EmailDetails(guest, messageBody, "Meeting Canceled", "");
-            this.emailService.sendSimpleMail(emailDetails);
+            SimpleEmail emailDetails = new SimpleEmail(guest, messageBody, "Meeting Canceled");
+            this.emailService.sendSimpleEmail(emailDetails);
         }
         meetingService.deleteMeetingById(id);
         return ResponseEntity.ok().build();
@@ -299,5 +299,11 @@ public class ApiController {
             Map<String,String> meetingToken = UserTokenManager.meetingUserToTokenMap(host);
             return ResponseEntity.ok().body(meetingToken);
         }
+    }
+
+    //only needed in development as the token will be sent on page load in production!
+    @GetMapping("/api/csrf_token")
+    public ResponseEntity getCSRFToken() {
+        return ResponseEntity.status(200).build();
     }
 }

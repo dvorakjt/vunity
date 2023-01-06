@@ -18,6 +18,8 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+
 import com.example.videochat3.recaptcha.*;
 
 @Slf4j
@@ -46,11 +48,8 @@ public class SecurityConfig {
             AppUserAuthNFilter appUserAuthNFilter = new AppUserAuthNFilter(authenticationManagerBean(), recaptchaManager);
             appUserAuthNFilter.setFilterProcessesUrl("/api/users/login");
 
-            
-
-            // http.antMatcher("/api/users/**").csrf().disable().authorizeRequests().antMatchers("/login", "/request_password_reset*", "/reset_password").permitAll().anyRequest().authenticated();
-            http.csrf().disable().authorizeRequests()
-            .antMatchers("/api/users/login", "/api/users/request_password_reset*", "/api/users/reset_password", "/api/token/refresh").permitAll().and()
+            http.csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()).and().authorizeRequests()
+            .antMatchers("/api/users/login", "/api/users/request_password_reset*", "/api/users/reset_password", "/api/token/refresh", "/api/csrf_token").permitAll().and()
             .antMatcher("/api/users/**").authorizeRequests().anyRequest().authenticated();
             
             http.addFilter(appUserAuthNFilter); //could set the login route to /api so that the frontend can make a post request
@@ -85,8 +84,8 @@ public class SecurityConfig {
             log.info("configuring guest user security config.");
             GuestUserAuthNFilter guestUserAuthNFilter = new GuestUserAuthNFilter(guestAuthManagerBean(), recaptchaManager);
             guestUserAuthNFilter.setFilterProcessesUrl("/api/meeting/join");
-            http.antMatcher("/**").csrf().disable().authorizeRequests()
-            .antMatchers("/api/meeting/join", "/socket/**", "/api/token/refresh").permitAll().anyRequest().authenticated();
+            http.antMatcher("/**").csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()).and().authorizeRequests()
+            .antMatchers("/api/meeting/join", "/socket/**", "/api/token/refresh", "/api/csrf_token").permitAll().anyRequest().authenticated();
             http.addFilter(guestUserAuthNFilter); //could set the login route to /api so that the frontend can make a post request
             http.addFilterBefore(new AppAuthZFilter(), UsernamePasswordAuthenticationFilter.class);
         }

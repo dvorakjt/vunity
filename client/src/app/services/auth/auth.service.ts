@@ -16,12 +16,15 @@ export class AuthService {
 
     constructor(private http : HttpClient, private router:Router) {
 
-        this.checkForExistingSession().subscribe({
-            next: (authSucceeded) => {
-                if(authSucceeded) this.isAuthenticated.next(true);
-                else this.isAuthenticated.next(false);
-            }
+        this.http.get("/api/csrf_token").subscribe(() => {
+            this.checkForExistingSession().subscribe({
+                next: (authSucceeded) => {
+                    if(authSucceeded) this.isAuthenticated.next(true);
+                    else this.isAuthenticated.next(false);
+                }
+            });
         });
+        
     }
 
     checkForExistingSession() {
@@ -80,7 +83,7 @@ export class AuthService {
 
     getUserInfo() {
         return new Observable<any>((subscriber) => {
-            this.http.get('/api/users/userinfo').subscribe({
+            this.http.post('/api/users/userinfo', {}).subscribe({
                 next: (responseData:any) => {
                     this.hideRecaptcha();
                     subscriber.next(responseData);
@@ -103,7 +106,7 @@ export class AuthService {
         return new Observable<any>((subscriber) => {
             this.refreshAccessToken().subscribe({
                 next: () => {
-                    this.http.get('/api/users/userinfo').subscribe({
+                    this.http.post('/api/users/userinfo', {}).subscribe({
                         next: (responseData:any) => {
                             subscriber.next(responseData);
                             subscriber.complete();
@@ -120,7 +123,7 @@ export class AuthService {
 
     refreshAccessToken() {
         return new Observable<any>((subscriber) => {
-            this.http.get(`/api/token/refresh`).subscribe({
+            this.http.post(`/api/token/refresh`, {}).subscribe({
                 next: () => {
                     subscriber.next();
                     subscriber.complete();

@@ -50,7 +50,7 @@ export class MeetingsService {
         return new Promise((resolve, reject) => {
             if(this.meetingsById[meetingId]) resolve(this.meetingsById[meetingId]);
             else {
-                this.http.get(`/api/users/meeting?meetingId=${meetingId}`).subscribe(({
+                this.http.post(`/api/users/meeting?meetingId=${meetingId}`, {}).subscribe(({
                     next: (responseData) => {   
                         const meeting = responseData as Meeting;
                         this.addMeetingToMeetingsById(meeting);
@@ -69,7 +69,7 @@ export class MeetingsService {
         const nextWeek = today.plus({weeks: 1});
         const startDateMillis = today.toMillis();
         const endDateMillis = nextWeek.toMillis();
-        this.http.get(`/api/users/meetings?startDate=${startDateMillis}&endDate=${endDateMillis}`).subscribe((responseData) => {
+        this.http.post(`/api/users/meetings?startDate=${startDateMillis}&endDate=${endDateMillis}`, {}).subscribe((responseData) => {
 
             this.upcomingMeetings.today = [];
             this.upcomingMeetings.tomorrow = [];
@@ -123,7 +123,7 @@ export class MeetingsService {
             const startDateMillis = monthDT.toMillis();
             const endDateMillis = monthDT.plus({months: 1}).toMillis();
 
-            this.http.get(`/api/users/meetings?startDate=${startDateMillis}&endDate=${endDateMillis}`).subscribe((responseData) => {
+            this.http.post(`/api/users/meetings?startDate=${startDateMillis}&endDate=${endDateMillis}`, {}).subscribe((responseData) => {
                 
                 const meetings = (responseData as any[]).map((data:any) => {
                     return new Meeting(data.id, data.title, data.password, data.duration, data.startDateTime, data.guests, data.ownerId);

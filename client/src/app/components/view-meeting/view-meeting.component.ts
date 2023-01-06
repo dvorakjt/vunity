@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { Meeting } from 'src/app/models/meeting.model';
 import { faAngleLeft } from '@fortawesome/free-solid-svg-icons';
+import { faClipboard } from '@fortawesome/free-solid-svg-icons';
 import { DateTime } from 'luxon';
 import { ActiveMeetingService } from 'src/app/services/active-meeting/active-meeting.service';
 import { LoadingService } from 'src/app/services/loading/loading.service';
@@ -13,6 +14,8 @@ import { Router } from '@angular/router';
   styleUrls: ['./view-meeting.component.scss']
 })
 export class ViewMeetingComponent {
+  showCopiedInvitationText = false;
+  hideCopiedInvitationTextTimer?:any;
 
   @Input() meeting?:Meeting;
   @Input() showBackButton = true;
@@ -21,6 +24,7 @@ export class ViewMeetingComponent {
   @Output() backButtonClicked = new EventEmitter<void>();
 
   faAngleLeft = faAngleLeft;
+  faClipboard = faClipboard;
 
   constructor(
     public activeMeetingService:ActiveMeetingService,
@@ -63,6 +67,33 @@ export class ViewMeetingComponent {
       });
       this.loadingService.isLoading = true;
       this.activeMeetingService.authenticateAsHost(this.meeting.id);
+    }
+  }
+
+  onCopyLinkToClipboard() {
+    if(this.meeting) {
+      if(this.hideCopiedInvitationTextTimer) this.hideCopiedInvitationTextTimer.clearTimeout();
+    const invitation = 
+`Dear Guest,
+
+You have been invited to a Vunity meeting:
+
+${this.meeting.title}
+Scheduled for ${this.getMeetingDateTime()}
+
+To join this meeting, visit:
+
+http://localhost:4200/joinmeeting?id=${this.meeting.id}
+
+And enter the password:
+
+${this.meeting.password}`;
+
+      navigator.clipboard.writeText(invitation);
+      this.showCopiedInvitationText = true;
+      this.hideCopiedInvitationTextTimer = setTimeout(() => {
+        this.showCopiedInvitationText = false;
+      }, 1500)
     }
   }
 }

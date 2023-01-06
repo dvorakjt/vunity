@@ -22,7 +22,8 @@ public class AppAuthZFilter extends OncePerRequestFilter {
         if(request.getServletPath().equals("/api/users/login") || 
           request.getServletPath().equals("/api/token/refresh") ||
           request.getServletPath().startsWith("/api/users/request_password_reset") ||
-          request.getServletPath().equals("/api/users/reset_password")
+          request.getServletPath().equals("/api/users/reset_password") ||
+          request.getServletPath().equals("/api/csrf_token")
         ) {
             if(request.getServletPath().equals(("/api/token/refresh"))) {
                 System.out.println("trying to refresh token.");

@@ -15,6 +15,16 @@
 <label class="text sm">Length</label>
 <p class="text xs">{{meeting ? meeting.duration : ''}} min.</p>
 <div class="spacer-sm"></div>
+<label class="text sm">Join Link<button class="btnTransparent" (click)="onCopyLinkToClipboard()"><fa-icon
+            [icon]="faClipboard"></fa-icon></button>
+    <span style="color: rgba(255, 255, 255, 0.75); font-size: 10px;" *ngIf="showCopiedInvitationText"><i>copied
+            invitation</i></span>
+</label>
+<br />
+<a [href]="meeting ? ('http://localhost:4200/joinmeeting?id=' + meeting.id) : ''" target="_blank" rel="noreferrer">
+    {{meeting ? 'Join Now' : ''}}
+</a>
+<div class="spacer-sm"></div>
 <label class="text sm">Password</label>
 <p class="text xs">{{meeting ? meeting.password : ''}}</p>
 <div class="spacer-sm"></div>

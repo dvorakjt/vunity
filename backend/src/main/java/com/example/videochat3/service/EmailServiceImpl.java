@@ -11,7 +11,8 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
-import com.example.videochat3.DTO.EmailDetails;
+import com.example.videochat3.DTO.EmailWithAttachment;
+import com.example.videochat3.DTO.SimpleEmail;
 
 @Service
 public class EmailServiceImpl implements EmailService {
@@ -20,7 +21,7 @@ public class EmailServiceImpl implements EmailService {
  
     @Value("${spring.mail.username}") private String sender;
  
-    public String sendSimpleMail(EmailDetails details)
+    public String sendSimpleEmail(SimpleEmail details)
     {
         try {
             SimpleMailMessage mailMessage
@@ -28,21 +29,20 @@ public class EmailServiceImpl implements EmailService {
  
             mailMessage.setFrom(sender);
             mailMessage.setTo(details.getRecipient());
-            mailMessage.setText(details.getMsgBody());
+            mailMessage.setText(details.getMessageBody());
             mailMessage.setSubject(details.getSubject());
  
             javaMailSender.send(mailMessage);
-            return "Mail Sent Successfully.";
+            return "Email sent successfully.";
         }
 
         catch (Exception e) {
-            return "Error while Sending Mail";
+            return "Error while sending email.";
         }
     }
 
-    // Send an email with attachment
     public String
-    sendMailWithAttachment(EmailDetails details)
+    sendEmailWithAttachment(EmailWithAttachment details)
     {
         MimeMessage mimeMessage
             = javaMailSender.createMimeMessage();
@@ -53,7 +53,7 @@ public class EmailServiceImpl implements EmailService {
                 = new MimeMessageHelper(mimeMessage, true);
             mimeMessageHelper.setFrom(sender);
             mimeMessageHelper.setTo(details.getRecipient());
-            mimeMessageHelper.setText(details.getMsgBody());
+            mimeMessageHelper.setText(details.getMessageBody());
             mimeMessageHelper.setSubject(
                 details.getSubject());
  
@@ -65,11 +65,11 @@ public class EmailServiceImpl implements EmailService {
                 file.getFilename(), file);
  
             javaMailSender.send(mimeMessage);
-            return "Mail sent Successfully";
+            return "Email sent successfully.";
         }
  
         catch (MessagingException e) {
-            return "Error while sending mail.";
+            return "Error while sending email.";
         }
     }
 }

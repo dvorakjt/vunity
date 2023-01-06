@@ -1,16 +1,11 @@
 package com.example.videochat3.service;
 
-// Importing required classes
-import com.example.videochat3.DTO.EmailDetails;
+import com.example.videochat3.DTO.EmailWithAttachment;
+import com.example.videochat3.DTO.SimpleEmail;
  
-// Interface
 public interface EmailService {
  
-    // Method
-    // To send a simple email
-    String sendSimpleMail(EmailDetails details);
+    String sendSimpleEmail(SimpleEmail details);
  
-    // Method
-    // To send an email with attachment
-    String sendMailWithAttachment(EmailDetails details);
+    String sendEmailWithAttachment(EmailWithAttachment details);
 }
