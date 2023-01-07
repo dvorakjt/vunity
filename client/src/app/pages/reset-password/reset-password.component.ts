@@ -1,14 +1,15 @@
 import { HttpClient } from '@angular/common/http';
-import { Component } from '@angular/core';
+import { AfterViewInit, Component, OnDestroy } from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import { ReCaptchaV3Service } from 'ng-recaptcha';
+import { showRecaptcha, hideRecaptcha } from 'src/app/utils/recaptcha.util';
 
 @Component({
   selector: 'app-reset-password',
   templateUrl: './reset-password.component.html',
   styleUrls: ['./reset-password.component.scss']
 })
-export class ResetPasswordComponent {
+export class ResetPasswordComponent implements AfterViewInit, OnDestroy{
   isLoading = false;
   succeeded = false;
 
@@ -27,6 +28,14 @@ export class ResetPasswordComponent {
   constructor(private http:HttpClient, private route:ActivatedRoute, private recaptchaV3Service:ReCaptchaV3Service) {
     this.passwordResetURI = this.route.snapshot.paramMap.get('passwordResetURI');
     console.log(this.passwordResetURI);
+  }
+  
+  ngAfterViewInit(): void {
+    showRecaptcha();
+  }
+
+  ngOnDestroy(): void {
+    hideRecaptcha();
   }
 
   onSubmit() {

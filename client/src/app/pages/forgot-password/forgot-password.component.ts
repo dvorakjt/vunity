@@ -1,13 +1,14 @@
 import { HttpClient } from '@angular/common/http';
-import { Component } from '@angular/core';
+import { AfterViewInit, Component, OnDestroy } from '@angular/core';
 import { ReCaptchaV3Service } from 'ng-recaptcha';
+import { hideRecaptcha, showRecaptcha } from 'src/app/utils/recaptcha.util';
 
 @Component({
   selector: 'app-forgot-password',
   templateUrl: './forgot-password.component.html',
   styleUrls: ['./forgot-password.component.scss']
 })
-export class ForgotPasswordComponent {
+export class ForgotPasswordComponent implements AfterViewInit, OnDestroy{
   public email = '';
   public isLoading = false;
   public succeeded = false;
@@ -15,6 +16,14 @@ export class ForgotPasswordComponent {
   public serverErrorMessage = '';
 
   constructor(private http:HttpClient, private recaptchaV3Service:ReCaptchaV3Service) {}
+
+  ngAfterViewInit(): void {
+    showRecaptcha();
+  }
+
+  ngOnDestroy(): void {
+    hideRecaptcha();
+  }
 
   onRequestPasswordReset() {
 

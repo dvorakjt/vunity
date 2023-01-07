@@ -209,8 +209,6 @@ export class ActiveMeetingService {
         this.resetMeetingData();
     }
 
-   
-
     public resetMeetingData() {
         for(const remotePeer of this.remotePeerList) {
             remotePeer.connection.close();
@@ -495,6 +493,8 @@ export class ActiveMeetingService {
             return peer.sessionId !== remotePeerId;
         });
         delete this.remotePeersById[remotePeerId];
+        this.speakingPeer = this.localPeer;
+        console.log(this.speakingPeer);
         this.remotePeerJoinedOrLeft.emit();
     }
 
@@ -544,6 +544,7 @@ export class ActiveMeetingService {
                     } else if (data.event === 'screenShareStopped') {
                         this.handleScreenShareStopped();
                     } else if (data.event === 'peerDeparture') {
+                        console.log('peer departure');
                         this.handlePeerDeparture(data.from);
                     } else if (data.event === 'closed') {
                         this.handleMeetingClosure();

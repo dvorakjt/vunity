@@ -85,7 +85,6 @@ export class AuthService {
         return new Observable<any>((subscriber) => {
             this.http.post('/api/users/userinfo', {}).subscribe({
                 next: (responseData:any) => {
-                    this.hideRecaptcha();
                     subscriber.next(responseData);
                     subscriber.complete();
                 },
@@ -138,26 +137,11 @@ export class AuthService {
     logout() {
         //should make a call to the backend to logout and cause the current cookies to expire.
         this.clearUserData();
-        this.showRecaptcha();
         this.isAuthenticated.next(false);
         this.router.navigate(["/login"]);
     }
 
     clearUserData() {
         this.activeUser = undefined;
-    }
-
-    hideRecaptcha() {
-        const recaptcha = document.getElementsByClassName('grecaptcha-badge')[0] as any;
-        if(recaptcha) {
-            recaptcha.style.visibility = 'hidden';
-        }
-    }
-
-    showRecaptcha() {
-        const recaptcha = document.getElementsByClassName('grecaptcha-badge')[0] as any;
-        if(recaptcha) {
-            recaptcha.style.visibility = 'visible';
-        }
     }
 }

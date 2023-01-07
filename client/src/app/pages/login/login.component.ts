@@ -1,13 +1,14 @@
-import { Component } from '@angular/core';
+import { AfterViewInit, Component, OnDestroy } from '@angular/core';
 import { AuthService } from 'src/app/services/auth/auth.service';
 import { ReCaptchaV3Service } from 'ng-recaptcha';
+import { showRecaptcha, hideRecaptcha } from 'src/app/utils/recaptcha.util';
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss']
 })
-export class LoginComponent {
+export class LoginComponent implements AfterViewInit, OnDestroy {
   email = '';
   password = '';
   emailErrorMessage = '';
@@ -15,6 +16,12 @@ export class LoginComponent {
   formSubmissionError = '';
 
   constructor(public authService:AuthService, public recaptchaV3Service:ReCaptchaV3Service) { }
+  ngAfterViewInit(): void {
+    showRecaptcha();
+  }
+  ngOnDestroy(): void {
+    hideRecaptcha();
+  }
 
   onLogin() {
     let failed = false;
