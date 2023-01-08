@@ -1,10 +1,12 @@
 import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
+import { ReCaptchaV3Service } from 'ng-recaptcha';
 import { ActiveMeetingService } from 'src/app/services/active-meeting/active-meeting.service';
 import { GuestAuthError } from 'src/app/services/active-meeting/errors/guest-auth-error';
 import { LoadingService } from 'src/app/services/loading/loading.service';
 import { ActiveMeetingServiceStub } from 'src/app/tests/mocks/ActiveMeetingServiceStub';
 import { LoadingServiceStub } from 'src/app/tests/mocks/LoadingServiceStub';
+import { RecaptchaV3ServiceStub } from 'src/app/tests/mocks/RecaptchaV3ServiceStub';
 
 import { JoinMeetingComponent } from './join-meeting.component';
 
@@ -18,7 +20,8 @@ describe('JoinMeetingComponent', () => {
       imports: [FormsModule],
       providers: [
         {provide: ActiveMeetingService, useClass: ActiveMeetingServiceStub},
-        {provide: LoadingService, useClass: LoadingServiceStub}
+        {provide: LoadingService, useClass: LoadingServiceStub},
+        {provide: ReCaptchaV3Service, useClass: RecaptchaV3ServiceStub}
       ]
     })
     .compileComponents();

@@ -1,7 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { User } from 'src/app/models/user.model';
+import { ActiveMeetingService } from 'src/app/services/active-meeting/active-meeting.service';
 import { AuthService } from 'src/app/services/auth/auth.service';
+import { ActiveMeetingServiceStub } from 'src/app/tests/mocks/ActiveMeetingServiceStub';
 import { AuthServiceStub } from 'src/app/tests/mocks/AuthServiceStub';
 
 import { NavbarComponent } from './navbar.component';
@@ -14,7 +16,7 @@ describe('NavbarComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [ NavbarComponent ],
       imports: [FontAwesomeModule],
-      providers: [{provide: AuthService, useClass: AuthServiceStub}]
+      providers: [{provide: AuthService, useClass: AuthServiceStub}, {provide: ActiveMeetingService, useClass: ActiveMeetingServiceStub}]
     })
     .compileComponents();
 

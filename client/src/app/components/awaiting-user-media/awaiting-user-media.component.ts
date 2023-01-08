@@ -7,7 +7,4 @@ import { ActiveMeetingService } from 'src/app/services/active-meeting/active-mee
   styleUrls: ['./awaiting-user-media.component.scss']
 })
 export class AwaitingUserMediaComponent {
-  constructor(private activeMeetingService:ActiveMeetingService) {
-
-  }
 }
