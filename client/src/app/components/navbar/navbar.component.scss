@@ -25,8 +25,23 @@
     }
 }
 
+.noPadding {
+    padding: 0 !important;
+}
+
+.logo {
+    height: 50px;
+    margin: 8px;
+    width: auto;
+}
+
 .spaceBetween {
     justify-content: space-between;
+
+    ul {
+        display: flex;
+        align-items: center;
+    }
 }
 
 .flexEnd {

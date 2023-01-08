@@ -15,7 +15,9 @@
 <button [ngClass]="{
     toolbarButton : !isMobile,
     toolbarButtonMobile : isMobile
-}"
+    }" [ngStyle]="{
+      boxShadow : activeMeetingService.isSharingScreen ? '0px 0px 8px #71d1a4' : 'none'
+    }"
     (click)="!activeMeetingService.isSharingScreen ? activeMeetingService.shareScreen() : activeMeetingService.stopScreenShare()">
     <fa-icon [icon]="faDesktop" [size]="isMobile ? 'lg' : 'xl'"></fa-icon>
 </button>

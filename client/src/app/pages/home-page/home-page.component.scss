@@ -1,0 +1,123 @@
+@use '../../../styles/colors.scss';
+@use '../../../styles/animations.scss';
+@use '../../../styles/containers.scss';
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400&display=swap');
+
+.hero {
+    width: 100%;
+    height: 400px;
+    padding: 20px;
+    box-sizing: border-box;
+    background: radial-gradient(ellipse at top, #085433, transparent),
+    radial-gradient(ellipse at bottom, #0d0561, transparent);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+
+    h1 {
+        font-size: 100px;
+    }
+}
+
+.section {
+    width: 100%;
+    min-height: 150px;
+    display: flex;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.subsection {
+    margin: 20px;
+    box-sizing: border-box;
+}
+
+.contactForm {
+    display: flex;
+    flex-direction: column;
+    background-color: colors.$dark-green-2;
+    padding: 20px;
+    min-width: 220px;
+    max-width: 220px;
+
+    textarea {
+        resize: none;
+        border: 2px solid white;
+        background-color: transparent;
+        font-family: 'Montserrat', sans-serif;
+        color: white;
+        height: 72px;
+    }
+}
+
+.footer {
+    background-color: colors.$dark-green-2;
+    padding: 20px;
+}
+
+.modalContainer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background-color: colors.$dark-green-0-translucent;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    @include animations.fade-in(250ms);
+}
+
+.modal {
+    position: relative;
+    height: fit-content;
+    max-height: calc(containers.$screen-height - 80px);
+    min-height: 180px;
+    width: 260px;
+    max-width: 260px;
+    overflow-y: scroll;
+    background-color: colors.$dark-green-2;
+    border-radius: 3.5px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 46px;
+    padding-left: 14px;
+    border: none;
+    @include animations.translate-up(250ms);
+
+    &::-webkit-scrollbar-track {
+        background: colors.$dark-green-2;
+        border-top-right-radius: 3.5px;
+        border-bottom-right-radius: 3.5px;
+    }
+}
+
+@media screen and (max-width: 720px) {
+    .section {
+        flex-direction: column;
+    }
+
+    .subsection {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+
+        form {
+            min-width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+            margin-top: 20px;
+        }
+    }
+}
+
+@media screen and (max-width: 360px) {
+    .hero {
+        h1 {
+            font-size: 72px;
+        }
+    }
+}

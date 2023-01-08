@@ -1,3 +1,5 @@
+@use '../../../styles/colors.scss';
+
 :host {
     width: 100%;
     height: 100%;
@@ -6,6 +8,10 @@
 .videoContainerThumbnail {
     width: 100%;
     height: 100%;
+    min-height: 100%;
+    max-height: 100%;
+    min-width: 100%;
+    max-width: 100%;
     position: relative;
 }
 
@@ -21,7 +27,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: #121212;
+    background-color: colors.$dark-green-0;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -56,11 +62,15 @@
 // speaker
 .videoContainerSpeaker {
     position: relative;
-    background-color: #0d0d0d;
+    background-color: colors.$dark-green-0;
     display: flex;
     justify-content: center;
     align-items: center;
     width: 100%;
+    min-height: 100%;
+    max-height: 100%;
+    min-width: 100%;
+    max-width: 100%;
     height: fit-content;
 }
 
@@ -76,7 +86,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: #121212;
+    background-color: colors.$dark-green-0;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -85,7 +95,7 @@
 
 .outline {
     box-sizing: border-box;
-    border: 3px solid aqua;
+    border: 3px solid colors.$brand-secondary-tint;
     width: 100%;
     height: calc(100% - 1px);
     background-color: transparent;

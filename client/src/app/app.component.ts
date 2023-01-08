@@ -11,7 +11,7 @@ import { LoadingService } from './services/loading/loading.service';
   styleUrls: ['./app.component.scss'],
 })
 export class AppComponent implements OnInit {
-  title = 'client';
+  title = 'Vunity';
   isLoading = true;
   meetingStatuses = MeetingStatus;
   joinMeetingModalOpen = false;

@@ -6,6 +6,7 @@ import com.example.videochat3.recaptcha.RecaptchaManager;
 import com.example.videochat3.DTO.MeetingDTO;
 import com.example.videochat3.DTO.MeetingUpdateDTO;
 import com.example.videochat3.DTO.PasswordResetDTO;
+import com.example.videochat3.DTO.RequestDemoDTO;
 import com.example.videochat3.DTO.HostTokenDTO;
 import com.example.videochat3.domain.AppUser;
 import com.example.videochat3.service.AppUserService;
@@ -62,6 +63,33 @@ public class ApiController {
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
     private final RecaptchaManager recaptchaManager;
+
+    @PostMapping(
+        value ="/api/request_demo",
+        consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE}
+    )
+    public ResponseEntity requestInfo(@RequestBody RequestDemoDTO body) {
+        if(body.getName() == null || body.getEmail() == null || body.getReasonForInterest() == null || body.getRecaptchaToken() == null) {
+            return ResponseEntity.status(400).build();
+        }
+        if(!recaptchaManager.verifyRecaptchaToken(body.getRecaptchaToken())) {
+            return ResponseEntity.status(403).build();
+        }
+        String messageBody = 
+        "Dear " + body.getName() + ",\n\n" +
+        "Thank you for your interest in Vunity!\n\n" + 
+        "We have received your request for a demo and we will be in contact to schedule a demo shortly.\n\n" +
+        "Thank you,\n" +
+        "The Vunity Team";
+        SimpleEmail emailDetails = new SimpleEmail(body.getEmail(), messageBody, "Vunity Demo Request Received");
+        this.emailService.sendSimpleEmail(emailDetails);
+
+        messageBody = "You have received a request for a demo from:\n\nName:\n" + body.getName() + "\n\nEmail:\n" + body.getEmail() + "\n\nReason for Interest:\n" + body.getReasonForInterest();
+        emailDetails = new SimpleEmail("jdvorakdevelops@gmail.com", messageBody, "New Vunity Demo Request");
+        this.emailService.sendSimpleEmail(emailDetails);
+
+        return ResponseEntity.status(200).build();
+    }
 
     @PostMapping("/api/users/userinfo")
     public ResponseEntity userInfo(Principal principal) {

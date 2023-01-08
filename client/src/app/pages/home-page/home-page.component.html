@@ -1,0 +1,67 @@
+<div class="hero">
+    <h1>Vunity</h1>
+    <h2>Immersive Video Conferencing</h2>
+</div>
+<div class="spacer-xl"></div>
+<section class="section">
+    <div class="subsection">
+        <h2>Welcome to Vunity!</h2>
+        <div class="spacer-xl"></div>
+        <p>Vunity is an application that allows users to host video chat calls and meet with others around the globe.
+        </p>
+        <div class="spacer-md"></div>
+        <p>
+            Users can schedule meetings and invite guests, conduct video calls, share their screens, and chat in
+            real-time.
+            More features are planned for future releases.</p>
+        <div class="spacer-md"></div>
+        <p>
+            For more information, please request a demo.
+        </p>
+    </div>
+    <div class="subsection">
+        <form class="contactForm">
+            <h2>Request a Demo</h2>
+            <div class="spacer-lg"></div>
+            <label for="name" class="formLabel">Name</label>
+            <input type="text" name="name" id="name" class="formInput" [(ngModel)]="name" (input)="nameError = ''" />
+            <div class="formFieldErrorContainer">
+                <small class="formFieldError" *ngIf="nameError">{{nameError}}</small>
+            </div>
+            <div class="spacer-sm"></div>
+            <label for="email" class="formLabel">Email</label>
+            <input type="email" name="email" id="email" class="formInput" [(ngModel)]="email"
+                (input)="emailError = ''" />
+            <div class="formFieldErrorContainer">
+                <small class="formFieldError" *ngIf="emailError">{{emailError}}</small>
+            </div>
+            <div class="spacer-sm"></div>
+            <label for="reasonForInterest" class="formLabel">Reason For Interest</label>
+            <textarea name="reasonForInterest" id="reasonForInterest" [(ngModel)]="reasonForInterest"
+                (input)="reasonForInterestError = ''"></textarea>
+            <div class="formFieldErrorContainer">
+                <small class="formFieldError" *ngIf="reasonForInterestError">{{reasonForInterestError}}</small>
+            </div>
+            <div class="spacer-lg"></div>
+            <div class="horizontalContainerFlexEnd">
+                <button class="btnPrimary" (click)="onSubmit()">Request Demo</button>
+            </div>
+            <div class="spacer-lg"></div>
+            <p class="formSubmissionError">{{formSubmissionError}}</p>
+        </form>
+    </div>
+</section>
+<footer class="footer">
+    <a href="https://www.instagram.com/thepwt821" target="_blank" rel="noreferrer">Logo & Favicon by Pei-wen Tan</a>
+</footer>
+<div class="modalContainer" *ngIf="showFormSubmissionSuccessModal">
+    <dialog class="modal">
+        <h2>Success!</h2>
+        <div class="spacer-lg"></div>
+        <p style="text-align: center;">We have received your request for a demo and we'll be in touch shortly. Thank you
+            for your interest in Vunity!
+        </p>
+        <div class="spacer-lg"></div>
+        <button (click)="showFormSubmissionSuccessModal = false" class="btnPrimary">Ok</button>
+    </dialog>
+</div>

@@ -354,7 +354,7 @@ export class ActiveMeetingService {
         try {
             this.screenSharingStream = await navigator.mediaDevices.getDisplayMedia({audio: true, video: true});
             this.isSharingScreen = true;
-            this.screenSharingStream.addEventListener('inactive', () => {
+            this.screenSharingStream.getVideoTracks()[0].addEventListener('ended', () => {
                 this.sendOverWebSocket({intent: 'stopSharingScreen'});
                 this.screenSharingPeer = undefined;
                 this.screenSharingStream = undefined;
@@ -365,6 +365,17 @@ export class ActiveMeetingService {
                 this.screenViewersById = {};
                 this.isSharingScreen = false;
             });
+            // this.screenSharingStream.addEventListener('inactive', () => {
+            //     this.sendOverWebSocket({intent: 'stopSharingScreen'});
+            //     this.screenSharingPeer = undefined;
+            //     this.screenSharingStream = undefined;
+            //     for(const key in this.screenViewersById) {
+            //         const viewer = this.screenViewersById[key];
+            //         viewer.connection.close();
+            //     }
+            //     this.screenViewersById = {};
+            //     this.isSharingScreen = false;
+            // });
             this.screenSharingPeer = new LocalScreenSharingPeer('My');
             this.screenSharingPeer.stream = this.screenSharingStream;
             data.peerIds.forEach((peerId:string) => {

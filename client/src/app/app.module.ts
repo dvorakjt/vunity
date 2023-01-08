@@ -43,6 +43,7 @@ import { StartMeetingPageComponent } from './pages/start-meeting-page/start-meet
 import { AwaitingUserMediaComponent } from './components/awaiting-user-media/awaiting-user-media.component';
 import { GetUserMediaSettingsComponent } from './components/get-user-media-settings/get-user-media-settings.component';
 import { ActiveMeetingPageComponent } from './pages/active-meeting-page/active-meeting-page.component';
+import { HomePageComponent } from './pages/home-page/home-page.component';
 
 @NgModule({
   declarations: [
@@ -81,7 +82,8 @@ import { ActiveMeetingPageComponent } from './pages/active-meeting-page/active-m
     StartMeetingPageComponent,
     AwaitingUserMediaComponent,
     GetUserMediaSettingsComponent,
-    ActiveMeetingPageComponent
+    ActiveMeetingPageComponent,
+    HomePageComponent
   ],
   imports: [
     BrowserModule,
