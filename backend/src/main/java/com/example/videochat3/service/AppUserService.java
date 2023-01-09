@@ -8,7 +8,6 @@ import org.springframework.security.core.userdetails.User;
 
 public interface AppUserService {
     AppUser saveUser(AppUser user);
-    void setName(String name);
     void setUserPasswordResetCodes(UUID id, String passwordResetURI, String passwordResetCode);
     void resetUserPassword(UUID id, String newPassword);
     AppUser findAppUserByEmail(String email);

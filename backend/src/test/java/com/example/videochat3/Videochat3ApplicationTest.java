@@ -10,15 +10,15 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import com.example.videochat3.controllers.ApiController;
 
-// @SpringBootTest
-class Videochat3ApplicationIT {
+@SpringBootTest
+class Videochat3ApplicationTest {
 
-	// @Autowired
-	// ApiController apiController;
+	@Autowired
+	ApiController apiController;
 
-	// @Test
-	// void contextLoads() {
-	// 	assertNotNull(apiController);
-	// }
+	@Test
+	void contextLoads() {
+		assertNotNull(apiController);
+	}
 
 }

@@ -7,7 +7,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -43,7 +42,6 @@ public class AppUserServiceImpl implements AppUserService, UserDetailsService {
     }
     @Override
     public AppUser saveUser(AppUser user) {
-        log.info("Saving new user to db.");
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         return appUserRepo.save(user);
     }
@@ -61,10 +59,5 @@ public class AppUserServiceImpl implements AppUserService, UserDetailsService {
     @Override
     public AppUser findAppUserByEmail(String email) {
         return appUserRepo.findAppUserByEmail(email);
-    }
-
-    @Override
-    public void setName(String name) {
-        appUserRepo.setName(name);
     }
 }
