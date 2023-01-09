@@ -14,6 +14,7 @@ import com.example.videochat3.service.EmailService;
 import com.example.videochat3.service.MeetingService;
 import lombok.RequiredArgsConstructor;
 
+import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.aventrix.jnanoid.jnanoid.*;
 
 import org.passay.*;
@@ -110,10 +111,14 @@ public class ApiController {
         }
         if(refreshTokenCookie != null && refreshTokenCookie.getValue() != null) {
             String refresh_token = refreshTokenCookie.getValue();
-            Map<String, String> tokens = UserTokenManager.refreshAccessToken(refresh_token, appUserService);
-            ResponseCookie newAccessTokenCookie = ResponseCookieFactory.createAccessTokenCookie(tokens.get("access_token"));
-            response.addHeader(HttpHeaders.SET_COOKIE, newAccessTokenCookie.toString());
-            response.setStatus(200);
+            try {
+                Map<String, String> tokens = UserTokenManager.refreshAccessToken(refresh_token, appUserService);
+                ResponseCookie newAccessTokenCookie = ResponseCookieFactory.createAccessTokenCookie(tokens.get("access_token"));
+                response.addHeader(HttpHeaders.SET_COOKIE, newAccessTokenCookie.toString());
+                response.setStatus(200);
+            } catch(JWTVerificationException e) {
+                response.setStatus(400);
+            }
         } else {
           response.setStatus(401);
         }   

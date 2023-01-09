@@ -3,6 +3,7 @@ package com.example.videochat3.tokens;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
@@ -21,7 +22,7 @@ import static java.util.Arrays.stream;
 public class UserTokenManager {
     private static Algorithm algorithm = Algorithm.HMAC256("secret".getBytes());
 
-    private static String userToToken(User user, int minutesUntilExpiration) {
+    public static String userToToken(User user, int minutesUntilExpiration) {
         int expirationMillis = minutesUntilExpiration * 60 * 1000;
         String token = JWT.create()
                 .withSubject(user.getUsername())
@@ -47,7 +48,7 @@ public class UserTokenManager {
         return tokens;
     }
 
-    public static Map<String, String> refreshAccessToken(String refresh_token, AppUserService appUserService) {
+    public static Map<String, String> refreshAccessToken(String refresh_token, AppUserService appUserService) throws JWTVerificationException {
         User user = decodeRefreshToken(refresh_token, appUserService);
         String new_access_token = userToToken(user, 10);
         Map<String, String> tokens = new HashMap<>();
@@ -56,7 +57,7 @@ public class UserTokenManager {
         return tokens;
     }
 
-    private static User decodeRefreshToken(String refresh_token, AppUserService appUserService) {
+    public static User decodeRefreshToken(String refresh_token, AppUserService appUserService) throws JWTVerificationException {
         Algorithm algorithm = Algorithm.HMAC256("secret".getBytes());
         JWTVerifier verifier = JWT.require(algorithm).build();
         DecodedJWT decodedJWT = verifier.verify(refresh_token);
@@ -67,12 +68,16 @@ public class UserTokenManager {
 
     public static DecodedToken decodeToken(String token) {
         JWTVerifier verifier = JWT.require(algorithm).build();
-        DecodedJWT decodedJWT = verifier.verify(token);
-        String username = decodedJWT.getSubject();
-        String[] roles = decodedJWT.getClaim("roles").asArray(String.class);
-        Date expiration = decodedJWT.getExpiresAt();
-        DecodedToken dToken = new DecodedToken(username, roles, expiration);
-        return dToken;
+        try {
+            DecodedJWT decodedJWT = verifier.verify(token);
+            String username = decodedJWT.getSubject();
+            String[] roles = decodedJWT.getClaim("roles").asArray(String.class);
+            Date expiration = decodedJWT.getExpiresAt();
+            DecodedToken dToken = new DecodedToken(username, roles, expiration);
+            return dToken;
+        } catch (JWTVerificationException e) {
+            return null;
+        }
     }
 
     public static void decodeTokenAndGrantAuthority(String token) throws Exception {
@@ -86,5 +91,9 @@ public class UserTokenManager {
         });
         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(username, null, authorities);
         SecurityContextHolder.getContext().setAuthentication(authToken);
+    }
+
+    public static Algorithm getAlgorithm() {
+        return algorithm;
     }
 }
