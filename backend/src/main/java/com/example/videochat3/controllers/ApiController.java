@@ -120,19 +120,21 @@ public class ApiController {
     public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
         Cookie[] cookies = request.getCookies();
         Cookie refreshTokenCookie = null;
-        for(Cookie cookie : cookies) {
-            if(cookie.getName().equals("vunite_refresh_token")) refreshTokenCookie = cookie;
-        }
-        if(refreshTokenCookie != null && refreshTokenCookie.getValue() != null) {
-            String refresh_token = refreshTokenCookie.getValue();
-            try {
-                Map<String, String> tokens = UserTokenManager.refreshAccessToken(refresh_token, appUserService);
-                ResponseCookie newAccessTokenCookie = ResponseCookieFactory.createAccessTokenCookie(tokens.get("access_token"));
-                response.addHeader(HttpHeaders.SET_COOKIE, newAccessTokenCookie.toString());
-                response.setStatus(200);
-            } catch(JWTVerificationException e) {
-                response.setStatus(400);
+        if(cookies != null) {
+            for(Cookie cookie : cookies) {
+                if(cookie.getName().equals("vunite_refresh_token")) refreshTokenCookie = cookie;
             }
+            if(refreshTokenCookie != null && refreshTokenCookie.getValue() != null) {
+                String refresh_token = refreshTokenCookie.getValue();
+                try {
+                    Map<String, String> tokens = UserTokenManager.refreshAccessToken(refresh_token, appUserService);
+                    ResponseCookie newAccessTokenCookie = ResponseCookieFactory.createAccessTokenCookie(tokens.get("access_token"));
+                    response.addHeader(HttpHeaders.SET_COOKIE, newAccessTokenCookie.toString());
+                    response.setStatus(200);
+                } catch(JWTVerificationException e) {
+                    response.setStatus(400);
+                }
+            } else response.setStatus(401);
         } else {
           response.setStatus(401);
         }   
@@ -252,8 +254,11 @@ public class ApiController {
             responseBody.put("meeting", meeting);
             responseBody.put("unreachableEmailAddresses", unreachableEmailAddresses);
             return ResponseEntity.status(HttpStatus.MULTI_STATUS).body(responseBody.toMap());
+        } else {
+            JSONObject responseBody = new JSONObject();
+            responseBody.put("meeting", meeting);
+            return ResponseEntity.ok().body(responseBody.toMap());
         }
-        return ResponseEntity.ok().body(meeting);
     }
 
     @PostMapping("/api/users/meeting")

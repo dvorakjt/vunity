@@ -55,11 +55,10 @@
     <a href="https://www.instagram.com/thepwt821" target="_blank" rel="noreferrer">Logo & Favicon by Pei-wen Tan</a>
 </footer>
 <div class="modalContainer" *ngIf="showFormSubmissionSuccessModal">
-    <dialog class="modal">
-        <h2>Success!</h2>
+    <dialog class="modal" style="text-align: center;">
+        <h2>{{formSubmissionSuccessModalTitle}}</h2>
         <div class="spacer-lg"></div>
-        <p style="text-align: center;">We have received your request for a demo and we'll be in touch shortly. Thank you
-            for your interest in Vunity!
+        <p style="text-align: center;">{{formSubmissionSuccessModalText}}
         </p>
         <div class="spacer-lg"></div>
         <button (click)="showFormSubmissionSuccessModal = false" class="btnPrimary">Ok</button>

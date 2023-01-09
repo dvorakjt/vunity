@@ -20,6 +20,7 @@ export class NewMeetingComponent implements OnInit {
   @Input() date:any;
 
   succeeded = false;
+  successText = '';
 
   newMeetingForm = new FormGroup({
     'title': new FormControl('', [Validators.required]),
@@ -102,15 +103,16 @@ export class NewMeetingComponent implements OnInit {
       this.loadingService.isLoading = true;
 
       this.meetingsService.apiCall.subscribe({
-        next: () => {
+        next: (result:any) => {
+          if(result.message === 'succeeded') {
+            this.successText = 'Success! The meeting was created and invitations were emailed to your guests';
+          } else this.successText = result.message;
           this.loadingService.isLoading = false;
           this.succeeded = true;
-          this.meetingsService.apiCall.unsubscribe();
         },
         error: () => {
           this.loadingService.isLoading = false;
           this.serverError = 'There was a problem creating the meeting.';
-          this.meetingsService.apiCall.unsubscribe();
         }
       })
       this.meetingsService.createMeeting(meetingDTO);

@@ -52,7 +52,7 @@
 <form [formGroup]="editMeetingForm" #ngForm="ngForm" *ngIf="editSucceeded">
     <h1 class="formHeader">Edit Meeting</h1>
     <div class="spacer-lg"></div>
-    <p style="text-align: center;">Success! The meeting was update and your guests have been notified.</p>
+    <p style="text-align: center;">{{editSuccessText}}</p>
     <div class="spacer-lg"></div>
     <div class="horizontalContainerCentered">
         <!-- this button will go back to the view mode -->
@@ -62,7 +62,7 @@
 <form [formGroup]="editMeetingForm" #ngForm="ngForm" *ngIf="deleteSucceeded">
     <h1 class="formHeader">Edit Meeting</h1>
     <div class="spacer-lg"></div>
-    <p style="text-align: center;">Success. The meeting was deleted and your guests have been notified.</p>
+    <p style="text-align: center;">{{deleteSuccessText}}</p>
     <div class="spacer-lg"></div>
     <!-- this button will trigger a goBack event -->
     <div class="horizontalContainerCentered">

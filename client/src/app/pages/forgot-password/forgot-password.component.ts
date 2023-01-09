@@ -40,14 +40,16 @@ export class ForgotPasswordComponent implements AfterViewInit, OnDestroy{
 
     this.recaptchaV3Service.execute('passwordResetRequest').subscribe({
       next: (recaptchaToken) => {
-        this.http.post('/api/users/request_password_reset?email=' + this.email + "&recaptchaToken=" + recaptchaToken, {}).subscribe({
+        this.http.post('/api/users/request_password_reset?email=' + this.email + "&recaptchaToken=" + recaptchaToken, {}, {observe: 'response'}).subscribe({
           next: () => {
             this.isLoading = false;
             this.succeeded = true;
           },
-          error: () => {
+          error: (responseData) => {
             this.isLoading = false;
-            this.serverErrorMessage = "We're sorry, we couldn't send you a reset code. Please ensure that your email address is entered correctly."
+            if(responseData.status == 500) {
+              this.serverErrorMessage = "We're sorry. We found your account but could not reach the email address you provided in order to send you a password reset link.";
+            } else this.serverErrorMessage = "We're sorry, we couldn't send you a reset code. Please ensure that your email address is entered correctly.";
           }
         })
       },

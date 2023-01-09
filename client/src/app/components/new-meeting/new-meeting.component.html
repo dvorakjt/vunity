@@ -73,7 +73,7 @@
 <div *ngIf="succeeded">
     <h1 class="formHeader">New Meeting</h1>
     <div class="spacer-lg"></div>
-    <p>Success! The meeting was created and invitations were emailed to your guests.</p>
+    <p>{{successText}}</p>
     <div class="spacer-lg"></div>
     <div class="horizontalContainerCentered">
         <button class="btnPrimary" (click)="onResetForm($event)">Ok</button>

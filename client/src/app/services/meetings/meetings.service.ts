@@ -148,26 +148,29 @@ export class MeetingsService {
 
     createMeeting(newMeetingDTO:MeetingDTO) {
         //should add this locally to upcoming meetings, meetings by id, and meetings by month and year, if that month and year exists!
-        this.http.post('/api/users/new_meeting', newMeetingDTO).subscribe({
+        this.http.post('/api/users/new_meeting', newMeetingDTO, {observe: 'response'}).subscribe({
             next: (responseData:any) => {
+                const meeting = responseData.body.meeting;
                 const newMeeting = new Meeting(
-                    responseData.id, 
-                    responseData.title, 
+                    meeting.id, 
+                    meeting.title, 
                     newMeetingDTO.password, 
-                    responseData.duration, 
-                    responseData.startDateTime, 
-                    responseData.guests, 
-                    responseData.ownerId
+                    meeting.duration, 
+                    meeting.startDateTime, 
+                    meeting.guests, 
+                    meeting.ownerId
                 );
 
                 this.addMeetingToMeetingsById(newMeeting);
                 this.addMeetingToUpcomingMeetings(newMeeting);
                 this.addMeetingToMeetingsByYearAndMonth(newMeeting);
 
-                //update meetings by id and by month and year
+                const message = responseData.status == 207 ?
+                    `The meeting was created but we could not reach the following guests' email addresses: ${responseData.body.unreachableEmailAddresses.join(", ")}` :
+                    "succeeded";
 
                 this.meetingsModified.emit();
-                this.apiCall.emit({success:true, message:"succeeded"});
+                this.apiCall.emit({success:true, message});
             },
             error: (error) => {
                 this.apiCall.error(error);
@@ -207,12 +210,16 @@ export class MeetingsService {
     }
 
     deleteMeeting(meetingId:string) {
-        return new Promise<void>((resolve, reject) => {
-            this.http.delete(`/api/users/delete_meeting?id=${meetingId}`).subscribe({
-                next: () => {
+        return new Promise<string>((resolve, reject) => {
+            this.http.delete(`/api/users/delete_meeting?id=${meetingId}`, {observe: 'response'}).subscribe({
+                next: (responseData:any) => {
                     this.deleteMeetingLocally(meetingId);
                     this.meetingsModified.emit();
-                    resolve();
+                    const result = 
+                        responseData.status == '207' ? 
+                            `The meeting was deleted but we could not reach the following guests to inform them: ${responseData.body.unreachableEmailAddresses.join(", ")}` :
+                            'The meeting was successfully deleted and your guests were notified via email.';
+                    resolve(result);
                 },
                 error: (error) => {
                     reject(error.message);
@@ -259,14 +266,17 @@ export class MeetingsService {
     }
 
     updateMeeting(id:string, title:string, startDateTime:string, duration:number) {
-        return new Promise<void>((resolve, reject) => {
+        return new Promise<string>((resolve, reject) => {
             const startDTMillis = DateTime.fromISO(startDateTime).toMillis();
             const meetingUpdateDTO = new MeetingUpdateDTO(id, title, startDTMillis, duration);
-            this.http.put('/api/users/update_meeting', meetingUpdateDTO).subscribe({
-                next: () => {
+            this.http.put('/api/users/update_meeting', meetingUpdateDTO, {observe: 'response'}).subscribe({
+                next: (responseData:any) => {
                     this.updateMeetingLocally(id, title, startDateTime, duration);
                     this.meetingsModified.emit();
-                    resolve();
+                    const result = responseData.status == 207 ? 
+                        `The meeting was updated but we could not reach the following guests to notify them: ${responseData.body.unreachableEmailAddresses.join(", ")}` :
+                        'The meeting was successfully updated and your guests have been notified via email.'
+                    resolve(result);
                 },
                 error: (error) => {
                     reject(error.message);

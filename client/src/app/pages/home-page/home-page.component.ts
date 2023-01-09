@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpResponse } from '@angular/common/http';
 import { AfterViewInit, Component, OnDestroy } from '@angular/core';
 import { ReCaptchaV3Service } from 'ng-recaptcha';
 import { LoadingService } from 'src/app/services/loading/loading.service';
@@ -29,6 +29,8 @@ export class HomePageComponent implements AfterViewInit, OnDestroy {
   reasonForInterestError = '';
   formSubmissionError = '';
   showFormSubmissionSuccessModal = false;
+  formSubmissionSuccessModalTitle = '';
+  formSubmissionSuccessModalText = '';
 
   onSubmit() {
     let valid = true;
@@ -58,8 +60,18 @@ export class HomePageComponent implements AfterViewInit, OnDestroy {
             email : this.email,
             reasonForInterest : this.reasonForInterest,
             recaptchaToken
+          }, {
+            observe: 'response'
           }).subscribe({
-            next: () => {
+            next: (responseData) => {
+              console.log(responseData);
+              if(responseData.status == 207) {
+                this.formSubmissionSuccessModalTitle = 'We received your request, but...'
+                this.formSubmissionSuccessModalText = `We could not reach the email address you entered ${(responseData.body as any).unreachableEmailAddresses ? '(' + (responseData.body as any).unreachableEmailAddresses[0] + ')' :  ''}. You may want to confirm that you entered your email address correctly and try again.`;
+              } else {
+                this.formSubmissionSuccessModalTitle = 'Success!';
+                this.formSubmissionSuccessModalText = "We have received your request for a demo and we'll be in touch shortly. Thank you for your interest in Vunity!";
+              }
               this.loadingService.isLoading = false;
               this.showFormSubmissionSuccessModal = true;
             },

@@ -13,7 +13,9 @@ import { LoadingService } from 'src/app/services/loading/loading.service';
 })
 export class EditMeetingComponent implements OnChanges {
   editSucceeded = false;
+  editSuccessText = '';
   deleteSucceeded = false;
+  deleteSuccessText = '';
   serverError = '';
   
   @Input() meeting?:Meeting;
@@ -52,7 +54,8 @@ export class EditMeetingComponent implements OnChanges {
       if(confirmDelete) {
         this.loadingService.isLoading = true;
           try {
-            await this.meetingsService.deleteMeeting(this.meeting.id);
+            const successMessage = await this.meetingsService.deleteMeeting(this.meeting.id);
+            this.deleteSuccessText = successMessage;
             this.deleteSucceeded = true;
             this.loadingService.isLoading = false;
           } catch(e) {
@@ -71,13 +74,15 @@ export class EditMeetingComponent implements OnChanges {
       this.editMeetingForm.value.duration &&
       this.meeting
     ) {
+      this.loadingService.isLoading = true;
       try {
-        await this.meetingsService.updateMeeting(
+        const successMessage = await this.meetingsService.updateMeeting(
           this.meeting.id, 
           this.editMeetingForm.value.title,
           this.editMeetingForm.value.startDateTime,
           this.editMeetingForm.value.duration
         );
+        this.editSuccessText = successMessage;
         this.editSucceeded = true;
         this.loadingService.isLoading = false;
       } catch(e) {

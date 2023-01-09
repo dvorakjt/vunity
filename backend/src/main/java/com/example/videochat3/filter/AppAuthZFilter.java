@@ -30,21 +30,25 @@ public class AppAuthZFilter extends OncePerRequestFilter {
         } else {
             Cookie[] cookies = request.getCookies();
             Cookie accessTokenCookie = null;
-            for(Cookie cookie : cookies) {
-                if(cookie.getName().equals("vunite_access_token")) {
-                    accessTokenCookie = cookie;
+            if(cookies != null) {
+                for(Cookie cookie : cookies) {
+                    if(cookie.getName().equals("vunite_access_token")) {
+                        accessTokenCookie = cookie;
+                    }
                 }
-            }
-            if(accessTokenCookie != null && accessTokenCookie.getValue() != null) {
-                try {
-                    UserTokenManager.decodeTokenAndGrantAuthority(accessTokenCookie.getValue());
+                if(accessTokenCookie != null && accessTokenCookie.getValue() != null) {
+                    try {
+                        UserTokenManager.decodeTokenAndGrantAuthority(accessTokenCookie.getValue());
+                        filterChain.doFilter(request, response);
+                    } catch (Exception e) {
+                        response.setStatus(401);
+                        Map<String, String> error = new HashMap<>();
+                        error.put("error_message", e.getMessage());
+                        response.setContentType(APPLICATION_JSON_VALUE);
+                        new ObjectMapper().writeValue(response.getOutputStream(), error);
+                    }
+                } else {
                     filterChain.doFilter(request, response);
-                } catch (Exception e) {
-                    response.setStatus(401);
-                    Map<String, String> error = new HashMap<>();
-                    error.put("error_message", e.getMessage());
-                    response.setContentType(APPLICATION_JSON_VALUE);
-                    new ObjectMapper().writeValue(response.getOutputStream(), error);
                 }
             } else {
                 filterChain.doFilter(request, response);
