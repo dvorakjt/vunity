@@ -6,49 +6,41 @@ import javax.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+import lombok.RequiredArgsConstructor;
 
 import com.example.videochat3.DTO.EmailWithAttachment;
 import com.example.videochat3.DTO.SimpleEmail;
 
 @Service
+@RequiredArgsConstructor
 public class EmailServiceImpl implements EmailService {
  
-    @Autowired private JavaMailSender javaMailSender;
+    private final JavaMailSender javaMailSender;
  
     @Value("${spring.mail.username}") private String sender;
  
-    public String sendSimpleEmail(SimpleEmail details)
-    {
-        try {
-            SimpleMailMessage mailMessage
-                = new SimpleMailMessage();
- 
-            mailMessage.setFrom(sender);
-            mailMessage.setTo(details.getRecipient());
-            mailMessage.setText(details.getMessageBody());
-            mailMessage.setSubject(details.getSubject());
- 
-            javaMailSender.send(mailMessage);
-            return "Email sent successfully.";
-        }
+    public void sendSimpleEmail(SimpleEmail details) throws MailException {
+        SimpleMailMessage mailMessage
+            = new SimpleMailMessage();
 
-        catch (Exception e) {
-            return "Error while sending email.";
-        }
+        mailMessage.setFrom(sender);
+        mailMessage.setTo(details.getRecipient());
+        mailMessage.setText(details.getMessageBody());
+        mailMessage.setSubject(details.getSubject());
+
+        javaMailSender.send(mailMessage);
     }
 
-    public String
-    sendEmailWithAttachment(EmailWithAttachment details)
-    {
+    public void sendEmailWithAttachment(EmailWithAttachment details) throws MessagingException {
         MimeMessage mimeMessage
             = javaMailSender.createMimeMessage();
         MimeMessageHelper mimeMessageHelper;
- 
-        try {
+
             mimeMessageHelper
                 = new MimeMessageHelper(mimeMessage, true);
             mimeMessageHelper.setFrom(sender);
@@ -65,11 +57,5 @@ public class EmailServiceImpl implements EmailService {
                 file.getFilename(), file);
  
             javaMailSender.send(mimeMessage);
-            return "Email sent successfully.";
-        }
- 
-        catch (MessagingException e) {
-            return "Error while sending email.";
-        }
     }
 }

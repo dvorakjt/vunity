@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.aventrix.jnanoid.jnanoid.*;
 
+import org.json.JSONObject;
 import org.passay.*;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -33,7 +34,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.example.videochat3.tokens.UserTokenManager;
 import com.example.videochat3.DTO.SimpleEmail;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -47,8 +47,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 
-import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
-
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -57,7 +55,6 @@ import javax.servlet.http.HttpServletResponse;
 @Controller
 @RequiredArgsConstructor
 public class ApiController {
-
 
     private final AppUserService appUserService;
     private final MeetingService meetingService;
@@ -74,22 +71,39 @@ public class ApiController {
             return ResponseEntity.status(400).build();
         }
         if(!recaptchaManager.verifyRecaptchaToken(body.getRecaptchaToken())) {
+            System.out.println("403 generated because recaptcha token was not verified.");
             return ResponseEntity.status(403).build();
         }
-        String messageBody = 
-        "Dear " + body.getName() + ",\n\n" +
-        "Thank you for your interest in Vunity!\n\n" + 
-        "We have received your request for a demo and we will be in contact to schedule a demo shortly.\n\n" +
-        "Thank you,\n" +
-        "The Vunity Team";
-        SimpleEmail emailDetails = new SimpleEmail(body.getEmail(), messageBody, "Vunity Demo Request Received");
-        this.emailService.sendSimpleEmail(emailDetails);
 
-        messageBody = "You have received a request for a demo from:\n\nName:\n" + body.getName() + "\n\nEmail:\n" + body.getEmail() + "\n\nReason for Interest:\n" + body.getReasonForInterest();
-        emailDetails = new SimpleEmail("jdvorakdevelops@gmail.com", messageBody, "New Vunity Demo Request");
-        this.emailService.sendSimpleEmail(emailDetails);
+        try {
+            String messageBody = "You have received a request for a demo from:\n\nName:\n" + body.getName() + "\n\nEmail:\n" + body.getEmail() + "\n\nReason for Interest:\n" + body.getReasonForInterest();
+            SimpleEmail emailDetails = new SimpleEmail("jdvorakdevelops@gmail.com", messageBody, "New Vunity Demo Request");
+            this.emailService.sendSimpleEmail(emailDetails);
 
-        return ResponseEntity.status(200).build();
+            try {
+                messageBody = 
+                "Dear " + body.getName() + ",\n\n" +
+                "Thank you for your interest in Vunity!\n\n" + 
+                "We have received your request for a demo and we will be in contact to schedule a demo shortly.\n\n" +
+                "Thank you,\n" +
+                "The Vunity Team";
+                emailDetails = new SimpleEmail(body.getEmail(), messageBody, "Vunity Demo Request Received");
+                this.emailService.sendSimpleEmail(emailDetails);
+
+                return ResponseEntity.status(HttpStatus.OK).build();
+
+            } catch(Exception e) {
+                //sending confirmation email to user failed, should return 207 status code with body containing unreached email addresses
+                JSONObject responseBody = new JSONObject();
+                List<String> unreachableEmailAddresses = new ArrayList<String>();
+                unreachableEmailAddresses.add(body.getEmail());
+                responseBody.put("unreachableEmailAddresses", unreachableEmailAddresses);
+                return ResponseEntity.status(HttpStatus.MULTI_STATUS).body(responseBody.toMap());
+            }
+        } catch(Exception e) {
+            //sending email to owner failed. this should return a 500 error code
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @PostMapping("/api/users/userinfo")
@@ -148,10 +162,14 @@ public class ApiController {
                 "and enter the following password:\n\n" + passwordResetCode + "\n\n" + 
                 "Thank you.\n\nThe Vunity Team";
 
-                SimpleEmail appToUserEmailDetails = new SimpleEmail(user.getEmail(), messageBody, "Password Reset Request");
-                emailService.sendSimpleEmail(appToUserEmailDetails);
-
-                return ResponseEntity.ok().build();
+                try {
+                    SimpleEmail emailDetails = new SimpleEmail(user.getEmail(), messageBody, "Password Reset Request");
+                    emailService.sendSimpleEmail(emailDetails);
+                    return ResponseEntity.ok().build();
+                } catch(Exception e) {
+                    //sending password reset link to user failed.
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+                }
             }
         } else {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
@@ -207,7 +225,9 @@ public class ApiController {
         DateFormat DFormat = DateFormat.getDateTimeInstance(
             DateFormat.LONG, DateFormat.LONG,
             Locale.getDefault());
-        //email guests that the meeting has been canceled, then
+        
+        List<String> unreachableEmailAddresses = new ArrayList<String>();
+
         for(String guest : meeting.getGuests()) {
             String messageBody = 
             "Dear " + guest + ",\n\n" +
@@ -220,8 +240,18 @@ public class ApiController {
             meetingDTO.getPassword() + "\n\n" +
             "Thank you,\n" +
             "The Vunity Team";
-            SimpleEmail emailDetails = new SimpleEmail(guest, messageBody, "New Vunity Meeting Invitation");
-            this.emailService.sendSimpleEmail(emailDetails);
+            try {
+                SimpleEmail emailDetails = new SimpleEmail(guest, messageBody, "New Vunity Meeting Invitation");
+                this.emailService.sendSimpleEmail(emailDetails);
+            } catch(Exception e) {
+                unreachableEmailAddresses.add(guest);
+            }
+        }
+        if(unreachableEmailAddresses.size() > 0) {
+            JSONObject responseBody = new JSONObject();
+            responseBody.put("meeting", meeting);
+            responseBody.put("unreachableEmailAddresses", unreachableEmailAddresses);
+            return ResponseEntity.status(HttpStatus.MULTI_STATUS).body(responseBody.toMap());
         }
         return ResponseEntity.ok().body(meeting);
     }
@@ -261,7 +291,9 @@ public class ApiController {
         DateFormat DFormat = DateFormat.getDateTimeInstance(
             DateFormat.LONG, DateFormat.LONG,
             Locale.getDefault());
-        //email guests that the meeting has been canceled, then
+        //email guests that the meeting has been updated
+        List<String> unreachableEmailAddresses = new ArrayList<String>();
+
         for(String guest : m.getGuests()) {
             String messageBody = 
             "Dear Vunity Guest,\n\n" +
@@ -275,16 +307,26 @@ public class ApiController {
             "Length: " + meetingUpdateDTO.getDuration() + " minutes\n\n" +
             "Thank you,\n" +
             "The Vunity Team";
-            SimpleEmail emailDetails = new SimpleEmail(guest, messageBody, "Updated Vunity Meeting Invitation");
-            this.emailService.sendSimpleEmail(emailDetails);
+            try {
+                SimpleEmail emailDetails = new SimpleEmail(guest, messageBody, "Updated Vunity Meeting Invitation");
+                this.emailService.sendSimpleEmail(emailDetails);
+            } catch (Exception e) {
+                unreachableEmailAddresses.add(guest);
+            }
         }
-        //email users that the meeting has been update
+        
         meetingService.updateMeeting(
             meetingUpdateDTO.getTitle(),
             meetingUpdateDTO.getDuration(), 
             new Date(meetingUpdateDTO.getStartDateTime()), 
             meetingUpdateDTO.getId()
         );
+
+        if(unreachableEmailAddresses.size() > 0) {
+            JSONObject responseBody = new JSONObject();
+            responseBody.put("unreachableEmailAddresses", unreachableEmailAddresses);
+            return ResponseEntity.status(HttpStatus.MULTI_STATUS).body(responseBody.toMap());
+        }
         return ResponseEntity.ok().build();
     }
 
@@ -301,7 +343,8 @@ public class ApiController {
         DateFormat DFormat = DateFormat.getDateTimeInstance(
         DateFormat.LONG, DateFormat.LONG,
         Locale.getDefault());
-        //email guests that the meeting has been canceled, then
+        //email guests that the meeting has been canceled
+        List<String> unreachableEmailAddresses = new ArrayList<String>();
         for(String guest : m.getGuests()) {
             String messageBody = 
             "Dear Vunity Guest,\n\n" +
@@ -310,10 +353,21 @@ public class ApiController {
             "Scheduled for " + DFormat.format(m.getStartDateTime()) + "\n\n" +
             "Thank you,\n" +
             "The Vunity Team";
-            SimpleEmail emailDetails = new SimpleEmail(guest, messageBody, "Meeting Canceled");
-            this.emailService.sendSimpleEmail(emailDetails);
+            try {
+                SimpleEmail emailDetails = new SimpleEmail(guest, messageBody, "Meeting Canceled");
+                this.emailService.sendSimpleEmail(emailDetails);
+            } catch(Exception e) {
+                unreachableEmailAddresses.add(guest);
+            }
         }
         meetingService.deleteMeetingById(id);
+
+        if(unreachableEmailAddresses.size() > 0) {
+            JSONObject responseBody = new JSONObject();
+            responseBody.put("unreachableEmailAddresses", unreachableEmailAddresses);
+            return ResponseEntity.status(HttpStatus.MULTI_STATUS).body(responseBody.toMap());
+        }
+
         return ResponseEntity.ok().build();
     }
 
