@@ -116,13 +116,13 @@ public class ApiController {
         return ResponseEntity.ok().body(publicUserInfo);
     }
 
-    @PostMapping("/api/token/refresh")
+    @PostMapping("/api/with_rt/refresh")
     public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
         Cookie[] cookies = request.getCookies();
         Cookie refreshTokenCookie = null;
         if(cookies != null) {
             for(Cookie cookie : cookies) {
-                if(cookie.getName().equals("vunite_refresh_token")) refreshTokenCookie = cookie;
+                if(cookie.getName().equals(ResponseCookieFactory.REFRESH_TOKEN_COOKIE_NAME)) refreshTokenCookie = cookie;
             }
             if(refreshTokenCookie != null && refreshTokenCookie.getValue() != null) {
                 String refresh_token = refreshTokenCookie.getValue();
@@ -391,6 +391,27 @@ public class ApiController {
             Map<String,String> meetingToken = UserTokenManager.meetingUserToTokenMap(host);
             return ResponseEntity.ok().body(meetingToken);
         }
+    }
+
+    @DeleteMapping("/api/with_rt/logout")
+    public void logout(HttpServletRequest req, HttpServletResponse res) {
+        System.out.println("Logout route reached.");
+        Cookie[] cookies = req.getCookies();
+        if(cookies != null) {
+            for(Cookie cookie : cookies) {
+                if(
+                    cookie.getName().equals(ResponseCookieFactory.ACCESS_TOKEN_COOKIE_NAME) ||
+                    cookie.getName().equals(ResponseCookieFactory.REFRESH_TOKEN_COOKIE_NAME) ||
+                    cookie.getName().equals("JSESSIONID")
+                ) {
+                    cookie.setValue("");
+                    cookie.setPath("/");
+                    cookie.setMaxAge(0);
+                }
+                res.addCookie(cookie);
+            }
+        }
+        res.setStatus(200);
     }
 
     //only needed in development as the token will be sent on page load in production!

@@ -7,13 +7,15 @@ import org.springframework.http.ResponseCookie;
 public class ResponseCookieFactory {
     private final static boolean isSecure=false;
     private static String sameSite="none";
-    private static Duration accessTokenMaxAge = Duration.ofSeconds(15);
+    private static Duration accessTokenMaxAge = Duration.ofMinutes(10);
     private static Duration refreshTokenMaxAge = Duration.ofMinutes(30);
-    
+
+    public static final String ACCESS_TOKEN_COOKIE_NAME = "vunity_access_token";
+    public static final String REFRESH_TOKEN_COOKIE_NAME = "vunity_refresh_token";
 
     public static ResponseCookie createAccessTokenCookie(String accessToken) {
         ResponseCookie cookie = ResponseCookie
-            .from("vunite_access_token", accessToken)
+            .from(ACCESS_TOKEN_COOKIE_NAME, accessToken)
             .httpOnly(true)
             .secure(isSecure)
             .sameSite(sameSite)
@@ -25,12 +27,12 @@ public class ResponseCookieFactory {
 
     public static ResponseCookie createRefreshTokenCookie(String refreshToken) {
         ResponseCookie cookie = ResponseCookie
-            .from("vunite_refresh_token", refreshToken)
+            .from(REFRESH_TOKEN_COOKIE_NAME, refreshToken)
             .httpOnly(true)
             .secure(isSecure)
             .sameSite(sameSite)
             .maxAge(refreshTokenMaxAge)
-            .path("/api/token/refresh")
+            .path("/")
             .build();
         return cookie;
     }

@@ -23,7 +23,7 @@
                                 routerLinkActive="active" ariaCurrentWhenActive="page">Join a
                                 Meeting</a></li>
                 <li *ngIf="authService.activeUser"><span class="navbar-text navbar-highlightable-text"
-                                (click)="authService.logout()">Logout</span>
+                                (click)="onLogout()">Logout</span>
                 </li>
         </ul>
         <button class="hamburger btnTransparent" (click)="menuOpen = !menuOpen" style="padding: 8px;"
@@ -41,7 +41,7 @@
                 <li *ngIf="activeMeetingService.meetingStatus == notInMeeting"><a routerLink="/joinmeeting"
                                 routerLinkActive="active" ariaCurrentWhenActive="page">Join a
                                 Meeting</a></li>
-                <li><span class="navbar-text navbar-highlightable-text" (click)="authService.logout()"
+                <li><span class="navbar-text navbar-highlightable-text" (click)="onLogout()"
                                 style="width: 100%; box-sizing: border-box;">Logout</span></li>
         </ul>
         <ul class="mobileMenu" *ngIf="menuOpen && showMobileMenu()" (click)="menuOpen = false">
@@ -64,6 +64,6 @@
                                 routerLinkActive="active" ariaCurrentWhenActive="page">Join a
                                 Meeting</a></li>
                 <li><span class="navbar-text navbar-highlightable-text" style="width: 100%; box-sizing: border-box;"
-                                (click)="authService.logout()">Logout</span></li>
+                                (click)="onLogout()">Logout</span></li>
         </ul>
 </nav>

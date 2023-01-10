@@ -4,6 +4,7 @@ import { faBars } from '@fortawesome/free-solid-svg-icons';
 import { isMobile, isTablet } from 'src/app/utils/deviceDetection';
 import { ActiveMeetingService } from 'src/app/services/active-meeting/active-meeting.service';
 import { MeetingStatus } from 'src/app/constants/meeting-status';
+import { LoadingService } from 'src/app/services/loading/loading.service';
 
 @Component({
   selector: 'app-navbar',
@@ -30,7 +31,8 @@ export class NavbarComponent {
   constructor(
     public authService:AuthService, 
     private changeDetector:ChangeDetectorRef,
-    public activeMeetingService:ActiveMeetingService
+    public activeMeetingService:ActiveMeetingService,
+    public loadingService:LoadingService
   ) {
     window.addEventListener('resize', () => {
       this.changeDetector.detectChanges();
@@ -46,6 +48,19 @@ export class NavbarComponent {
         if(target.parentNode) target = target.parentNode as HTMLElement;
       } while(target.parentNode);
       if(!clickedNavbar) this.menuOpen = false;
+    });
+  }
+
+  onLogout() {
+    this.loadingService.isLoading = true;
+    this.authService.logout().subscribe({
+      next: () => {
+        this.loadingService.isLoading = false;
+      },
+      error: () => {
+        this.loadingService.isLoading = false;
+        window.alert("There was a problem logging out. Please refresh and try again.");
+      }
     });
   }
 }

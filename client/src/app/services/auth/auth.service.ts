@@ -122,7 +122,7 @@ export class AuthService {
 
     refreshAccessToken() {
         return new Observable<any>((subscriber) => {
-            this.http.post(`/api/token/refresh`, {}).subscribe({
+            this.http.post(`/api/with_rt/refresh`, {}).subscribe({
                 next: () => {
                     subscriber.next();
                     subscriber.complete();
@@ -136,9 +136,21 @@ export class AuthService {
 
     logout() {
         //should make a call to the backend to logout and cause the current cookies to expire.
-        this.clearUserData();
-        this.isAuthenticated.next(false);
-        this.router.navigate(["/login"]);
+        return new Observable<any>((subscriber) => {
+            this.http.delete('/api/with_rt/logout').subscribe({
+                next: () => {
+                    subscriber.next();
+                    subscriber.complete();
+                    this.clearUserData();
+                    this.isAuthenticated.next(false);
+                    this.router.navigate(["/login"]);
+                },
+                error: (error) => {
+                    subscriber.error(error);
+                    subscriber.complete();
+                }
+            });
+        });
     }
 
     clearUserData() {

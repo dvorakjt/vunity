@@ -32,7 +32,7 @@ public class AppAuthZFilter extends OncePerRequestFilter {
             Cookie accessTokenCookie = null;
             if(cookies != null) {
                 for(Cookie cookie : cookies) {
-                    if(cookie.getName().equals("vunite_access_token")) {
+                    if(cookie.getName().equals(ResponseCookieFactory.ACCESS_TOKEN_COOKIE_NAME)) {
                         accessTokenCookie = cookie;
                     }
                 }
