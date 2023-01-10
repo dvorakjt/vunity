@@ -53,7 +53,7 @@ public class AppUserServiceImpl implements AppUserService, UserDetailsService {
 
     @Override
     public void resetUserPassword(UUID id, String newPassword) {
-        appUserRepo.resetPassword(id, newPassword);
+        appUserRepo.resetPassword(id, passwordEncoder.encode(newPassword));
     }
 
     @Override

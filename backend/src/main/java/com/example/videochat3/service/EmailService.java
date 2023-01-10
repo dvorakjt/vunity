@@ -11,5 +11,7 @@ public interface EmailService {
  
     void sendSimpleEmail(SimpleEmail details) throws MailException;
  
-    void sendEmailWithAttachment(EmailWithAttachment details) throws MessagingException;
+    //CURRENTLY UNUSED
+    //void sendEmailWithAttachment(EmailWithAttachment details) throws MessagingException;
+
 }

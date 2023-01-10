@@ -3,7 +3,6 @@ package com.example.videochat3.service;
 import com.example.videochat3.domain.Meeting;
 
 import java.util.List;
-import java.util.ArrayList;
 import java.util.Date;
 
 import org.springframework.security.core.userdetails.User;

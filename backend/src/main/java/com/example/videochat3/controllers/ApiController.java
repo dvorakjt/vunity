@@ -191,7 +191,7 @@ public class ApiController {
                 passwordEncoder.matches(passwordResetDTO.getPasswordResetURI(), user.getPasswordResetURI()) &&
                 passwordEncoder.matches(passwordResetDTO.getPasswordResetCode(), user.getPasswordResetCode())
             ) {
-                appUserService.resetUserPassword(user.getId(), passwordEncoder.encode(passwordResetDTO.getNewPassword()));
+                appUserService.resetUserPassword(user.getId(), passwordResetDTO.getNewPassword());
                 return ResponseEntity.ok().build();
             } else {
                 System.out.println(passwordEncoder.matches(passwordResetDTO.getPasswordResetURI(), user.getPasswordResetURI()));

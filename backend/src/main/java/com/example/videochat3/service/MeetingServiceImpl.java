@@ -35,8 +35,8 @@ public class MeetingServiceImpl implements MeetingService, UserDetailsService {
     @Qualifier("MeetingPasswordEncoder")
     private final PasswordEncoder meetingPasswordEncoder;
 
-    @Override
-    public UserDetails loadUserByUsername(String meetingId) throws UsernameNotFoundException {
+    @Override //Note: return type changed from UserDetails to User
+    public User loadUserByUsername(String meetingId) throws UsernameNotFoundException {
         Meeting meeting = meetingRepo.findMeetingById(meetingId);
         if(meeting == null) {
             log.error("Meeting not found");

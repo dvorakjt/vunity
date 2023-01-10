@@ -16,7 +16,7 @@ import org.springframework.security.core.userdetails.User;
 import com.example.videochat3.tokens.UserTokenManager;
 
 @SpringBootTest
-public class UserTokenManagerTest {
+public class UserTokenManagerIntTest {
     SecurityContext securityContext = SecurityContextHolder.getContext();
 
     @Test
