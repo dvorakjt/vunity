@@ -10,7 +10,7 @@ import { SelectedDate } from 'src/app/types/selected-date.type';
 export class CalendarPageComponent {
   constructor(public router:Router) {}
 
-  onDateSelected(event:SelectedDate) {
+  onDateSelected() {
     this.router.navigate(['/viewdate']);
   }
 }

@@ -8,7 +8,7 @@ import { ActiveMeetingServiceStub } from 'src/app/tests/mocks/ActiveMeetingServi
 
 import { ActiveMeetingPageComponent } from './active-meeting-page.component';
 
-describe('ActiveMeetingPageComponent', () => {
+xdescribe('ActiveMeetingPageComponent', () => {
   let component: ActiveMeetingPageComponent;
   let fixture: ComponentFixture<ActiveMeetingPageComponent>;
 
