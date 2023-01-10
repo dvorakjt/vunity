@@ -6,8 +6,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.isNotNull;
 
 import org.junit.jupiter.api.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import com.example.videochat3.controllers.ApiController;
 
@@ -19,8 +21,7 @@ class Videochat3ApplicationTest {
 
 	@Test
 	void contextLoads() {
-		// assertNotNull(apiController);
-		assertTrue(true);
+		assertNotNull(apiController);
 	}
 
 }
