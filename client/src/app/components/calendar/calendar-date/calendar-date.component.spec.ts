@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { DateTime } from 'luxon';
 import { Meeting } from 'src/app/models/meeting.model';
 
@@ -10,6 +11,7 @@ describe('CalendarDateComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
+      imports: [FontAwesomeModule],
       declarations: [ CalendarDateComponent ]
     })
     .compileComponents();

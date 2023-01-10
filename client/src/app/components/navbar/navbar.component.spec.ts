@@ -3,8 +3,10 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { User } from 'src/app/models/user.model';
 import { ActiveMeetingService } from 'src/app/services/active-meeting/active-meeting.service';
 import { AuthService } from 'src/app/services/auth/auth.service';
+import { LoadingService } from 'src/app/services/loading/loading.service';
 import { ActiveMeetingServiceStub } from 'src/app/tests/mocks/ActiveMeetingServiceStub';
 import { AuthServiceStub } from 'src/app/tests/mocks/AuthServiceStub';
+import { LoadingServiceStub } from 'src/app/tests/mocks/LoadingServiceStub';
 
 import { NavbarComponent } from './navbar.component';
 
@@ -16,7 +18,10 @@ describe('NavbarComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [ NavbarComponent ],
       imports: [FontAwesomeModule],
-      providers: [{provide: AuthService, useClass: AuthServiceStub}, {provide: ActiveMeetingService, useClass: ActiveMeetingServiceStub}]
+      providers: [{provide: AuthService, useClass: AuthServiceStub},
+        {provide: ActiveMeetingService, useClass: ActiveMeetingServiceStub},
+        {provide: LoadingService, useClass: LoadingServiceStub}
+      ]
     })
     .compileComponents();
 
@@ -40,7 +45,7 @@ describe('NavbarComponent', () => {
     expect(component.showDesktopMenu).toHaveBeenCalled();
     expect(navbar.classList).toContain('spaceBetween');
     expect(navbar.classList).not.toContain('flexEnd');
-    expect(desktopULs.length).toBe(1);
+    expect(desktopULs.length).toBe(2);
     expect(tabletUL).toBeFalsy();
     expect(mobileMenu).toBeFalsy();
     expect(hamburger).toBeFalsy();
@@ -173,17 +178,16 @@ describe('NavbarComponent', () => {
   });
 
 
-  it('should call authService.logout when the logout button is clicked while there is an activeUser.', () => {
+  it('should call onLogout when the logout button is clicked while there is an activeUser.', () => {
     spyOn(component, 'showDesktopMenu').and.returnValue(true);
-    spyOn(component.authService, 'logout');
+    spyOn(component, 'onLogout');
     component.authService.activeUser = new User('Test User', 'user@example.com');
     fixture.detectChanges();
     const spans = fixture.nativeElement.querySelectorAll('span');
     console.log(spans[0]);
     for(let span of spans) {
-      console.log(span.textContent);
       if(span.textContent === 'Logout') span.click();
     }
-    expect(component.authService.logout).toHaveBeenCalled();
+    expect(component.onLogout).toHaveBeenCalled();
   });
 });

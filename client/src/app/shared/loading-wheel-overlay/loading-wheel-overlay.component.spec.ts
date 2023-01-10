@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { LoadingWheelComponent } from '../loading-wheel/loading-wheel.component';
 
 import { LoadingWheelOverlayComponent } from './loading-wheel-overlay.component';
 
@@ -8,7 +9,7 @@ describe('LoadingWheelOverlayComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ LoadingWheelOverlayComponent ]
+      declarations: [ LoadingWheelOverlayComponent, LoadingWheelComponent ]
     })
     .compileComponents();
 

@@ -8,7 +8,7 @@ import { SelectedDate } from 'src/app/types/selected-date.type';
   styleUrls: ['./calendar-page.component.scss']
 })
 export class CalendarPageComponent {
-  constructor(private router:Router) {}
+  constructor(public router:Router) {}
 
   onDateSelected(event:SelectedDate) {
     this.router.navigate(['/viewdate']);

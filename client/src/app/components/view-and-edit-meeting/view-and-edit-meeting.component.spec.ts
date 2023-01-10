@@ -1,4 +1,15 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ReactiveFormsModule } from '@angular/forms';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { ActiveMeetingService } from 'src/app/services/active-meeting/active-meeting.service';
+import { DateTimeService } from 'src/app/services/date-time/date-time.service';
+import { LoadingService } from 'src/app/services/loading/loading.service';
+import { MeetingsService } from 'src/app/services/meetings/meetings.service';
+import { ActiveMeetingServiceStub } from 'src/app/tests/mocks/ActiveMeetingServiceStub';
+import { LoadingServiceStub } from 'src/app/tests/mocks/LoadingServiceStub';
+import { MeetingsServiceStub } from 'src/app/tests/mocks/MeetingsServiceStub';
+import { EditMeetingComponent } from '../edit-meeting/edit-meeting.component';
+import { ViewMeetingComponent } from '../view-meeting/view-meeting.component';
 
 import { ViewAndEditMeetingComponent } from './view-and-edit-meeting.component';
 
@@ -8,7 +19,14 @@ describe('ViewAndEditMeetingComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ ViewAndEditMeetingComponent ]
+      providers: [
+        {provide: ActiveMeetingService, useClass: ActiveMeetingServiceStub},
+        {provide: LoadingService, useClass: LoadingServiceStub},
+        {provide: DateTimeService, useClass: DateTimeService},
+        {provide: MeetingsService, useClass: MeetingsServiceStub}
+      ],
+      imports: [ReactiveFormsModule, FontAwesomeModule],
+      declarations: [ ViewAndEditMeetingComponent, ViewMeetingComponent, EditMeetingComponent ]
     })
     .compileComponents();
 

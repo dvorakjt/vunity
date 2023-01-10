@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActiveMeetingService } from 'src/app/services/active-meeting/active-meeting.service';
+import { LoadingWheelComponent } from 'src/app/shared/loading-wheel/loading-wheel.component';
 import { ActiveMeetingServiceStub } from 'src/app/tests/mocks/ActiveMeetingServiceStub';
 
 import { AwaitingHostComponent } from './awaiting-host.component';
@@ -11,7 +12,7 @@ describe('AwaitingHostComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       providers: [{provide: ActiveMeetingService, useClass: ActiveMeetingServiceStub}],
-      declarations: [ AwaitingHostComponent ]
+      declarations: [ AwaitingHostComponent, LoadingWheelComponent ]
     })
     .compileComponents();
 

@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { FormsModule } from '@angular/forms';
 import { ActiveMeetingService } from 'src/app/services/active-meeting/active-meeting.service';
 import { ActiveMeetingServiceStub } from 'src/app/tests/mocks/ActiveMeetingServiceStub';
 
@@ -11,6 +12,7 @@ describe('ChatMessagesComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [ ChatMessagesComponent ],
+      imports: [FormsModule],
       providers: [{provide: ActiveMeetingService, useClass: ActiveMeetingServiceStub}]
     })
     .compileComponents();

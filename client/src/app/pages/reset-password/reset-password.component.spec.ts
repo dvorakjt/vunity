@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { ReCaptchaV3Service } from 'ng-recaptcha';
 import { ActivatedRouteStub } from 'src/app/tests/mocks/ActivatedRouteStub';
@@ -19,6 +20,7 @@ describe('ResetPasswordComponent', () => {
         {provide: ActivatedRoute, useClass: ActivatedRouteStub},
         {provide: ReCaptchaV3Service, useClass: RecaptchaV3ServiceStub}
       ],
+      imports: [FormsModule],
       declarations: [ ResetPasswordComponent ]
     })
     .compileComponents();

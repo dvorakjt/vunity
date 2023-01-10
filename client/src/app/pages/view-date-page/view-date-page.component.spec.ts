@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { DateViewComponent } from 'src/app/components/date-view/date-view.component';
 
 import { ViewDatePageComponent } from './view-date-page.component';
 
@@ -8,7 +9,7 @@ describe('ViewDatePageComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ ViewDatePageComponent ]
+      declarations: [ ViewDatePageComponent, DateViewComponent ]
     })
     .compileComponents();
 

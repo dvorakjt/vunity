@@ -8,6 +8,7 @@ import { DateTimeServiceStub } from 'src/app/tests/mocks/DateTimeServiceStub';
 import { SelectedDate } from 'src/app/types/selected-date.type';
 
 import { DateViewComponent } from './date-view.component';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 
 describe('DateViewComponent', () => {
   let component: DateViewComponent;
@@ -16,7 +17,10 @@ describe('DateViewComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [ DateViewComponent ],
-      providers: [{provide: ViewDateService, useClass: ViewDateServiceStub}, {provide: DateTimeService, useClass: DateTimeServiceStub}]
+      imports: [FontAwesomeModule],
+      providers: [
+        {provide: ViewDateService, useClass: ViewDateServiceStub},
+        {provide: DateTimeService, useClass: DateTimeServiceStub},]
     })
     .compileComponents();
 

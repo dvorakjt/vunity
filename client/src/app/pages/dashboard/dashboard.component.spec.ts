@@ -1,4 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { CalendarComponent } from 'src/app/components/calendar/calendar.component';
+import { UpcomingMeetingsComponent } from 'src/app/components/upcoming-meetings/upcoming-meetings.component';
 
 import { DashboardComponent } from './dashboard.component';
 
@@ -8,7 +10,7 @@ describe('DashboardComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ DashboardComponent ]
+      declarations: [ DashboardComponent, UpcomingMeetingsComponent, CalendarComponent ]
     })
     .compileComponents();
 

@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { FormsModule } from '@angular/forms';
 import { ReCaptchaV3Service } from 'ng-recaptcha';
 import { HttpClientStub } from 'src/app/tests/mocks/HttpClientStub';
 import { RecaptchaV3ServiceStub } from 'src/app/tests/mocks/RecaptchaV3ServiceStub';
@@ -16,6 +17,7 @@ describe('ForgotPasswordComponent', () => {
         {provide: HttpClient, useClass: HttpClientStub},
         {provide: ReCaptchaV3Service, useClass: RecaptchaV3ServiceStub}
       ],
+      imports: [FormsModule],
       declarations: [ ForgotPasswordComponent ]
     })
     .compileComponents();

@@ -20,4 +20,10 @@ describe('CalendarPageComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('should call router.navigate when onDateSelected is called.', () => {
+    spyOn(component.router, 'navigate');
+    expect(component.router.navigate).toHaveBeenCalledWith(['/viewdate']);
+  });
+
 });

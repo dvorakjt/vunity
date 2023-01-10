@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { LoadingWheelComponent } from 'src/app/shared/loading-wheel/loading-wheel.component';
 
 import { AwaitingUserMediaComponent } from './awaiting-user-media.component';
 
@@ -8,7 +9,7 @@ describe('AwaitingUserMediaComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ AwaitingUserMediaComponent ]
+      declarations: [ AwaitingUserMediaComponent, LoadingWheelComponent ]
     })
     .compileComponents();
 

@@ -35,14 +35,15 @@ describe('ViewMeetingComponent', () => {
 
   it('should render the backbutton when showBackButton is true.', () => {
     const backButton = fixture.nativeElement.getElementsByClassName('btnTransparent')[0];
-    expect(backButton).toBeTruthy();
+    const transparentButtons = fixture.nativeElement.getElementsByClassName('btnTransparent');
+    expect(transparentButtons.length).toBe(2);
   });
 
   it('should not render the backbutton when showBackButton is false.', () => {
     component.showBackButton = false;
     fixture.detectChanges();
     const transparentButtons = fixture.nativeElement.getElementsByClassName('btnTransparent');
-    expect(transparentButtons.length).toBe(0);
+    expect(transparentButtons.length).toBe(1);
   });
 
   it('should emit an event when onGoBack is called.', () => {

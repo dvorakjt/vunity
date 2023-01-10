@@ -1,6 +1,7 @@
 import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { ReCaptchaV3Service } from 'ng-recaptcha';
+import { of } from 'rxjs';
 import { ActiveMeetingService } from 'src/app/services/active-meeting/active-meeting.service';
 import { GuestAuthError } from 'src/app/services/active-meeting/errors/guest-auth-error';
 import { LoadingService } from 'src/app/services/loading/loading.service';
@@ -60,6 +61,7 @@ describe('JoinMeetingComponent', () => {
   });
 
   it('should call activeMeetingService.authenticateAsGuest when a meetingId and password is provided.', () => {
+    spyOn(component.recaptchaV3Service, 'execute').and.returnValue(of('token'));
     spyOn(component.activeMeetingService, 'authenticateAsGuest');
 
     component.meetingId = '1';
@@ -71,6 +73,8 @@ describe('JoinMeetingComponent', () => {
   });
 
   it('should set loadingService.isLoading to false when activeMeeting.meetingStatusChanged emits an event.', () => {
+    spyOn(component.recaptchaV3Service, 'execute').and.returnValue(of('token'));
+
     component.meetingId = '1';
     component.password = 'password';
     component.onAuthenticateToMeeting();
@@ -83,6 +87,7 @@ describe('JoinMeetingComponent', () => {
   });
 
   it('should set loadingService.isLoading to false and set the serverErrorMessage when activeMeeting.errorEmitter emits a GuestAuthError', () => {
+    spyOn(component.recaptchaV3Service, 'execute').and.returnValue(of('token'));
     component.meetingId = '1';
     component.password = 'some wrong password';
     component.onAuthenticateToMeeting();

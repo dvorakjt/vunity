@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { FormsModule } from '@angular/forms';
 import { ReCaptchaV3Service } from 'ng-recaptcha';
 import { LoadingService } from 'src/app/services/loading/loading.service';
 import { HttpClientStub } from 'src/app/tests/mocks/HttpClientStub';
@@ -19,6 +20,7 @@ describe('HomePageComponent', () => {
         {provide: ReCaptchaV3Service, useClass: RecaptchaV3ServiceStub},
         {provide: HttpClient, useClass: HttpClientStub}
       ],
+      imports: [FormsModule],
       declarations: [ HomePageComponent ]
     })
     .compileComponents();

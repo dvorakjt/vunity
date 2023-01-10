@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { UpcomingMeetingsComponent } from 'src/app/components/upcoming-meetings/upcoming-meetings.component';
 
 import { UpcomingMeetingsPageComponent } from './upcoming-meetings-page.component';
 
@@ -8,7 +9,7 @@ describe('UpcomingMeetingsPageComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ UpcomingMeetingsPageComponent ]
+      declarations: [ UpcomingMeetingsPageComponent, UpcomingMeetingsComponent ]
     })
     .compileComponents();
 

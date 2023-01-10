@@ -10,6 +10,7 @@ import { MeetingsServiceStub } from 'src/app/tests/mocks/MeetingsServiceStub';
 import { LoadingServiceStub } from 'src/app/tests/mocks/LoadingServiceStub';
 
 import { EditMeetingComponent } from './edit-meeting.component';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 
 describe('EditMeetingComponent', () => {
   let component: EditMeetingComponent;
@@ -18,7 +19,7 @@ describe('EditMeetingComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [ EditMeetingComponent ],
-      imports: [ReactiveFormsModule],
+      imports: [ReactiveFormsModule, FontAwesomeModule],
       providers: [
         {provide: DateTimeService, useClass: DateTimeService},
         {provide: MeetingsService, useClass: MeetingsServiceStub},
@@ -67,14 +68,15 @@ describe('EditMeetingComponent', () => {
     expect(component.meetingsService.deleteMeeting).not.toHaveBeenCalled();
   });
 
-  it('should set delete succeeded to true and loadingService.isLoading to false when a meeting is successfully deleted.', fakeAsync(() => {
+  it('should set delete succeeded to true, deleteSuccessText to \'set text\' and loadingService.isLoading to false when a meeting is successfully deleted.', fakeAsync(() => {
     spyOn(window, 'confirm').and.returnValue(true);
-    spyOn(component.meetingsService, 'deleteMeeting').and.returnValue(Promise.resolve());
+    spyOn(component.meetingsService, 'deleteMeeting').and.returnValue(Promise.resolve('set text'));
     const meeting = new Meeting('1', 'Title', 'password', 45, DateTime.fromObject({year: 1903, month: 12, day: 17}).toISO(), [], '1');
     component.meeting = meeting;
     component.onDelete();
     tick();
     expect(component.deleteSucceeded).toBe(true);
+    expect(component.deleteSuccessText).toBe('set text');
     expect(component.loadingService.isLoading).toBe(false);
   }));
 
@@ -103,8 +105,8 @@ describe('EditMeetingComponent', () => {
     expect(component.meetingsService.updateMeeting).toHaveBeenCalled();
   });
 
-  it('should set editSucceeded to true and loadingService.isLoading to false when meetingService.updateMeeting succeeds.', fakeAsync(() => {
-    spyOn(component.meetingsService, 'updateMeeting').and.returnValue(Promise.resolve());
+  it('should set editSucceeded to true, editSuccessText to \'set text\' and loadingService.isLoading to false when meetingService.updateMeeting succeeds.', fakeAsync(() => {
+    spyOn(component.meetingsService, 'updateMeeting').and.returnValue(Promise.resolve('set text'));
 
     const meeting = new Meeting('1', 'Title', 'password', 45, DateTime.fromObject({year: 1903, month: 12, day: 17}).toISO(), [], '1');
     component.meeting = meeting;
@@ -117,6 +119,7 @@ describe('EditMeetingComponent', () => {
     tick();
 
     expect(component.editSucceeded).toBe(true);
+    expect(component.editSuccessText).toBe('set text');
     expect(component.loadingService.isLoading).toBe(false);
   }));
 
