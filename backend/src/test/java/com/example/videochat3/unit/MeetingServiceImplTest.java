@@ -26,7 +26,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import com.example.videochat3.domain.Meeting;
 import com.example.videochat3.encryption.MeetingPasswordEncoder;
 import com.example.videochat3.repo.MeetingRepo;
-import com.example.videochat3.service.MeetingService;
 import com.example.videochat3.service.MeetingServiceImpl;
 
 @ExtendWith(MockitoExtension.class)

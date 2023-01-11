@@ -66,7 +66,7 @@ public class ApiController {
         value ="/api/request_demo",
         consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE}
     )
-    public ResponseEntity requestInfo(@RequestBody RequestDemoDTO body) {
+    public ResponseEntity<Object> requestInfo(@RequestBody RequestDemoDTO body) {
         if(body.getName() == null || body.getEmail() == null || body.getReasonForInterest() == null || body.getRecaptchaToken() == null) {
             return ResponseEntity.status(400).build();
         }
@@ -414,9 +414,8 @@ public class ApiController {
         res.setStatus(200);
     }
 
-    //only needed in development as the token will be sent on page load in production!
     @GetMapping("/api/csrf_token")
-    public ResponseEntity getCSRFToken() {
+    public ResponseEntity<Object> getCSRFToken() {
         return ResponseEntity.status(200).build();
     }
 }

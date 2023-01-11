@@ -34,17 +34,22 @@ public class AppUserServiceImplTest {
     @Before
     public void initMocks() {
         MockitoAnnotations.openMocks(this);
-        this.appUserService = new AppUserServiceImpl(appUserRepo, passwordEncoder);
+    }
+
+    private void initAppUserService() {
+        if(appUserService == null) appUserService = new AppUserServiceImpl(appUserRepo, passwordEncoder);
     }
 
     @Test
     public void loadUserByUsernameShouldThrowExceptionIfNoUserFound() {
+        initAppUserService();
         when(appUserRepo.findAppUserByEmail("nonuser@example.com")).thenReturn(null);
         assertThrows(UsernameNotFoundException.class, () -> appUserService.loadUserByUsername("nonuser@example.com"));
     }
 
     @Test
     public void loadUserByUsernameShouldReturnUserWhenUserFound() {
+        initAppUserService();
         AppUser appUser = new AppUser();
         appUser.setEmail("existinguser@example.com");
         appUser.setPassword(passwordEncoder.encode("password"));
@@ -57,6 +62,7 @@ public class AppUserServiceImplTest {
 
     @Test
     public void saveUserShouldReturnSavedUserWithPasswordEncoded() {
+        initAppUserService();
         AppUser appUser = new AppUser();
         appUser.setEmail("bill@example.com");
         appUser.setPassword("password");
