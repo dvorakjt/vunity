@@ -9,10 +9,9 @@ import { Meeting } from 'src/app/models/meeting.model';
   styleUrls: ['./view-date-page.component.scss']
 })
 export class ViewDatePageComponent {
-  constructor(private router:Router, private location:Location) {}
+  constructor(public router:Router, public location:Location) {}
 
   onMeetingSelected(meeting:Meeting) {
-    console.log(meeting);
     this.router.navigateByUrl(`/meeting?id=${meeting.id}`);
   }
 

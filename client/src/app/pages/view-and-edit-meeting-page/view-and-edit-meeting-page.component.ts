@@ -13,7 +13,7 @@ export class ViewAndEditMeetingPageComponent implements OnInit {
   meetingId:any;
   meeting?:Meeting;
 
-  constructor(private meetingsService:MeetingsService, private route:ActivatedRoute, public location:Location) {
+  constructor(public meetingsService:MeetingsService, public route:ActivatedRoute, public location:Location) {
     this.meetingId = this.route.snapshot.queryParamMap.get('id');
   }
 

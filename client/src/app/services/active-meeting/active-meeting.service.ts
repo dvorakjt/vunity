@@ -23,13 +23,13 @@ declare var Stomp: any;
 
 @Injectable({providedIn: 'root'})
 export class ActiveMeetingService {
-    private websocketConnection?: WebSocket;
-    private websocketStatus = new ReplaySubject<string>(1);
+    public websocketConnection?: WebSocket;
+    public websocketStatus = new ReplaySubject<string>(1);
 
     public isHost = false;
-    private authToken = '';
+    public authToken = '';
     public localPeer?:LocalPeer;
-    private remotePeerPartials:RemotePeerPartial[] = [];
+    public remotePeerPartials:RemotePeerPartial[] = [];
     public remotePeerList:RemotePeer[] = [];
     public remotePeersById:RemotePeerMap = {};
 
@@ -49,7 +49,7 @@ export class ActiveMeetingService {
 
     public remotePeerJoinedOrLeft = new EventEmitter<void>();
 
-    constructor(private authService: AuthService, private http: HttpClient) {
+    constructor(public authService: AuthService, public http: HttpClient) {
     }
 
     authenticateAsGuest(meetingId:string, password:string, recaptchaToken:string) {
@@ -95,18 +95,14 @@ export class ActiveMeetingService {
         this.getLocalMedia();
     }
 
-    private createLocalPeer(username:string) {
+    public createLocalPeer(username:string) {
         this.localPeer = new LocalPeer(username);
         this.localPeer.dataChannelEventEmitter.subscribe({
             next: (value:DataChannelMessage) => {
-                console.log(value);
                 this.broadCastMessage(value.messageType, value.message);
             },
             error: (e) => {
                 console.log(e);
-            },
-            complete: () => {
-                console.log("complete");
             }
         });
         //speaking peer defaults to localPeer
@@ -153,7 +149,7 @@ export class ActiveMeetingService {
         } else this.join();
     }
 
-    private join() {
+    public join() {
         this.updateMeetingStatus(MeetingStatus.ConnectingToSignalingServer);
         this.checkAndEstablishWebSocketConnection();
         this.updateMeetingStatus(MeetingStatus.WaitingForHost);
@@ -164,7 +160,7 @@ export class ActiveMeetingService {
         this.sendOverWebSocket(joinData);
     }
 
-    private open() {
+    public open() {
         this.updateMeetingStatus(MeetingStatus.ConnectingToSignalingServer);
         this.checkAndEstablishWebSocketConnection();
         const openData = {
@@ -250,7 +246,7 @@ export class ActiveMeetingService {
 
     //Handle Signaling messages
 
-    private handleJoinOrOpenAsHost(data:any) {
+    public handleJoinOrOpenAsHost(data:any) {
         for (const participant of data.preexistingParticipants) {
             const {sessionId, username} = participant;
             const remotePeerPartial = new RemotePeerPartial(sessionId, username, new RTCPeerConnection(PEER_CONNECTION_CONFIG));
@@ -264,7 +260,7 @@ export class ActiveMeetingService {
         }
     }
 
-    private openConnections() {
+    public openConnections() {
         if(this.localPeer && this.localPeer.stream) {
             for(const remotePeerPartial of this.remotePeerPartials) {
                 const remotePeer = remotePeerPartial.openConnection(this.localPeer.stream);
@@ -278,7 +274,7 @@ export class ActiveMeetingService {
         }
     }
 
-    private handleOffer(data:any) {
+    public handleOffer(data:any) {
         if(this.localPeer && this.localPeer.stream) {
             const connection = new RTCPeerConnection(PEER_CONNECTION_CONFIG);
             const offer = new RTCSessionDescription(JSON.parse(data.offer));
@@ -294,7 +290,7 @@ export class ActiveMeetingService {
         }
     }
 
-    private subscribeToRemotePeerEvents(remotePeer:RemotePeer) {
+    public subscribeToRemotePeerEvents(remotePeer:RemotePeer) {
         remotePeer.signalingEventEmitter.subscribe({
             next: (dto) => {
                 if(dto) {
@@ -332,7 +328,7 @@ export class ActiveMeetingService {
         });
     }
 
-    private handleAnswer(data:any) {
+    public handleAnswer(data:any) {
         const answer = new RTCSessionDescription(JSON.parse(data.answer));
         const remotePeerSessionId = data.from;
         const remotePeer = this.remotePeersById[remotePeerSessionId];
@@ -341,7 +337,7 @@ export class ActiveMeetingService {
         }
     }
 
-    private handleCandidate(data:any) {
+    public handleCandidate(data:any) {
         const candidate = new RTCIceCandidate(JSON.parse(data.candidate));
         const remotePeerSessionId = data.from;
         const remotePeer = this.remotePeersById[remotePeerSessionId]
@@ -350,7 +346,7 @@ export class ActiveMeetingService {
         }
     }
 
-    private async handleScreenShareSucceeded(data:any) {
+    public async handleScreenShareSucceeded(data:any) {
         try {
             this.screenSharingStream = await navigator.mediaDevices.getDisplayMedia({audio: true, video: true});
             this.isSharingScreen = true;
@@ -387,7 +383,7 @@ export class ActiveMeetingService {
         }
     }
 
-    private createScreenShareOffer(peerId:string) {
+    public createScreenShareOffer(peerId:string) {
 
         const viewer = new ScreenViewer(peerId, new RTCPeerConnection(PEER_CONNECTION_CONFIG));
         this.screenViewersById[peerId] = viewer;
@@ -423,7 +419,7 @@ export class ActiveMeetingService {
         });
     }
 
-    private handleScreenShareOffer(data:any) {
+    public handleScreenShareOffer(data:any) {
         const screenSharingPeer = new ScreenSharingPeer(data.from, data.username + "'s", new RTCPeerConnection(PEER_CONNECTION_CONFIG));
 
         const offer = new RTCSessionDescription(JSON.parse(data.offer));
@@ -462,14 +458,14 @@ export class ActiveMeetingService {
         this.screenSharingPeer = screenSharingPeer;
     }
 
-    private handleScreenShareCandidate(data:any) {
+    public handleScreenShareCandidate(data:any) {
         const candidate = new RTCIceCandidate(JSON.parse(data.candidate));
         if(this.screenSharingPeer) {
             (this.screenSharingPeer as ScreenSharingPeer).connection.addIceCandidate(candidate);
         }
     }
 
-    private handleScreenViewerAnswer(data:any) {
+    public handleScreenViewerAnswer(data:any) {
         const answer = new RTCSessionDescription(JSON.parse(data.answer));
         const screenViewerId = data.from;
         const screenViewer = this.screenViewersById[screenViewerId];
@@ -478,7 +474,7 @@ export class ActiveMeetingService {
         }
     }
 
-    private handleScreenViewerCandidate(data:any) {
+    public handleScreenViewerCandidate(data:any) {
         const candidate = new RTCIceCandidate(JSON.parse(data.candidate));
         const screenViewerId = data.from;
         const screenViewer = this.screenViewersById[screenViewerId];
@@ -487,19 +483,19 @@ export class ActiveMeetingService {
         }
     }
 
-    private handleNewScreenViewer(data:any) {
+    public handleNewScreenViewer(data:any) {
         this.createScreenShareOffer(data.peerId);
     }
 
-    private handleScreenShareFailed(data:any) {
+    public handleScreenShareFailed(data:any) {
         console.log(data);
     }
 
-    private handleScreenShareStopped() {
+    public handleScreenShareStopped() {
         this.screenSharingPeer = undefined;
     }
 
-    private handlePeerDeparture(remotePeerId:string) {
+    public handlePeerDeparture(remotePeerId:string) {
         this.remotePeerList = this.remotePeerList.filter((peer) => {
             return peer.sessionId !== remotePeerId;
         });
@@ -509,16 +505,16 @@ export class ActiveMeetingService {
         this.remotePeerJoinedOrLeft.emit();
     }
 
-    private handleMeetingClosure() {
+    public handleMeetingClosure() {
         this.resetMeetingData();
     }
 
-    private updateMeetingStatus(newStatus:MeetingStatus) {
+    public updateMeetingStatus(newStatus:MeetingStatus) {
         this.meetingStatus = newStatus;
         this.meetingStatusChanged.emit(newStatus);
     }
 
-    private checkAndEstablishWebSocketConnection() {
+    public checkAndEstablishWebSocketConnection() {
         if (!this.websocketConnection || this.websocketConnection.readyState === WebSocket.CLOSING || this.websocketConnection.readyState === WebSocket.CLOSED) {
             this.websocketStatus.next('loading');
             this.websocketConnection = new WebSocket('ws://localhost:8080/socket'); //websocket should be reopened if closed
@@ -568,7 +564,7 @@ export class ActiveMeetingService {
         }
     }
 
-    private sendOverWebSocket(dto: any) {
+    public sendOverWebSocket(dto: any) {
         const authData = {
             isHost: this.isHost,
             meetingAccessToken: this.authToken
@@ -607,7 +603,7 @@ export class ActiveMeetingService {
         }
     }
 
-    private handleError(e:Error) {
+    public handleError(e:Error) {
         console.log(e);
         this.errorEmitter.emit(e);
     }

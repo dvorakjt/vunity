@@ -87,4 +87,5 @@ describe('ForgotPasswordComponent', () => {
     component.onRequestPasswordReset();
     expect(component.serverErrorMessage).toBe('There was a problem creating a Recaptcha token.');
   });
+
 });

@@ -11,7 +11,7 @@ import { showRecaptcha, hideRecaptcha } from 'src/app/utils/recaptcha.util';
 })
 export class HomePageComponent implements AfterViewInit, OnDestroy {
 
-  constructor(private loadingService:LoadingService, private recaptchaV3Service:ReCaptchaV3Service, private http:HttpClient) {}
+  constructor(public loadingService:LoadingService, public recaptchaV3Service:ReCaptchaV3Service, public http:HttpClient) {}
 
   ngAfterViewInit(): void {
     showRecaptcha();
@@ -81,8 +81,8 @@ export class HomePageComponent implements AfterViewInit, OnDestroy {
             }
           })
         }, 
-        error: (error) => {
-          this.formSubmissionError = 'There was a problem with recaptcha. Please reload the page and try again.'
+        error: (_error) => {
+          this.formSubmissionError = 'There was a problem with recaptcha. Please reload the page and try again.';
         }
       });
   }

@@ -9,7 +9,7 @@ import { Meeting } from 'src/app/models/meeting.model';
 })
 export class UpcomingMeetingsPageComponent {
 
-  constructor(private router:Router) {}
+  constructor(public router:Router) {}
 
   onMeetingSelected(meeting:Meeting) {
     this.router.navigateByUrl(`/meeting?id=${meeting.id}`);
