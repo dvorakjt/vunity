@@ -29,7 +29,7 @@ export class ChatMessagesComponent implements OnInit, AfterViewInit {
   }
 
   onSendMessage() {
-    this.activeMeetingService.broadCastMessage('chat', this.newMessage);
+    this.activeMeetingService.broadcastMessage('chat', this.newMessage);
     this.newMessage = '';
   }
   

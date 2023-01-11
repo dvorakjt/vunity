@@ -77,5 +77,5 @@ export class ActiveMeetingServiceStub {
     public resetMeetingData() {
     }
 
-    public broadCastMessage(type:string, message:string) {}
+    public broadcastMessage(type:string, message:string) {}
 }

@@ -32,11 +32,11 @@ describe('ChatMessagesComponent', () => {
     expect(component.scrollToBottomOfMessages).toHaveBeenCalled();
   });
 
-  it('should call activeMeetingService.broadCastMessage when onSendMessage is called.', () => {
-    spyOn(component.activeMeetingService, 'broadCastMessage');
+  it('should call activeMeetingService.broadcastMessage when onSendMessage is called.', () => {
+    spyOn(component.activeMeetingService, 'broadcastMessage');
     component.newMessage = 'Hello there';
     component.onSendMessage();
-    expect(component.activeMeetingService.broadCastMessage).toHaveBeenCalledWith('chat', 'Hello there');
+    expect(component.activeMeetingService.broadcastMessage).toHaveBeenCalledWith('chat', 'Hello there');
   });
 
   it('should call onSendMessage when the send button is clicked.', () => {

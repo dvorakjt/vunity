@@ -99,7 +99,7 @@ export class ActiveMeetingService {
         this.localPeer = new LocalPeer(username);
         this.localPeer.dataChannelEventEmitter.subscribe({
             next: (value:DataChannelMessage) => {
-                this.broadCastMessage(value.messageType, value.message);
+                this.broadcastMessage(value.messageType, value.message);
             },
             error: (e) => {
                 console.log(e);
@@ -125,11 +125,12 @@ export class ActiveMeetingService {
                     this.updateMeetingStatus(MeetingStatus.AwaitingMediaSettings);
                 }
             }).catch((e) => {
-                this.handleError(e);
+                console.log(e);
+                this.handleError(new Error("User declined to give permissions."));
                 this.resetMeetingData();
             });
         } else {
-            this.handleError(new Error("No local peer was created"));
+            this.handleError(new Error("No local peer was created."));
             this.resetMeetingData();
         }
     }
@@ -581,7 +582,7 @@ export class ActiveMeetingService {
 
     //send data over data channel
 
-    public broadCastMessage(messageType:string, message:any) {
+    public broadcastMessage(messageType:string, message:any) {
         console.log(this.meetingStatus);
         if (this.meetingStatus === MeetingStatus.InMeeting) {
             if(messageType === 'chat') {
@@ -593,9 +594,6 @@ export class ActiveMeetingService {
                 message
             });
             for(const remotePeer of this.remotePeerList) {
-                console.log(remotePeer);
-                console.log(remotePeer.dataChannel);
-                console.log(remotePeer.dataChannel?.readyState);
                 if (remotePeer.dataChannel && remotePeer.dataChannel.readyState == 'open') {
                     remotePeer.dataChannel.send(broadcastData);
                 }
