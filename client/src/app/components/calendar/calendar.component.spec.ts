@@ -27,6 +27,15 @@ describe('CalendarComponent', () => {
     expect(component.days.length).toBe(30);
   });
 
+  it('should call initializeDays and populateDays when a meetingsModified event is received after ngOnInit is called.', () => {
+    component.ngOnInit();
+    spyOn(component, 'initializeDays');
+    spyOn(component, 'populateDays');
+    component.meetingsService.meetingsModified.emit();
+    expect(component.initializeDays).toHaveBeenCalled();
+    expect(component.populateDays).toHaveBeenCalled();
+  });
+
   it('should correctly get the previous month\'s days.', () => {
     const today = DateTime.fromObject({year: 1955, month: 4, day: 27}).startOf('day');
     expect(component.getPreviousMonthDays(today).length).toBe(5);
@@ -95,6 +104,11 @@ describe('CalendarComponent', () => {
     expect(component.days[0][0]).toEqual(meeting1);
     expect(component.days[0][1]).toEqual(meeting2);
   }));
+
+  it('should return Promise.reject() when meetingService.loadMeetingsByMonthAndYear throws an error.', async () => {
+    spyOn(component.meetingsService, 'loadMeetingsByMonthAndYear').and.returnValue(Promise.reject());
+    await expectAsync(component.populateDays(2, 2021, [[]])).toBeRejected();
+  });
 
   it('should emit a selected date when a onDateSelected() is called', () => {
     spyOn(component.dateSelected, 'emit');

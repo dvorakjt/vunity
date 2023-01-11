@@ -38,4 +38,17 @@ describe('GetUsernameComponent', () => {
     expect(component.activeMeetingService.setLocalPeerUsername).toHaveBeenCalledWith('Mieczyslaw');
   });
 
+  it('should call activeMeetingService.resetMeetingData() when onCancel() is called.', () => {
+    spyOn(component.activeMeetingService, 'resetMeetingData');
+    component.onCancel();
+    expect(component.activeMeetingService.resetMeetingData).toHaveBeenCalled();
+  });
+
+  it('should call onCancel when the cancel button is clicked.', () => {
+    spyOn(component, 'onCancel');
+    const cancelBtn = fixture.nativeElement.getElementsByClassName('btnDanger')[0];
+    cancelBtn.click();
+    expect(component.onCancel).toHaveBeenCalled();
+  });
+
 });

@@ -11,6 +11,7 @@ import { HttpClientStub } from "src/app/tests/mocks/HttpClientStub";
 import { AuthService } from "../auth/auth.service";
 import { ActiveMeetingService } from "./active-meeting.service";
 import { GuestAuthError } from "./errors/guest-auth-error";
+import { HostAuthError } from "./errors/host-auth-error";
 
 describe('ActiveMeetingService', () => {
     let service:ActiveMeetingService;
@@ -55,6 +56,28 @@ describe('ActiveMeetingService', () => {
         expect(service.createLocalPeer).toHaveBeenCalledWith('Host');
         expect(service.updateMeetingStatus).toHaveBeenCalledWith(MeetingStatus.AwaitingMedia);
         expect(service.getLocalMedia).toHaveBeenCalled();
+    });
+
+    it('should call handleError with new HostAuthError when authenticateAsHost post request succeeds but activeUser is undefined.', () => {
+        spyOn(service.http, 'post').and.returnValue(of({access_token: "meetingJWT"}));
+        spyOn(service, 'handleError');
+        service.authService.activeUser = undefined;
+        service.authenticateAsHost("valid meeting id");
+        expect(service.handleError).toHaveBeenCalledWith(new HostAuthError("No active user."));
+    });
+
+    it('should call handleError with new HostAuthError when authenticateAsHost is called and the post request fails.', () => {
+        spyOn(service.http, 'post').and.returnValue(throwError(() => new Error()))
+        spyOn(service, 'handleError');
+        service.authenticateAsHost("invalid meeting id");
+        expect(service.handleError).toHaveBeenCalledWith(new HostAuthError('Insufficicent permissions.'));
+    });
+
+    it('should call handleError with new HostAuthError when authenticateAsHost is called and meetingStatus is anything but NotInMeeting.', () => {
+        spyOn(service, 'handleError');
+        service.meetingStatus = MeetingStatus.AwaitingMedia;
+        service.authenticateAsHost("valid meeting id");
+        expect(service.handleError).toHaveBeenCalledWith(new HostAuthError("Already in meeting"));
     });
 
     it('should call createLocalPeer, updateMeetingStatus and getLocalMedia when setLocalPeerUsername is called.', () => {
@@ -319,5 +342,27 @@ describe('ActiveMeetingService', () => {
         expect(service.openConnections).toHaveBeenCalled();
     });
 
+    it('should call openConnection() on each remotePeerPartial, add the resulting RemotePeer to remotePeerList and remotePeersById,' +
+        'set speakingPeer to the first RemotePeer, emit a remotePeerJoinedOrLeft event, call subscribeToRemotePeerEvents and call remotePeer.createOffer' +
+        'when openConnections() is called.', () => {
+            const peerPartial = new RemotePeerPartial("1", "username", new RTCPeerConnection());
+            const remotePeer = new RemotePeer("1", "username", peerPartial.connection);
+            service.createLocalPeer("host");
+            if(service.localPeer) service.localPeer.stream = new MediaStream();
+            service.speakingPeer = service.localPeer;
+            service.remotePeerPartials = [peerPartial];
 
+            spyOn(peerPartial, 'openConnection').and.returnValue(remotePeer);
+            spyOn(remotePeer, 'createOffer');
+            spyOn(service.remotePeerJoinedOrLeft, 'emit');
+            spyOn(service, 'subscribeToRemotePeerEvents');
+
+            service.openConnections();
+
+            expect(peerPartial.openConnection).toHaveBeenCalled();
+            expect(remotePeer.createOffer).toHaveBeenCalled();
+            expect(service.remotePeerJoinedOrLeft.emit).toHaveBeenCalled();
+            expect(service.subscribeToRemotePeerEvents).toHaveBeenCalledWith(remotePeer);
+            expect(service.speakingPeer).toEqual(remotePeer);
+        });
 });

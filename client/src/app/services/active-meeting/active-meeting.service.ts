@@ -275,6 +275,7 @@ export class ActiveMeetingService {
         }
     }
 
+    //resume writing tests here
     public handleOffer(data:any) {
         if(this.localPeer && this.localPeer.stream) {
             const connection = new RTCPeerConnection(PEER_CONNECTION_CONFIG);

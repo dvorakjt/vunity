@@ -24,4 +24,10 @@ describe('AwaitingHostComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('should call activeMeetingService.resetMeetingDate() when onCancel() is called.', () => {
+    spyOn(component.activeMeetingService, 'resetMeetingData');
+    component.onCancel();
+    expect(component.activeMeetingService.resetMeetingData).toHaveBeenCalled();
+  });
 });

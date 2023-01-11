@@ -7,7 +7,7 @@ import { ActiveMeetingService } from 'src/app/services/active-meeting/active-mee
   styleUrls: ['./awaiting-host.component.scss']
 })
 export class AwaitingHostComponent {
-  constructor(private activeMeetingService:ActiveMeetingService) {}
+  constructor(public activeMeetingService:ActiveMeetingService) {}
   
   onCancel() {
     this.activeMeetingService.resetMeetingData();

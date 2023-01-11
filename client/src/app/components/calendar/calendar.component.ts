@@ -37,10 +37,7 @@ export class CalendarComponent implements OnInit {
     this.populateDays(this.currentMonth, this.currentYear, this.days);
     this.meetingsService.meetingsModified.subscribe(() => {
       this.days = this.initializeDays(this.currentMonth, this.currentYear);
-      this.populateDays(this.currentMonth, this.currentYear, this.days).then(() => {
-      }).catch((e) => {
-        console.log(e);
-      });
+      this.populateDays(this.currentMonth, this.currentYear, this.days);
     });
   }
 
@@ -91,11 +88,7 @@ export class CalendarComponent implements OnInit {
     this.days = this.initializeDays(this.currentMonth, this.currentYear);
     this.previousMonthDays = this.getPreviousMonthDays(nextMonthDT);
     this.nextMonthDays = this.getNextMonthDays(nextMonthDT);
-    this.populateDays(this.currentMonth, this.currentYear, this.days).then(() => {
-      console.log(this.days);
-    }).catch((e) => {
-      console.log(e);
-    });
+    this.populateDays(this.currentMonth, this.currentYear, this.days);
   }
 
   onSelectMonth() {
