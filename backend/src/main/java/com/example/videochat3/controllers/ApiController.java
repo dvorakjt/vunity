@@ -116,6 +116,7 @@ public class ApiController {
         return ResponseEntity.ok().body(publicUserInfo);
     }
 
+    //testing this may require refactoring UserTokenManager to be a bean instead of a static class so that a MockBean can be instantiated
     @PostMapping("/api/with_rt/refresh")
     public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
         Cookie[] cookies = request.getCookies();
@@ -194,8 +195,6 @@ public class ApiController {
                 appUserService.resetUserPassword(user.getId(), passwordResetDTO.getNewPassword());
                 return ResponseEntity.ok().build();
             } else {
-                System.out.println(passwordEncoder.matches(passwordResetDTO.getPasswordResetURI(), user.getPasswordResetURI()));
-                System.out.println(passwordEncoder.matches(passwordResetDTO.getPasswordResetCode(), user.getPasswordResetCode()));
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
         } else {
@@ -205,8 +204,8 @@ public class ApiController {
 
     @PostMapping(
             value = "/api/users/new_meeting",
-            consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE},
-            produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+            consumes = {MediaType.APPLICATION_JSON_VALUE},
+            produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity createNewMeeting(@RequestBody MeetingDTO meetingDTO, Principal principal) {
         if(meetingDTO.getTitle() == null || meetingDTO.getPassword() == null || meetingDTO.getDuration() == null || meetingDTO.getStartDateTime() == null) {
             return new ResponseEntity("Missing fields.", HttpStatus.BAD_REQUEST);

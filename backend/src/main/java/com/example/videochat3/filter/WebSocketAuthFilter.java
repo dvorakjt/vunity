@@ -1,12 +1,9 @@
 package com.example.videochat3.filter;
 
 import org.springframework.stereotype.Component;
-import lombok.RequiredArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
-import com.example.videochat3.domain.AppUser;
-import com.example.videochat3.domain.Meeting;
 import com.example.videochat3.repo.AppUserRepo;
 import com.example.videochat3.repo.MeetingRepo;
 import com.example.videochat3.tokens.*;

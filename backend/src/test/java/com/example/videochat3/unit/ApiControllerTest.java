@@ -15,6 +15,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
+import com.example.videochat3.DTO.MeetingDTO;
+import com.example.videochat3.DTO.PasswordResetDTO;
 import com.example.videochat3.DTO.RequestDemoDTO;
 import com.example.videochat3.DTO.SimpleEmail;
 import com.example.videochat3.controllers.ApiController;
@@ -31,6 +33,8 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.UUID;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.*;
@@ -197,5 +201,173 @@ public class ApiControllerTest {
         when(appUserService.findAppUserByEmail("user@example.com")).thenReturn(user);
         String expectedContent = "{\"name\":\"user\",\"email\":\"user@example.com\"}";
         this.mockMvc.perform(post("/api/users/userinfo").with(csrf().asHeader())).andExpect(status().isOk()).andExpect(content().json(expectedContent));
+    }
+
+    @Test
+    public void requestPasswordResetShouldFailWith403ErrorWhenNoCSRFTokenIsPresent() throws Exception {
+        when(recaptchaManager.verifyRecaptchaToken(any(String.class))).thenReturn(true);
+        this.mockMvc.perform(post("/api/users/request_password_reset").param("email", "user@example.com").param("recaptchaToken", "token")).andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void requestPasswordResetShouldFailWith403ErrorWhenRecaptchaTokenIsInvalid() throws Exception {
+        when(recaptchaManager.verifyRecaptchaToken(any(String.class))).thenReturn(false);
+        this.mockMvc.perform(post("/api/users/request_password_reset")
+            .param("email", "user@example.com")
+            .param("recaptchaToken", "token")
+            .with(csrf().asHeader()))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void requestPasswordResetShouldFailWith400ErrorCodeWhenTheUserIsNotFoundInDB() throws Exception {
+        when(recaptchaManager.verifyRecaptchaToken(any(String.class))).thenReturn(true);
+        when(appUserService.findAppUserByEmail(any(String.class))).thenReturn(null);
+        this.mockMvc.perform(post("/api/users/request_password_reset")
+            .param("email", "notauser@example.com")
+            .param("recaptchaToken", "token")
+            .with(csrf().asHeader()))
+            .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void requestPasswordResetShouldSucceedWhenUserIsFoundInDBAndSendSimpleEmailSucceeds() throws Exception {
+        when(recaptchaManager.verifyRecaptchaToken(any(String.class))).thenReturn(true);
+        AppUser user = new AppUser(UUID.randomUUID(), "user", "user@example.com", "password", "", "");
+        when(appUserService.findAppUserByEmail("user@example.com")).thenReturn(user);
+        this.mockMvc.perform(post("/api/users/request_password_reset")
+            .param("email", "user@example.com")
+            .param("recaptchaToken", "token")
+            .with(csrf().asHeader()))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    public void requestPasswordResetShouldFailWith500ErrorCodeWhenSendSimpleEmailFails() throws Exception {
+        when(recaptchaManager.verifyRecaptchaToken(any(String.class))).thenReturn(true);
+        AppUser user = new AppUser(UUID.randomUUID(), "user", "user@example.com", "password", "", "");
+        when(appUserService.findAppUserByEmail("user@example.com")).thenReturn(user);
+        Mockito.doThrow(new MailSendException("could not send message")).when(emailService).sendSimpleEmail(any(SimpleEmail.class));
+        this.mockMvc.perform(post("/api/users/request_password_reset")
+            .param("email", "user@example.com")
+            .param("recaptchaToken", "token")
+            .with(csrf().asHeader()))
+            .andExpect(status().isInternalServerError());
+    }
+
+    @Test
+    public void resetPasswordShouldFailWith403ErrorCodeWhenCSRFTokenIsNotPresent() throws Exception {
+        PasswordResetDTO requestBody = new PasswordResetDTO("email", "uri", "1234", "newPassword", "token");
+        String requestJson = transformDTOToJsonString(requestBody);
+        this.mockMvc.perform(post("/api/users/reset_password").contentType(MediaType.APPLICATION_JSON).content(requestJson)).andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void resetPasswordShouldFailWith403ErrorCodeWhenRecaptchaTokenIsInvalid() throws Exception {
+        when(recaptchaManager.verifyRecaptchaToken(any(String.class))).thenReturn(false);
+        PasswordResetDTO requestBody = new PasswordResetDTO("email", "uri", "1234", "newPassword", "bad_token");
+        String requestJson = transformDTOToJsonString(requestBody);
+        this.mockMvc.perform(post("/api/users/reset_password")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(requestJson)
+            .with(csrf().asHeader()))
+            .andExpect(status().isForbidden());
+    }
+    
+    @Test
+    public void resetPasswordShouldFailWith404ErrorCodeWhenUserIsNotFoundInDB() throws Exception {
+        when(recaptchaManager.verifyRecaptchaToken(any(String.class))).thenReturn(true);
+        when(appUserService.findAppUserByEmail(any(String.class))).thenReturn(null);
+        PasswordResetDTO requestBody = new PasswordResetDTO("notauser@example.com", "uri", "1234", "newPassword", "token");
+        String requestJson = transformDTOToJsonString(requestBody);
+        this.mockMvc.perform(post("/api/users/reset_password")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(requestJson)
+            .with(csrf().asHeader()))
+            .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void resetPasswordShouldFailWith403ErrorCodeWhenUsersPasswordResetURIIsEmptyString() throws Exception {
+        when(recaptchaManager.verifyRecaptchaToken(any(String.class))).thenReturn(true);
+        AppUser user = new AppUser(UUID.randomUUID(), "user", "user@example.com", "password", "", "1234");
+        when(appUserService.findAppUserByEmail("user@example.com")).thenReturn(user);
+        PasswordResetDTO requestBody = new PasswordResetDTO("user@example.com", "uri", "1234", "newPassword", "token");
+        String requestJson = transformDTOToJsonString(requestBody);
+        this.mockMvc.perform(post("/api/users/reset_password")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(requestJson)
+            .with(csrf().asHeader()))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void resetPasswordShouldFailWith403ErrorCodeWhenUsersPasswordResetCodeIsEmptyString() throws Exception {
+        when(recaptchaManager.verifyRecaptchaToken(any(String.class))).thenReturn(true);
+        AppUser user = new AppUser(UUID.randomUUID(), "user", "user@example.com", "password", "uri", "");
+        when(appUserService.findAppUserByEmail("user@example.com")).thenReturn(user);
+        PasswordResetDTO requestBody = new PasswordResetDTO("user@example.com", "uri", "1234", "newPassword", "token");
+        String requestJson = transformDTOToJsonString(requestBody);
+        this.mockMvc.perform(post("/api/users/reset_password")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(requestJson)
+            .with(csrf().asHeader()))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void resetPasswordShouldFailWith403CodeWhenPassedURIDoesNotMatchStoredURI() throws Exception {
+        when(recaptchaManager.verifyRecaptchaToken(any(String.class))).thenReturn(true);
+        AppUser user = new AppUser(UUID.randomUUID(), "user", "user@example.com", "password", "uri", "1234");
+        when(appUserService.findAppUserByEmail("user@example.com")).thenReturn(user);
+        when(passwordEncoder.matches(any(String.class), any(String.class))).thenAnswer(i -> i.getArguments()[0].equals(i.getArguments()[1]));
+        PasswordResetDTO requestBody = new PasswordResetDTO("user@example.com", "wrong_uri", "1234", "newPassword", "token");
+        String requestJson = transformDTOToJsonString(requestBody);
+        this.mockMvc.perform(post("/api/users/reset_password")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(requestJson)
+            .with(csrf().asHeader()))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void resetPasswordShouldFailWith403CodeWhenPassedCodeDoesNotMatchStoredCode() throws Exception {
+        when(recaptchaManager.verifyRecaptchaToken(any(String.class))).thenReturn(true);
+        AppUser user = new AppUser(UUID.randomUUID(), "user", "user@example.com", "password", "uri", "1234");
+        when(appUserService.findAppUserByEmail("user@example.com")).thenReturn(user);
+        when(passwordEncoder.matches(any(String.class), any(String.class))).thenAnswer(i -> i.getArguments()[0].equals(i.getArguments()[1]));
+        PasswordResetDTO requestBody = new PasswordResetDTO("user@example.com", "uri", "4321", "newPassword", "token");
+        String requestJson = transformDTOToJsonString(requestBody);
+        this.mockMvc.perform(post("/api/users/reset_password")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(requestJson)
+            .with(csrf().asHeader()))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void resetPasswordShouldSucceedWhenPassedURIAndCodeMatchStoredValues() throws Exception {
+        when(recaptchaManager.verifyRecaptchaToken(any(String.class))).thenReturn(true);
+        AppUser user = new AppUser(UUID.randomUUID(), "user", "user@example.com", "password", "uri", "1234");
+        when(appUserService.findAppUserByEmail("user@example.com")).thenReturn(user);
+        when(passwordEncoder.matches(any(String.class), any(String.class))).thenAnswer(i -> i.getArguments()[0].equals(i.getArguments()[1]));
+        PasswordResetDTO requestBody = new PasswordResetDTO("user@example.com", "uri", "1234", "newPassword", "token");
+        String requestJson = transformDTOToJsonString(requestBody);
+        this.mockMvc.perform(post("/api/users/reset_password")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(requestJson)
+            .with(csrf().asHeader()))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(username = "user@example.com", password = "password", authorities = {"ROLE_USER"})
+    public void newMeetingShouldFailWhenCSRFTokenIsNotPresent() throws Exception {
+        MeetingDTO requestBody = new MeetingDTO("Title", "password", 50, new Date().toInstant().toEpochMilli(), new ArrayList<String>());
+        String requestJson = transformDTOToJsonString(requestBody);
+        this.mockMvc.perform(post("/api/users/new_meeting")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(requestJson))
+            .andExpect(status().isForbidden());
     }
 }
