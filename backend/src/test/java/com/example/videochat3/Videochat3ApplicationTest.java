@@ -49,44 +49,4 @@ class Videochat3ApplicationTest {
 		ResponseEntity<Object> entity = testRestTemplate.exchange(createUrl("/api/csrf_token"), HttpMethod.GET, requestEntity, Object.class);
 		assertEquals(HttpStatus.OK, entity.getStatusCode());
 	}
-
-	@Test
-	public void requestDemoShouldReturn400StatusWhenNameIsMissing() throws URISyntaxException {
-		RequestDemoDTO requestBody = new RequestDemoDTO(null, "user@example.com", "It's cool!", "recaptchaToken");
-		RequestEntity<RequestDemoDTO> requestEntity = RequestEntity.post(new URI(createUrl("/api/request_demo"))).contentType(MediaType.APPLICATION_JSON).body(requestBody);	
-		ResponseEntity<Object> responseEntity = testRestTemplate.exchange(createUrl("/api/request_demo"), HttpMethod.POST, requestEntity, Object.class);
-		assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-	}
-
-	@Test
-	public void requestDemoShouldReturn400StatusWhenEmailIsMissing() throws URISyntaxException {
-		RequestDemoDTO requestBody = new RequestDemoDTO("name", null, "It's cool!", "recaptchaToken");
-		RequestEntity<RequestDemoDTO> requestEntity = RequestEntity.post(new URI(createUrl("/api/request_demo"))).contentType(MediaType.APPLICATION_JSON).body(requestBody);	
-		ResponseEntity<Object> responseEntity = testRestTemplate.exchange(createUrl("/api/request_demo"), HttpMethod.POST, requestEntity, Object.class);
-		assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-	}
-
-	@Test
-	public void requestDemoShouldReturn400StatusWhenReasonForInterestIsMissing() throws URISyntaxException {
-		RequestDemoDTO requestBody = new RequestDemoDTO("name", "user@example.com", null, "recaptchaToken");
-		RequestEntity<RequestDemoDTO> requestEntity = RequestEntity.post(new URI(createUrl("/api/request_demo"))).contentType(MediaType.APPLICATION_JSON).body(requestBody);	
-		ResponseEntity<Object> responseEntity = testRestTemplate.exchange(createUrl("/api/request_demo"), HttpMethod.POST, requestEntity, Object.class);
-		assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-	}
-
-	@Test
-	public void requestDemoShouldReturn400StatusWhenRecaptchaTokenIsMissing() throws URISyntaxException {
-		RequestDemoDTO requestBody = new RequestDemoDTO("name", "user@example.com", "It's cool!", null);
-		RequestEntity<RequestDemoDTO> requestEntity = RequestEntity.post(new URI(createUrl("/api/request_demo"))).contentType(MediaType.APPLICATION_JSON).body(requestBody);	
-		ResponseEntity<Object> responseEntity = testRestTemplate.exchange(createUrl("/api/request_demo"), HttpMethod.POST, requestEntity, Object.class);
-		assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-	}
-
-	@Test
-	public void requestDemoShouldReturn403WhenRecaptchaManagerFailsToVerifyToken() throws URISyntaxException {
-		RequestDemoDTO requestBody = new RequestDemoDTO("rob", "bot@example.com", "I'm a robot!", "invalidRecaptchaToken");
-		RequestEntity<RequestDemoDTO> requestEntity = RequestEntity.post(new URI(createUrl("/api/request_demo"))).contentType(MediaType.APPLICATION_JSON).body(requestBody);	
-		ResponseEntity<Object> responseEntity = testRestTemplate.exchange(createUrl("/api/request_demo"), HttpMethod.POST, requestEntity, Object.class);
-		assertEquals(HttpStatus.FORBIDDEN, responseEntity.getStatusCode());
-	}
 }

@@ -48,8 +48,8 @@ public class SecurityConfig {
             AppUserAuthNFilter appUserAuthNFilter = new AppUserAuthNFilter(authenticationManagerBean(), recaptchaManager);
             appUserAuthNFilter.setFilterProcessesUrl("/api/users/login");
 
-            //http.csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()).and().authorizeRequests()
-            http.csrf().disable().authorizeRequests()
+            http.csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()).and().authorizeRequests()
+            //http.csrf().disable().authorizeRequests()
             .antMatchers("/api/users/login", "/api/users/request_password_reset*", "/api/users/reset_password", "/api/token/refresh", "/api/csrf_token", "/api/request_demo").permitAll().and()
             .antMatcher("/api/users/**").authorizeRequests().anyRequest().authenticated();
             
@@ -82,11 +82,10 @@ public class SecurityConfig {
 
         @Override
         protected void configure(HttpSecurity http) throws Exception {
-            log.info("configuring guest user security config.");
             GuestUserAuthNFilter guestUserAuthNFilter = new GuestUserAuthNFilter(guestAuthManagerBean(), recaptchaManager);
             guestUserAuthNFilter.setFilterProcessesUrl("/api/meeting/join");
-            //http.antMatcher("/**").csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()).and().authorizeRequests()
-            http.antMatcher("/**").csrf().disable().authorizeRequests()
+            http.antMatcher("/**").csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()).and().authorizeRequests()
+            //http.antMatcher("/**").csrf().disable().authorizeRequests()
             .antMatchers("/api/meeting/join", "/socket/**", "/api/token/refresh", "/api/csrf_token", "/api/request_demo").permitAll().anyRequest().authenticated();
             http.addFilter(guestUserAuthNFilter); //could set the login route to /api so that the frontend can make a post request
             http.addFilterBefore(new AppAuthZFilter(), UsernamePasswordAuthenticationFilter.class);
