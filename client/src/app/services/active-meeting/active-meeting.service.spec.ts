@@ -365,4 +365,38 @@ describe('ActiveMeetingService', () => {
             expect(service.subscribeToRemotePeerEvents).toHaveBeenCalledWith(remotePeer);
             expect(service.speakingPeer).toEqual(remotePeer);
         });
+
+    it('should initialize a RemotePeer when handle offer is called.', () => {
+        let offer = '{"type":"offer","sdp":"v=0\r\no=mozilla...THIS_IS_SDPARTA-99.0 6386352374598014504 0 IN IP4 0.0.0.0\r\ns=-\r\nt=0 0\r\na=fingerprint:sha-256 59:61:F1:11:46:BF:43:1B:48:5C:A8:79:9A:83:05:97:7A:D1:0D:63:70:89:1D:F8:EF:87:88:01:03:2A:9D:21\r\na=group:BUNDLE 0 1 2\r\na=ice-options:trickle\r\na=msid-semantic:WMS *\r\nm=audio 9 UDP/TLS/RTP/SAVPF 109 9 0 8 101\r\nc=IN IP4 0.0.0.0\r\na=sendrecv\r\na=extmap:1 urn:ietf:params:rtp-hdrext:ssrc-audio-level\r\na=extmap:2/recvonly urn:ietf:params:rtp-hdrext:csrc-audio-level\r\na=extmap:3 urn:ietf:params:rtp-hdrext:sdes:mid\r\na=fmtp:109 maxplaybackrate=48000;stereo=1;useinbandfec=1\r\na=fmtp:101 0-15\r\na=ice-pwd:bc850420fdcdc67393b14fc8a66928e7\r\na=ice-ufrag:073212cf\r\na=mid:0\r\na=msid:{bfb6d63e-8f4f-472d-8fdb-fff4aa03436d} {1428fb85-f917-496a-857e-835fed70a9e6}\r\na=rtcp-mux\r\na=rtpmap:109 opus/48000/2\r\na=rtpmap:9 G722/8000/1\r\na=rtpmap:0 PCMU/8000\r\na=rtpmap:8 PCMA/8000\r\na=rtpmap:101 telephone-event/8000/1\r\na=setup:actpass\r\na=ssrc:4000403882 cname:{bee7faf7-0f0c-43af-8ace-a49a65a9d708}\r\nm=video 9 UDP/TLS/RTP/SAVPF 120 124 121 125 126 127 97 98\r\nc=IN IP4 0.0.0.0\r\na=sendrecv\r\na=extmap:3 urn:ietf:params:rtp-hdrext:sdes:mid\r\na=extmap:4 http://www.webrtc.org/experiments/rtp-hdrext/abs-send-time\r\na=extmap:5 urn:ietf:params:rtp-hdrext:toffset\r\na=extmap:6/recvonly http://www.webrtc.org/experiments/rtp-hdrext/playout-delay\r\na=extmap:7 http://www.ietf.org/id/draft-holmer-rmcat-transport-wide-cc-extensions-01\r\na=fmtp:126 profile-level-id=42e01f;level-asymmetry-allowed=1;packetization-mode=1\r\na=fmtp:97 profile-level-id=42e01f;level-asymmetry-allowed=1\r\na=fmtp:120 max-fs=12288;max-fr=60\r\na=fmtp:124 apt=120\r\na=fmtp:121 max-fs=12288;max-fr=60\r\na=fmtp:125 apt=121\r\na=fmtp:127 apt=126\r\na=fmtp:98 apt=97\r\na=ice-pwd:bc850420fdcdc67393b14fc8a66928e7\r\na=ice-ufrag:073212cf\r\na=mid:1\r\na=msid:{bfb6d63e-8f4f-472d-8fdb-fff4aa03436d} {855091cd-85b6-40c3-bc29-354c560b5da1}\r\na=rtcp-fb:120 nack\r\na=rtcp-fb:120 nack pli\r\na=rtcp-fb:120 ccm fir\r\na=rtcp-fb:120 goog-remb\r\na=rtcp-fb:120 transport-cc\r\na=rtcp-fb:121 nack\r\na=rtcp-fb:121 nack pli\r\na=rtcp-fb:121 ccm fir\r\na=rtcp-fb:121 goog-remb\r\na=rtcp-fb:121 transport-cc\r\na=rtcp-fb:126 nack\r\na=rtcp-fb:126 nack pli\r\na=rtcp-fb:126 ccm fir\r\na=rtcp-fb:126 goog-remb\r\na=rtcp-fb:126 transport-cc\r\na=rtcp-fb:97 nack\r\na=rtcp-fb:97 nack pli\r\na=rtcp-fb:97 ccm fir\r\na=rtcp-fb:97 goog-remb\r\na=rtcp-fb:97 transport-cc\r\na=rtcp-mux\r\na=rtcp-rsize\r\na=rtpmap:120 VP8/90000\r\na=rtpmap:124 rtx/90000\r\na=rtpmap:121 VP9/90000\r\na=rtpmap:125 rtx/90000\r\na=rtpmap:126 H264/90000\r\na=rtpmap:127 rtx/90000\r\na=rtpmap:97 H264/90000\r\na=rtpmap:98 rtx/90000\r\na=setup:actpass\r\na=ssrc:1589685122 cname:{bee7faf7-0f0c-43af-8ace-a49a65a9d708}\r\na=ssrc:1103256191 cname:{bee7faf7-0f0c-43af-8ace-a49a65a9d708}\r\na=ssrc-group:FID 1589685122 1103256191\r\nm=application 9 UDP/DTLS/SCTP webrtc-datachannel\r\nc=IN IP4 0.0.0.0\r\na=sendrecv\r\na=ice-pwd:bc850420fdcdc67393b14fc8a66928e7\r\na=ice-ufrag:073212cf\r\na=mid:2\r\na=setup:actpass\r\na=sctp-port:5000\r\na=max-message-size:1073741823\r\n"}'
+        offer = offer.replace(/\r/g, '\\r').replace(/\n/g, '\\n');
+        service.createLocalPeer("host");
+        if(service.localPeer) service.localPeer.stream = new MediaStream();
+        service.speakingPeer = service.localPeer;
+        const data = {
+            from: 'someWebSocketSessionID',
+            username: 'Anna',
+            offer
+        }
+        spyOn(service.remotePeerJoinedOrLeft, 'emit');
+        spyOn(service, 'subscribeToRemotePeerEvents');
+        service.handleOffer(data);
+        expect(service.remotePeerList.length).toBe(1);
+        expect(service.remotePeersById['someWebSocketSessionID']).toBeTruthy();
+        expect(service.speakingPeer).toEqual(service.remotePeersById['someWebSocketSessionID']);
+        expect(service.remotePeerJoinedOrLeft.emit).toHaveBeenCalled();
+        expect(service.subscribeToRemotePeerEvents).toHaveBeenCalledWith(service.remotePeersById['someWebSocketSessionID']);
+    });
+
+    it('should subscribe to a RemotePeer\'s events when subscribeToRemotePeerEvents is called.', () => {
+        const remotePeer = new RemotePeer("1234", "remotePeer", new RTCPeerConnection());
+        spyOn(remotePeer.signalingEventEmitter, 'subscribe');
+        spyOn(remotePeer.mediaStatusRequestEventEmitter, 'subscribe');
+        spyOn(remotePeer.chatMessageEventEmitter, 'subscribe');
+        spyOn(remotePeer.speechEventEmitter, 'subscribe');
+        service.subscribeToRemotePeerEvents(remotePeer);
+        expect(remotePeer.signalingEventEmitter.subscribe).toHaveBeenCalled();
+        expect(remotePeer.mediaStatusRequestEventEmitter.subscribe).toHaveBeenCalled();
+        expect(remotePeer.chatMessageEventEmitter.subscribe).toHaveBeenCalled();
+        expect(remotePeer.speechEventEmitter.subscribe).toHaveBeenCalled();
+    });
 });

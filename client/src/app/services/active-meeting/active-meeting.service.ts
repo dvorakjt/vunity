@@ -275,10 +275,10 @@ export class ActiveMeetingService {
         }
     }
 
-    //resume writing tests here
     public handleOffer(data:any) {
         if(this.localPeer && this.localPeer.stream) {
             const connection = new RTCPeerConnection(PEER_CONNECTION_CONFIG);
+            console.log(data.offer);
             const offer = new RTCSessionDescription(JSON.parse(data.offer));
             const initiatingPeerId = data.from;
             const initiatingPeerUsername = data.username;
@@ -330,6 +330,7 @@ export class ActiveMeetingService {
         });
     }
 
+    //resume writing tests here
     public handleAnswer(data:any) {
         const answer = new RTCSessionDescription(JSON.parse(data.answer));
         const remotePeerSessionId = data.from;
