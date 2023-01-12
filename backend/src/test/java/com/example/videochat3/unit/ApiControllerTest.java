@@ -14,10 +14,12 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.mockito.Mockito;
 import org.springframework.http.MediaType;
 import org.springframework.mail.MailSendException;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
+import com.example.videochat3.DTO.HostTokenDTO;
 import com.example.videochat3.DTO.MeetingDTO;
 import com.example.videochat3.DTO.MeetingUpdateDTO;
 import com.example.videochat3.DTO.PasswordResetDTO;
@@ -26,6 +28,7 @@ import com.example.videochat3.DTO.SimpleEmail;
 import com.example.videochat3.controllers.ApiController;
 import com.example.videochat3.domain.AppUser;
 import com.example.videochat3.domain.Meeting;
+import com.example.videochat3.filter.ResponseCookieFactory;
 import com.example.videochat3.recaptcha.RecaptchaManager;
 import com.example.videochat3.service.AppUserServiceImpl;
 import com.example.videochat3.service.EmailService;
@@ -35,14 +38,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.mysql.cj.xdevapi.JsonArray;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import javax.servlet.http.Cookie;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.*;
 
@@ -87,6 +94,18 @@ public class ApiControllerTest {
         this.mockMvc.perform(post("/api/request_demo")
             .contentType(MediaType.APPLICATION_JSON)
             .content(requestJson))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void requestDemoShouldFailWith403WhenRecaptchaManagerFailsToVerifyRecaptchaToken() throws Exception {
+        when(recaptchaManager.verifyRecaptchaToken(any(String.class))).thenReturn(false);
+        RequestDemoDTO requestBody = new RequestDemoDTO("rob", "bot@example.com", "I'm a robot and I was programmed to crawl this site.", "badRecaptchaToken");
+        String requestJson = transformDTOToJsonString(requestBody);
+        this.mockMvc.perform(post("/api/request_demo")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(requestJson)
+            .with(csrf().asHeader()))
             .andExpect(status().isForbidden());
     }
 
@@ -712,8 +731,6 @@ public class ApiControllerTest {
             .andExpect(status().isMultiStatus());
     }
 
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
     @Test
     @WithMockUser(username = "user@example.com", password = "password", authorities = {"ROLE_USER"})
     public void deleteMeetingShouldFailWith403ErrorCodeWhenCSRFTokenIsNotPresent() throws Exception {
@@ -787,6 +804,7 @@ public class ApiControllerTest {
             .with(csrf().asHeader()))
             .andExpect(status().isOk());
     }
+
     @Test
     @WithMockUser(username = "user@example.com", password = "password", authorities = {"ROLE_USER"})
     public void deleteMeetingShouldReturn207CodeWhenSomeGuestsCannotBeEmailed() throws Exception {
@@ -804,5 +822,102 @@ public class ApiControllerTest {
             .param("id", "1")
             .with(csrf().asHeader()))
             .andExpect(status().isMultiStatus());
+    }
+
+    @Test
+    @WithMockUser(username = "user@example.com", password = "password", authorities = {"ROLE_USER"})
+    public void generateHostTokenShouldFailWith403ErrorCodeWhenCSRFTokenIsNotPresent() throws Exception {
+        HostTokenDTO requestBody = new HostTokenDTO("1");
+        this.mockMvc.perform(post("/api/users/host_token")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(transformDTOToJsonString(requestBody)))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void generateHostTokenShouldFailWith403ErrorCodeWhenUserIsNotAuthenticated() throws Exception {
+        HostTokenDTO requestBody = new HostTokenDTO("1");
+        this.mockMvc.perform(post("/api/users/host_token")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(transformDTOToJsonString(requestBody))
+            .with(csrf().asHeader()))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(username = "user@example.com", password = "password", authorities = {"ROLE_USER"})
+    public void generateHostTokenShouldFailWith404ErrorCodeWhenMeetingIsNotFound() throws Exception {
+        HostTokenDTO requestBody = new HostTokenDTO("1");
+        UUID userId = UUID.fromString("1c874643-0f1a-4168-9710-56b7207afd6c");
+        AppUser user = new AppUser(userId, "user", "user@example.com", "password", "", "");
+        when(appUserService.findAppUserByEmail("user@example.com")).thenReturn(user);
+        when(meetingService.getMeeting(anyString())).thenReturn(null);
+        this.mockMvc.perform(post("/api/users/host_token")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(transformDTOToJsonString(requestBody))
+            .with(csrf().asHeader()))
+            .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser(username = "notauser@example.com", password = "password", authorities = {"ROLE_USER"})
+    public void generateHostTokenShouldFailWith401ErrorCodeWhenUserIsNotFound() throws Exception {
+        HostTokenDTO requestBody = new HostTokenDTO("1");
+        UUID userId = UUID.fromString("1c874643-0f1a-4168-9710-56b7207afd6c");
+        Meeting meeting = new Meeting("1", "Old Title", "password", 120, new Date(), new ArrayList<String>(), userId.toString());
+        when(appUserService.findAppUserByEmail("notauser@example.com")).thenReturn(null);
+        when(meetingService.getMeeting("1")).thenReturn(meeting);
+        this.mockMvc.perform(post("/api/users/host_token")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(transformDTOToJsonString(requestBody))
+            .with(csrf().asHeader()))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithMockUser(username = "user@example.com", password = "password", authorities = {"ROLE_USER"})
+    public void generateHostTokenShouldFailWith403ErrorCodeWhenUserIsNotTheOwnerOfTheMeeting() throws Exception {
+        HostTokenDTO requestBody = new HostTokenDTO("1");
+        UUID userId = UUID.fromString("1c874643-0f1a-4168-9710-56b7207afd6c");
+        AppUser user = new AppUser(userId, "user", "user@example.com", "password", "", "");
+        Meeting meeting = new Meeting("1", "Old Title", "password", 120, new Date(), new ArrayList<String>(), "some other user's ID");
+        
+        when(appUserService.findAppUserByEmail("user@example.com")).thenReturn(user);
+        when(meetingService.getMeeting("1")).thenReturn(meeting);
+
+        this.mockMvc.perform(post("/api/users/host_token")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(transformDTOToJsonString(requestBody))
+            .with(csrf().asHeader()))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(username = "user@example.com", password = "password", authorities = {"ROLE_USER"})
+    public void generateHostTokenShouldReturn200CodeWhenUserOwnsTheMeeting() throws Exception {
+        HostTokenDTO requestBody = new HostTokenDTO("1");
+        UUID userId = UUID.fromString("1c874643-0f1a-4168-9710-56b7207afd6c");
+        AppUser user = new AppUser(userId, "user", "user@example.com", "password", "", "");
+        Meeting meeting = new Meeting("1", "Old Title", "password", 120, new Date(), new ArrayList<String>(), userId.toString());
+        
+        when(appUserService.findAppUserByEmail("user@example.com")).thenReturn(user);
+        when(meetingService.getMeeting("1")).thenReturn(meeting);
+
+        List<SimpleGrantedAuthority> authorities = new ArrayList<SimpleGrantedAuthority>();
+        authorities.add(new SimpleGrantedAuthority("ROLE_HOST"));
+        User u = new User("user@example.com", "password", authorities);
+        when(meetingService.loadHostByMeetingId("1")).thenReturn(u);
+
+        this.mockMvc.perform(post("/api/users/host_token")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(transformDTOToJsonString(requestBody))
+            .with(csrf().asHeader()))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(username = "user@example.com", password = "password", authorities = {"ROLE_USER"})
+    public void logoutShouldSucceedIfUserIsLoggedInAndCSRFTokenIsPresent() throws Exception {
+        this.mockMvc.perform(delete("/api/with_rt/logout").with(csrf().asHeader())).andExpect(status().isOk());
     }
 }

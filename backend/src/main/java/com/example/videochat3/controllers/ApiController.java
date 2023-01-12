@@ -384,8 +384,10 @@ public class ApiController {
         String email = principal.getName();
         AppUser user = appUserService.findAppUserByEmail(email);
         Meeting meeting = this.meetingService.getMeeting(meetingId);
+        if(meeting == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        if(user == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         if(!meeting.getOwnerId().equals(user.getId().toString())) {
-            return new ResponseEntity("Forbidden.", HttpStatus.FORBIDDEN);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         } else {
             User host = meetingService.loadHostByMeetingId(meetingId);
             //tokenize the host and send
@@ -396,7 +398,6 @@ public class ApiController {
 
     @DeleteMapping("/api/with_rt/logout")
     public void logout(HttpServletRequest req, HttpServletResponse res) {
-        System.out.println("Logout route reached.");
         Cookie[] cookies = req.getCookies();
         if(cookies != null) {
             for(Cookie cookie : cookies) {

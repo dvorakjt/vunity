@@ -4,6 +4,8 @@ import java.time.Duration;
 
 import org.springframework.http.ResponseCookie;
 
+//make this a component so that I can add value notations to instance variables
+//and pull them from different applications.properties files depending on whether the app is in development or production
 public class ResponseCookieFactory {
     private final static boolean isSecure=false;
     private static String sameSite="none";
