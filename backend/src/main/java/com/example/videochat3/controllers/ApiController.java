@@ -271,18 +271,20 @@ public class ApiController {
         } else return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 
-    //get all of a user's meetings, this will eventually change and use indexedDB in the frontend
+    //get all of the user's meetings between two dates.
     @PostMapping("/api/users/meetings")
     public ResponseEntity<List<Meeting>> getMeetings(Principal principal, @RequestParam Long startDate, @RequestParam Long endDate) {
         String email = principal.getName();
         AppUser user = appUserService.findAppUserByEmail(email);
-        return ResponseEntity.ok().body(meetingService.getMeetings(user.getId().toString(), new Date(startDate), new Date(endDate)));
+        if(user != null) {
+            return ResponseEntity.ok().body(meetingService.getMeetings(user.getId().toString(), new Date(startDate), new Date(endDate)));
+        } else return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 
     @PutMapping(
         value = "/api/users/update_meeting",
-        consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE},
-        produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE}
+        consumes = {MediaType.APPLICATION_JSON_VALUE},
+        produces = {MediaType.APPLICATION_JSON_VALUE}
     )
     public ResponseEntity updateMeeting(@RequestBody MeetingUpdateDTO meetingUpdateDTO, Principal principal) {
         Meeting m = meetingService.getMeeting(meetingUpdateDTO.getId());

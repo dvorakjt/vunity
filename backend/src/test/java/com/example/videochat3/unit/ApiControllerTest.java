@@ -1,8 +1,11 @@
 package com.example.videochat3.unit;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -16,11 +19,13 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.example.videochat3.DTO.MeetingDTO;
+import com.example.videochat3.DTO.MeetingUpdateDTO;
 import com.example.videochat3.DTO.PasswordResetDTO;
 import com.example.videochat3.DTO.RequestDemoDTO;
 import com.example.videochat3.DTO.SimpleEmail;
 import com.example.videochat3.controllers.ApiController;
 import com.example.videochat3.domain.AppUser;
+import com.example.videochat3.domain.Meeting;
 import com.example.videochat3.recaptcha.RecaptchaManager;
 import com.example.videochat3.service.AppUserServiceImpl;
 import com.example.videochat3.service.EmailService;
@@ -29,13 +34,15 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.mysql.cj.xdevapi.JsonArray;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.*;
 
@@ -362,12 +369,440 @@ public class ApiControllerTest {
 
     @Test
     @WithMockUser(username = "user@example.com", password = "password", authorities = {"ROLE_USER"})
-    public void newMeetingShouldFailWhenCSRFTokenIsNotPresent() throws Exception {
+    public void newMeetingShouldFailWith403ErrorCodeWhenCSRFTokenIsNotPresent() throws Exception {
         MeetingDTO requestBody = new MeetingDTO("Title", "password", 50, new Date().toInstant().toEpochMilli(), new ArrayList<String>());
         String requestJson = transformDTOToJsonString(requestBody);
         this.mockMvc.perform(post("/api/users/new_meeting")
             .contentType(MediaType.APPLICATION_JSON)
             .content(requestJson))
             .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(username = "user@example.com", password = "password", authorities = {"ROLE_USER"})
+    public void newMeetingShouldFailWith400ErrorCodeWhenTitleIsNotPresent() throws Exception {
+        MeetingDTO requestBody = new MeetingDTO(null, "password", 50, new Date().toInstant().toEpochMilli(), new ArrayList<String>());
+        String requestJson = transformDTOToJsonString(requestBody);
+        this.mockMvc.perform(post("/api/users/new_meeting")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(requestJson)
+            .with(csrf().asHeader()))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithMockUser(username = "user@example.com", password = "password", authorities = {"ROLE_USER"})
+    public void newMeetingShouldFailWith400ErrorCodeWhenPasswordIsNotPresent() throws Exception {
+        MeetingDTO requestBody = new MeetingDTO("Title", null, 50, new Date().toInstant().toEpochMilli(), new ArrayList<String>());
+        String requestJson = transformDTOToJsonString(requestBody);
+        this.mockMvc.perform(post("/api/users/new_meeting")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(requestJson)
+            .with(csrf().asHeader()))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithMockUser(username = "user@example.com", password = "password", authorities = {"ROLE_USER"})
+    public void newMeetingShouldFailWith400ErrorCodeWhenDurationIsNotPresent() throws Exception {
+        MeetingDTO requestBody = new MeetingDTO("Title", "password", null, new Date().toInstant().toEpochMilli(), new ArrayList<String>());
+        String requestJson = transformDTOToJsonString(requestBody);
+        this.mockMvc.perform(post("/api/users/new_meeting")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(requestJson)
+            .with(csrf().asHeader()))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithMockUser(username = "user@example.com", password = "password", authorities = {"ROLE_USER"})
+    public void newMeetingShouldFailWith400ErrorCodeWhenDateIsNotPresent() throws Exception {
+        MeetingDTO requestBody = new MeetingDTO("Title", "password", 50, null, new ArrayList<String>());
+        String requestJson = transformDTOToJsonString(requestBody);
+        this.mockMvc.perform(post("/api/users/new_meeting")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(requestJson)
+            .with(csrf().asHeader()))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithMockUser(username = "user@example.com", password = "password", authorities = {"ROLE_USER"})
+    public void newMeetingShouldSucceedWhenCSRFAndIsAuthenticatedAndAllFieldsArePresent() throws Exception {
+        MeetingDTO requestBody = new MeetingDTO("Title", "password", 50, new Date().toInstant().toEpochMilli(), new ArrayList<String>());
+        String requestJson = transformDTOToJsonString(requestBody);
+        AppUser user = new AppUser(UUID.randomUUID(), "user", "user@example.com", "password", "uri", "1234");
+        when(appUserService.findAppUserByEmail("user@example.com")).thenReturn(user);
+        Meeting savedMeeting = new Meeting("1", requestBody.getTitle(), requestBody.getPassword(), requestBody.getDuration(), new Date(requestBody.getStartDateTime()), new ArrayList<String>(requestBody.getGuests()), user.getId().toString());
+        when(meetingService.saveMeeting(any(Meeting.class))).thenReturn(savedMeeting);
+        this.mockMvc.perform(post("/api/users/new_meeting")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(requestJson)
+            .with(csrf().asHeader()))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(username = "user@example.com", password = "password", authorities = {"ROLE_USER"})
+    public void newMeetingShouldReturn207StatusCodeWhenMeetingIsCreatedButSomeGuestsCannotBeEmailed() throws Exception {
+        ArrayList<String> guests = new ArrayList<String>();
+        guests.add("guest@example.com");
+        MeetingDTO requestBody = new MeetingDTO("Title", "password", 50, new Date().toInstant().toEpochMilli(), guests);
+        String requestJson = transformDTOToJsonString(requestBody);
+        AppUser user = new AppUser(UUID.randomUUID(), "user", "user@example.com", "password", "uri", "1234");
+        when(appUserService.findAppUserByEmail("user@example.com")).thenReturn(user);
+        Meeting savedMeeting = new Meeting("1", requestBody.getTitle(), requestBody.getPassword(), requestBody.getDuration(), new Date(requestBody.getStartDateTime()), new ArrayList<String>(requestBody.getGuests()), user.getId().toString());
+        when(meetingService.saveMeeting(any(Meeting.class))).thenReturn(savedMeeting);
+        Mockito.doThrow(new MailSendException("could not send message")).when(emailService).sendSimpleEmail(any(SimpleEmail.class));
+        this.mockMvc.perform(post("/api/users/new_meeting")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(requestJson)
+            .with(csrf().asHeader()))
+            .andExpect(status().isMultiStatus())
+            .andExpect(content().json("{\"unreachableEmailAddresses\":[\"guest@example.com\"]}"));
+    }
+
+    @Test
+    @WithMockUser(username = "user@example.com", password = "password", authorities = {"ROLE_USER"})
+    public void getMeetingShouldFailWith403ErrorCodeWhenCSRFTokenIsNotPresent() throws Exception {
+        this.mockMvc.perform(post("/api/users/meeting")
+        .param("meetingId", "1"))
+        .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void getMeetingShouldFailWith403ErrorCodeWhenCSRFTokenExistsButThereIsNoUser() throws Exception {
+        this.mockMvc.perform(post("/api/users/meeting")
+        .param("meetingId", "1")
+        .with(csrf().asHeader()))
+        .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(username = "notavaliduser@example.com", password = "password", authorities = {"ROLE_USER"})
+    public void getMeetingShouldFailWith401StatusCodeWhenThePrincipalCannotBeFoundInTheDB() throws Exception {
+        when(appUserService.findAppUserByEmail(any(String.class))).thenReturn(null);
+        this.mockMvc.perform(post("/api/users/meeting")
+        .param("meetingId", "1")
+        .with(csrf().asHeader()))
+        .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithMockUser(username = "user@example.com", password = "password", authorities = {"ROLE_USER"})
+    public void getMeetingShouldFailWith404StatusCodeWhenTheMeetingIsNotFoundInTheDB() throws Exception {
+        AppUser user = new AppUser(UUID.randomUUID(), "user", "user@example.com", "password", "", "");
+        when(appUserService.findAppUserByEmail("user@example.com")).thenReturn(user);
+        when(meetingService.getMeeting(any(String.class))).thenReturn(null);
+        this.mockMvc.perform(post("/api/users/meeting")
+        .param("meetingId", "1")
+        .with(csrf().asHeader()))
+        .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser(username = "user@example.com", password = "password", authorities = {"ROLE_USER"})
+    public void getMeetingShouldFailWith403StatusCodeWhenTheMeetingExistsButBelongsToAnotherUser() throws Exception {
+        AppUser user = new AppUser(UUID.randomUUID(), "user", "user@example.com", "password", "", "");
+        when(appUserService.findAppUserByEmail("user@example.com")).thenReturn(user);
+        Meeting meeting = new Meeting("meeting1", "Title", "password", 60, new Date(), new ArrayList<String>(), "another user's ID");
+        when(meetingService.getMeeting("meeting1")).thenReturn(meeting);
+        this.mockMvc.perform(post("/api/users/meeting")
+        .param("meetingId", "meeting1")
+        .with(csrf().asHeader()))
+        .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(username = "user@example.com", password = "password", authorities = {"ROLE_USER"})
+    public void getMeetingShouldSuccessfullyReturnTheMeetingWhenItBelongsToTheCurrentUser() throws Exception {
+        UUID userId = UUID.randomUUID();
+        AppUser user = new AppUser(userId, "user", "user@example.com", "password", "", "");
+        when(appUserService.findAppUserByEmail("user@example.com")).thenReturn(user);
+        Meeting meeting = new Meeting("meeting1", "Title", "password", 60, new Date(), new ArrayList<String>(), userId.toString());
+        when(meetingService.getMeeting("meeting1")).thenReturn(meeting);
+        this.mockMvc.perform(post("/api/users/meeting")
+        .param("meetingId", "meeting1")
+        .with(csrf().asHeader()))
+        .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(username = "user@example.com", password = "password", authorities = {"ROLE_USER"})
+    public void getMeetingsShouldFailWith403ErrorCodeWhenCSRFTokenIsNotPresent() throws Exception {
+        String startDate = String.valueOf(new Date(2022, 1, 1).getTime());
+        String endDate = String.valueOf(new Date(2022, 12, 31).getTime());
+        this.mockMvc.perform(post("/api/users/meetings")
+        .param("startDate", startDate)
+        .param("endDate", endDate))
+        .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void getMeetingsShouldFailWith403ErrorCodeWhenCSRFTokenExistsButThereIsNoUser() throws Exception {
+        String startDate = String.valueOf(new Date(2022, 1, 1).getTime());
+        String endDate = String.valueOf(new Date(2022, 12, 31).getTime());
+        this.mockMvc.perform(post("/api/users/meetings")
+        .param("startDate", startDate)
+        .param("endDate", endDate)
+        .with(csrf().asHeader()))
+        .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(username = "notauser@example.com", password = "password", authorities = {"ROLE_USER"})
+    public void getMeetingsShouldFailWith401ErrorWhenTheUserCannotBeFoundInTheDB() throws Exception {
+        String startDate = String.valueOf(new Date(2022, 1, 1).getTime());
+        String endDate = String.valueOf(new Date(2022, 12, 31).getTime());
+        when(appUserService.findAppUserByEmail(any(String.class))).thenReturn(null);
+        this.mockMvc.perform(post("/api/users/meetings")
+        .param("startDate", startDate)
+        .param("endDate", endDate)
+        .with(csrf().asHeader()))
+        .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithMockUser(username = "user@example.com", password = "password", authorities = {"ROLE_USER"})
+    public void getMeetingsReturnAListOfMeetingsOwnedByTheUserWithinTwoDates() throws Exception {
+        UUID userId = UUID.fromString("1c874643-0f1a-4168-9710-56b7207afd6c");
+        AppUser user = new AppUser(userId, "user", "user@example.com", "password", "", "");
+        String startDate = String.valueOf(new Date(2022, 1, 1).getTime());
+        String endDate = String.valueOf(new Date(2022, 12, 31).getTime());
+
+        ArrayList<Meeting> allMeetings = new ArrayList<Meeting>();
+        Meeting meeting1 = new Meeting("1", "Title", "password", 60, new Date(2022, 2, 1), new ArrayList<String>(), userId.toString());
+        Meeting meeting2 = new Meeting("2", "Title", "password", 60, new Date(2022, 12, 30), new ArrayList<String>(), userId.toString());
+        Meeting meeting3 = new Meeting("3", "Title", "password", 60, new Date(2023, 1, 1), new ArrayList<String>(), userId.toString());
+        Meeting meeting4 = new Meeting("4", "Title", "password", 60, new Date(2022, 2, 1), new ArrayList<String>(), "some other user's id");
+
+        allMeetings.add(meeting1);
+        allMeetings.add(meeting2);
+        allMeetings.add(meeting3);
+        allMeetings.add(meeting4);
+
+        when(meetingService.getMeetings(any(String.class), any(Date.class), any(Date.class)))
+            .thenAnswer(i -> {
+                String ownerId = i.getArgument(0);
+                Date sd = i.getArgument(1);
+                Date ed = i.getArgument(2);
+                return allMeetings.stream().filter(m -> {
+                    return m.getOwnerId().equals(ownerId) && 
+                        m.getStartDateTime().compareTo(sd) != -1 &&
+                        m.getStartDateTime().compareTo(ed) != 1;
+                }).collect(Collectors.toList());
+            });
+
+        when(appUserService.findAppUserByEmail("user@example.com")).thenReturn(user);
+
+        String expectedResult = "[{\"id\":\"1\",\"title\":\"Title\",\"password\":\"password\",\"duration\":60,\"startDateTime\":\"3922-03-01T05:00:00.000+00:00\",\"guests\":[],\"ownerId\":\"1c874643-0f1a-4168-9710-56b7207afd6c\"},"
+        + "{\"id\":\"2\",\"title\":\"Title\",\"password\":\"password\",\"duration\":60,\"startDateTime\":\"3923-01-30T05:00:00.000+00:00\",\"guests\":[],\"ownerId\":\"1c874643-0f1a-4168-9710-56b7207afd6c\"}]";
+
+        this.mockMvc.perform(post("/api/users/meetings")
+        .param("startDate", startDate)
+        .param("endDate", endDate)
+        .with(csrf().asHeader()))
+        .andExpect(status().isOk())
+        .andExpect(content().json(expectedResult));
+    }
+
+    @Test
+    @WithMockUser(username = "user@example.com", password = "password", authorities = {"ROLE_USER"})
+    public void updateMeetingShouldFailWith403ErrorCodeWhenCSRFTokenIsNotPresent() throws Exception {
+        MeetingUpdateDTO requestBody = new MeetingUpdateDTO("1", "New Title", 120, new Date(2023, 1, 15).getTime());
+        this.mockMvc.perform(put("/api/users/update_meeting")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(transformDTOToJsonString(requestBody)))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void updateMeetingShouldFailWith403ErrorCodeWhenUserIsNotAuthenticated() throws Exception {
+        MeetingUpdateDTO requestBody = new MeetingUpdateDTO("1", "New Title", 120, new Date(2023, 1, 15).getTime());
+        this.mockMvc.perform(put("/api/users/update_meeting")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(transformDTOToJsonString(requestBody))
+            .with(csrf().asHeader()))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(username = "user@example.com", password = "password", authorities = {"ROLE_USER"})
+    public void updateMeetingShouldFailWith404ErrorCodeWhenMeetingIsNotFound() throws Exception {
+        MeetingUpdateDTO requestBody = new MeetingUpdateDTO("1", "New Title", 120, new Date(2023, 1, 15).getTime());
+        UUID userId = UUID.fromString("1c874643-0f1a-4168-9710-56b7207afd6c");
+        AppUser user = new AppUser(userId, "user", "user@example.com", "password", "", "");
+        when(appUserService.findAppUserByEmail("user@example.com")).thenReturn(user);
+        when(meetingService.getMeeting(anyString())).thenReturn(null);
+        this.mockMvc.perform(put("/api/users/update_meeting")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(transformDTOToJsonString(requestBody))
+            .with(csrf().asHeader()))
+            .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser(username = "notauser@example.com", password = "password", authorities = {"ROLE_USER"})
+    public void updateMeetingShouldFailWith404ErrorCodeWhenUserIsNotFound() throws Exception {
+        MeetingUpdateDTO requestBody = new MeetingUpdateDTO("1", "New Title", 120, new Date(2023, 1, 15).getTime());
+        UUID userId = UUID.fromString("1c874643-0f1a-4168-9710-56b7207afd6c");
+        Meeting meeting = new Meeting("1", "Old Title", "password", 120, new Date(), new ArrayList<String>(), userId.toString());
+        when(appUserService.findAppUserByEmail("notauser@example.com")).thenReturn(null);
+        when(meetingService.getMeeting("1")).thenReturn(meeting);
+        this.mockMvc.perform(put("/api/users/update_meeting")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(transformDTOToJsonString(requestBody))
+            .with(csrf().asHeader()))
+            .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser(username = "user@example.com", password = "password", authorities = {"ROLE_USER"})
+    public void updateMeetingShouldFailWith403ErrorCodeWhenUserIsNotTheOwnerOfTheMeeting() throws Exception {
+        MeetingUpdateDTO requestBody = new MeetingUpdateDTO("1", "New Title", 120, new Date(2023, 1, 15).getTime());
+        UUID userId = UUID.fromString("1c874643-0f1a-4168-9710-56b7207afd6c");
+        AppUser user = new AppUser(userId, "user", "user@example.com", "password", "", "");
+        Meeting meeting = new Meeting("1", "Old Title", "password", 120, new Date(), new ArrayList<String>(), "some other user's ID");
+        
+        when(appUserService.findAppUserByEmail("user@example.com")).thenReturn(user);
+        when(meetingService.getMeeting("1")).thenReturn(meeting);
+
+        this.mockMvc.perform(put("/api/users/update_meeting")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(transformDTOToJsonString(requestBody))
+            .with(csrf().asHeader()))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(username = "user@example.com", password = "password", authorities = {"ROLE_USER"})
+    public void updateMeetingShouldReturn200CodeWhenUserOwnsTheMeetingAndAllGuestsCanBeReached() throws Exception {
+        MeetingUpdateDTO requestBody = new MeetingUpdateDTO("1", "New Title", 120, new Date(2023, 1, 15).getTime());
+        UUID userId = UUID.fromString("1c874643-0f1a-4168-9710-56b7207afd6c");
+        AppUser user = new AppUser(userId, "user", "user@example.com", "password", "", "");
+        Meeting meeting = new Meeting("1", "Old Title", "password", 120, new Date(), new ArrayList<String>(), userId.toString());
+        
+        when(appUserService.findAppUserByEmail("user@example.com")).thenReturn(user);
+        when(meetingService.getMeeting("1")).thenReturn(meeting);
+
+        this.mockMvc.perform(put("/api/users/update_meeting")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(transformDTOToJsonString(requestBody))
+            .with(csrf().asHeader()))
+            .andExpect(status().isOk());
+    }
+    @Test
+    @WithMockUser(username = "user@example.com", password = "password", authorities = {"ROLE_USER"})
+    public void updateMeetingShouldReturn207CodeWhenSomeGuestsCannotBeEmailed() throws Exception {
+        MeetingUpdateDTO requestBody = new MeetingUpdateDTO("1", "New Title", 120, new Date(2023, 1, 15).getTime());
+        UUID userId = UUID.fromString("1c874643-0f1a-4168-9710-56b7207afd6c");
+        ArrayList<String> guests = new ArrayList<String>();
+        guests.add("not a valid email address.");
+        AppUser user = new AppUser(userId, "user", "user@example.com", "password", "", "");
+        Meeting meeting = new Meeting("1", "Old Title", "password", 120, new Date(), guests, userId.toString());
+
+        when(appUserService.findAppUserByEmail("user@example.com")).thenReturn(user);
+        when(meetingService.getMeeting("1")).thenReturn(meeting);
+        Mockito.doThrow(new MailSendException("could not send email.")).when(emailService).sendSimpleEmail(any(SimpleEmail.class));
+
+        this.mockMvc.perform(put("/api/users/update_meeting")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(transformDTOToJsonString(requestBody))
+            .with(csrf().asHeader()))
+            .andExpect(status().isMultiStatus());
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Test
+    @WithMockUser(username = "user@example.com", password = "password", authorities = {"ROLE_USER"})
+    public void deleteMeetingShouldFailWith403ErrorCodeWhenCSRFTokenIsNotPresent() throws Exception {
+        this.mockMvc.perform(delete("/api/users/delete_meeting")
+            .param("id", "1"))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void deleteMeetingShouldFailWith403ErrorCodeWhenUserIsNotAuthenticated() throws Exception {
+        this.mockMvc.perform(delete("/api/users/delete_meeting")
+            .param("id", "1")
+            .with(csrf().asHeader()))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(username = "user@example.com", password = "password", authorities = {"ROLE_USER"})
+    public void deleteMeetingShouldFailWith404ErrorCodeWhenMeetingIsNotFound() throws Exception {
+        UUID userId = UUID.fromString("1c874643-0f1a-4168-9710-56b7207afd6c");
+        AppUser user = new AppUser(userId, "user", "user@example.com", "password", "", "");
+        when(appUserService.findAppUserByEmail("user@example.com")).thenReturn(user);
+        when(meetingService.getMeeting(anyString())).thenReturn(null);
+        this.mockMvc.perform(delete("/api/users/delete_meeting")
+            .param("id", "1")
+            .with(csrf().asHeader()))
+            .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser(username = "notauser@example.com", password = "password", authorities = {"ROLE_USER"})
+    public void deleteMeetingShouldFailWith404ErrorCodeWhenUserIsNotFound() throws Exception {
+        UUID userId = UUID.fromString("1c874643-0f1a-4168-9710-56b7207afd6c");
+        Meeting meeting = new Meeting("1", "Old Title", "password", 120, new Date(), new ArrayList<String>(), userId.toString());
+        when(appUserService.findAppUserByEmail("notauser@example.com")).thenReturn(null);
+        when(meetingService.getMeeting("1")).thenReturn(meeting);
+        this.mockMvc.perform(delete("/api/users/delete_meeting")
+            .param("id", "1")
+            .with(csrf().asHeader()))
+            .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser(username = "user@example.com", password = "password", authorities = {"ROLE_USER"})
+    public void deleteMeetingShouldFailWith403ErrorCodeWhenUserIsNotTheOwnerOfTheMeeting() throws Exception {
+        UUID userId = UUID.fromString("1c874643-0f1a-4168-9710-56b7207afd6c");
+        AppUser user = new AppUser(userId, "user", "user@example.com", "password", "", "");
+        Meeting meeting = new Meeting("1", "Old Title", "password", 120, new Date(), new ArrayList<String>(), "some other user's ID");
+        
+        when(appUserService.findAppUserByEmail("user@example.com")).thenReturn(user);
+        when(meetingService.getMeeting("1")).thenReturn(meeting);
+
+        this.mockMvc.perform(delete("/api/users/delete_meeting")
+            .param("id", "1")
+            .with(csrf().asHeader()))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(username = "user@example.com", password = "password", authorities = {"ROLE_USER"})
+    public void deleteMeetingShouldReturn200CodeWhenUserOwnsTheMeetingAndAllGuestsCanBeReached() throws Exception {
+        UUID userId = UUID.fromString("1c874643-0f1a-4168-9710-56b7207afd6c");
+        AppUser user = new AppUser(userId, "user", "user@example.com", "password", "", "");
+        Meeting meeting = new Meeting("1", "Old Title", "password", 120, new Date(), new ArrayList<String>(), userId.toString());
+        
+        when(appUserService.findAppUserByEmail("user@example.com")).thenReturn(user);
+        when(meetingService.getMeeting("1")).thenReturn(meeting);
+
+        this.mockMvc.perform(delete("/api/users/delete_meeting")
+            .param("id", "1")
+            .with(csrf().asHeader()))
+            .andExpect(status().isOk());
+    }
+    @Test
+    @WithMockUser(username = "user@example.com", password = "password", authorities = {"ROLE_USER"})
+    public void deleteMeetingShouldReturn207CodeWhenSomeGuestsCannotBeEmailed() throws Exception {
+        UUID userId = UUID.fromString("1c874643-0f1a-4168-9710-56b7207afd6c");
+        ArrayList<String> guests = new ArrayList<String>();
+        guests.add("not a valid email address.");
+        AppUser user = new AppUser(userId, "user", "user@example.com", "password", "", "");
+        Meeting meeting = new Meeting("1", "Old Title", "password", 120, new Date(), guests, userId.toString());
+
+        when(appUserService.findAppUserByEmail("user@example.com")).thenReturn(user);
+        when(meetingService.getMeeting("1")).thenReturn(meeting);
+        Mockito.doThrow(new MailSendException("could not send email.")).when(emailService).sendSimpleEmail(any(SimpleEmail.class));
+
+        this.mockMvc.perform(delete("/api/users/delete_meeting")
+            .param("id", "1")
+            .with(csrf().asHeader()))
+            .andExpect(status().isMultiStatus());
     }
 }
