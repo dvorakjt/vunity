@@ -4,7 +4,9 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build",
+    "prebuild" : "node create-spring-controller.js",
+    "build": "ng build --configuration production",
+    "postbuild" : "node move-dist-contents.js",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },

@@ -25,14 +25,14 @@ paths = paths.map(path => {
 });
 
 //this will have to be updated so it dynamically gets your package name.
-const homeController = 
+const ngController = 
 `package ${config.javaPackage};
 
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
 
-@RestController
-public class HomeController {
+@Controller
+public class AngularController {
 
 	@GetMapping(value = {${paths.join(", ")}}) 
 	public String index() {
@@ -43,6 +43,6 @@ public class HomeController {
 
 let output = config.outputPath;
 if(!output.endsWith("/")) output += "/";
-output += "HomeController.java";
+output += "AngularController.java";
 
-fs.writeFileSync(output, homeController);
+fs.writeFileSync(output, ngController);

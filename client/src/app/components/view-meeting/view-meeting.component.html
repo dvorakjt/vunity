@@ -21,7 +21,7 @@
             invitation</i></span>
 </label>
 <br />
-<a [href]="meeting ? ('http://localhost:4200/joinmeeting?id=' + meeting.id) : ''" target="_blank" rel="noreferrer">
+<a [href]="meeting ? this.getMeetingLink() : ''" target="_blank" rel="noreferrer">
     {{meeting ? 'Join Now' : ''}}
 </a>
 <div class="spacer-sm"></div>

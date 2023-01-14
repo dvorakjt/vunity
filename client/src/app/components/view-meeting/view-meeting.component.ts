@@ -7,6 +7,7 @@ import { ActiveMeetingService } from 'src/app/services/active-meeting/active-mee
 import { LoadingService } from 'src/app/services/loading/loading.service';
 import { MeetingStatus } from 'src/app/constants/meeting-status';
 import { Router } from '@angular/router';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-view-meeting',
@@ -38,6 +39,12 @@ export class ViewMeetingComponent {
 
   onEnterEditMode() {
     this.editModeActivated.emit();
+  }
+
+  getMeetingLink() {
+    if(this.meeting) {
+      return environment.httpProtocol + environment.siteUrl + '/joinmeeting?id=' + this.meeting.id;
+    } else return '';
   }
 
   getMeetingDateTime() {
@@ -84,7 +91,7 @@ Scheduled for ${this.getMeetingDateTime()}
 
 To join this meeting, visit:
 
-http://localhost:4200/joinmeeting?id=${this.meeting.id}
+${environment.httpProtocol}${environment.siteUrl}/joinmeeting?id=${this.meeting.id}
 
 And enter the password:
 

@@ -1,7 +1,17 @@
 const fs = require('fs');
 const angularJson = require('./angular.json');
-//require moveDistConfig
 const outputPath = '../backend/src/main/resources';
+
+//clear files if they exist
+const templatesExist = fs.existsSync(outputPath + '/templates');
+if(templatesExist) {
+    fs.rmSync(outputPath + '/templates', {recursive: true, force: true});
+}
+const staticExists = fs.existsSync(outputPath + '/static');
+if(staticExists) {
+    fs.rmSync(outputPath + '/static', {recursive: true, force: true});
+}
+
 const distDir = './' + angularJson.projects[Object.keys(angularJson.projects)[0]].architect.build.options.outputPath;
 
 let files = fs.readdirSync(distDir);
@@ -15,13 +25,13 @@ files = files.map((file) => {
         if(file.includes('.html')) {
             fileObj.newLocation = '/templates/'
         } else if(file.includes('.css')) {
-            fileObj.newLocation = '/static/styles/'
+            fileObj.newLocation = '/styles/'
         } else if(file.includes('.js')) {
-            fileObj.newLocation = '/static/js/'
+            fileObj.newLocation = '/js/'
         } else {
-            fileObj.newLocation = '/static/assets/'
+            fileObj.newLocation = '/assets/'
         }
-    } else fileObj.newLocation = '/static/';
+    } else fileObj.newLocation = '/';
 
     return fileObj;
 });
@@ -40,7 +50,7 @@ for(const f of files) {
         });
     }
     if(!f.fileName.includes('.html')) {
-        copyFileRecursively(distDir, f.fileName, outputPath + f.newLocation);
+        copyFileRecursively(distDir, f.fileName, outputPath + "/static" + f.newLocation);
     }
 }
 

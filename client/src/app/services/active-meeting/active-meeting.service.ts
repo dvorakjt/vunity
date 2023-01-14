@@ -17,6 +17,7 @@ import { ScreenSharingPeer } from 'src/app/models/screen-sharing-peer.model';
 import { LocalScreenSharingPeer } from 'src/app/models/local-screen-sharing-peer.model';
 import { GuestAuthError } from './errors/guest-auth-error';
 import { HostAuthError } from './errors/host-auth-error';
+import { environment } from 'src/environments/environment';
 
 declare var SockJS: any;
 declare var Stomp: any;
@@ -520,7 +521,7 @@ export class ActiveMeetingService {
     public checkAndEstablishWebSocketConnection() {
         if (!this.websocketConnection || this.websocketConnection.readyState === WebSocket.CLOSING || this.websocketConnection.readyState === WebSocket.CLOSED) {
             this.websocketStatus.next('loading');
-            this.websocketConnection = new WebSocket('ws://localhost:8080/socket'); //websocket should be reopened if closed
+            this.websocketConnection = new WebSocket(environment.webSocketProtocol + environment.siteUrl + '/socket'); //websocket should be reopened if closed
             this.websocketConnection.onopen = () => {
                 this.websocketStatus.next('open');
                 this.websocketConnection?.addEventListener('message', (message) => {
