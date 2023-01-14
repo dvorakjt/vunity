@@ -8,11 +8,11 @@
 		<version>2.7.5</version>
 		<relativePath/>
 	</parent>
-	<groupId>com.example</groupId>
-	<artifactId>videochat3</artifactId>
+	<groupId>link.vunity</groupId>
+	<artifactId>vunityapp</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>videochat3</name>
-	<description>Demo project for Spring Boot</description>
+	<name>vunityapp</name>
+	<description>Vunity Videochat App</description>
 	<properties>
 		<java.version>17</java.version>
 	</properties>

@@ -1,6 +1,6 @@
 {
     "inputPath" : "./src/app",
     "routingModuleFileName" : "app-routing.module.ts",
-    "javaPackage" : "com.example.videochat3.controllers",
-    "outputPath" : "../backend/src/main/java/com/example/videochat3/controllers"
+    "javaPackage" : "link.vunity.vunityapp.controllers",
+    "outputPath" : "../backend/src/main/java/link/vunity/vunityapp/controllers"
 }
