@@ -22,10 +22,12 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 public class GuestUserAuthNFilter extends UsernamePasswordAuthenticationFilter {
     private final AuthenticationManager authenticationManager;
+    private final UserTokenManager userTokenManager;
     private RecaptchaManager recaptchaManager;
 
-    public GuestUserAuthNFilter(AuthenticationManager authenticationManager, RecaptchaManager recaptchaManager) {
+    public GuestUserAuthNFilter(AuthenticationManager authenticationManager, UserTokenManager userTokenManager, RecaptchaManager recaptchaManager) {
         this.authenticationManager = authenticationManager;
+        this.userTokenManager = userTokenManager;
         this.recaptchaManager = recaptchaManager;
     }
 
@@ -49,7 +51,7 @@ public class GuestUserAuthNFilter extends UsernamePasswordAuthenticationFilter {
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
         User user = (User)authResult.getPrincipal();
         response.setContentType(APPLICATION_JSON_VALUE);
-        Map<String, String> tokens = UserTokenManager.userToTokenMap(user);
+        Map<String, String> tokens = userTokenManager.userToTokenMap(user);
         new ObjectMapper().writeValue(response.getOutputStream(), tokens);
     }
 }

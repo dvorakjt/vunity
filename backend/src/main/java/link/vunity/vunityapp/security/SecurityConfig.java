@@ -6,8 +6,6 @@ import link.vunity.vunityapp.filter.GuestUserAuthNFilter;
 import link.vunity.vunityapp.filter.ResponseCookieFactory;
 import lombok.RequiredArgsConstructor;
 
-import java.net.http.HttpHeaders;
-
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -26,6 +24,7 @@ import org.springframework.security.web.authentication.logout.CookieClearingLogo
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
 import link.vunity.vunityapp.recaptcha.*;
+import link.vunity.vunityapp.tokens.UserTokenManager;
 
 @Configuration
 @EnableWebSecurity
@@ -42,6 +41,7 @@ public class SecurityConfig {
         private final PasswordEncoder delegatingPasswordEncoder;
         private final RecaptchaManager recaptchaManager;
         private final ResponseCookieFactory responseCookieFactory;
+        private final UserTokenManager userTokenManager;
 
         @Override
         protected void configure(AuthenticationManagerBuilder auth) throws Exception {
@@ -50,7 +50,7 @@ public class SecurityConfig {
 
         @Override
         protected void configure(HttpSecurity http) throws Exception {
-            AppUserAuthNFilter appUserAuthNFilter = new AppUserAuthNFilter(authenticationManagerBean(), responseCookieFactory, recaptchaManager);
+            AppUserAuthNFilter appUserAuthNFilter = new AppUserAuthNFilter(authenticationManagerBean(), responseCookieFactory, recaptchaManager, userTokenManager);
             appUserAuthNFilter.setFilterProcessesUrl("/api/users/login");
 
             http.csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
@@ -67,7 +67,7 @@ public class SecurityConfig {
                 }));
             
             http.addFilter(appUserAuthNFilter); //could set the login route to /api so that the frontend can make a post request
-            http.addFilterBefore(new AppAuthZFilter(responseCookieFactory), UsernamePasswordAuthenticationFilter.class);
+            http.addFilterBefore(new AppAuthZFilter(responseCookieFactory, userTokenManager), UsernamePasswordAuthenticationFilter.class);
         }
         @Bean
         @Override
@@ -87,6 +87,7 @@ public class SecurityConfig {
         private final PasswordEncoder meetingPasswordEncoder;
         private final RecaptchaManager recaptchaManager;
         private final ResponseCookieFactory responseCookieFactory;
+        private final UserTokenManager userTokenManager;
 
         @Override
         protected void configure(AuthenticationManagerBuilder auth) throws Exception {
@@ -95,7 +96,7 @@ public class SecurityConfig {
 
         @Override
         protected void configure(HttpSecurity http) throws Exception {
-            GuestUserAuthNFilter guestUserAuthNFilter = new GuestUserAuthNFilter(guestAuthManagerBean(), recaptchaManager);
+            GuestUserAuthNFilter guestUserAuthNFilter = new GuestUserAuthNFilter(guestAuthManagerBean(), userTokenManager, recaptchaManager);
             guestUserAuthNFilter.setFilterProcessesUrl("/api/meeting/join");
             http.antMatcher("/**").csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()).and().authorizeRequests()
             //http.antMatcher("/**").csrf().disable().authorizeRequests()
@@ -103,7 +104,7 @@ public class SecurityConfig {
             .and().authorizeRequests()
             .antMatchers("/api/meeting/join", "/socket/**", "/api/token/refresh", "/api/csrf_token", "/api/request_demo").permitAll().anyRequest().authenticated();
             http.addFilter(guestUserAuthNFilter); //could set the login route to /api so that the frontend can make a post request
-            http.addFilterBefore(new AppAuthZFilter(responseCookieFactory), UsernamePasswordAuthenticationFilter.class);
+            http.addFilterBefore(new AppAuthZFilter(responseCookieFactory, userTokenManager), UsernamePasswordAuthenticationFilter.class);
         }
         @Bean
         public AuthenticationManager guestAuthManagerBean() throws Exception {

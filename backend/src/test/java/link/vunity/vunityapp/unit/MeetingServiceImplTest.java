@@ -98,7 +98,7 @@ public class MeetingServiceImplTest {
 
     @Test
     public void saveMeetingShouldReturnSavedMeetingWithPasswordEncoded() throws Exception {
-        MeetingPasswordEncoder passwordEncoder = new MeetingPasswordEncoder("Secret");
+        MeetingPasswordEncoder passwordEncoder = new MeetingPasswordEncoder("DDLxFePppChe7QLX8ajGGrwcIuWYWsrC");
         this.meetingService = new MeetingServiceImpl(meetingRepo, passwordEncoder);
 
         ArrayList<String> guests = new ArrayList<String>();

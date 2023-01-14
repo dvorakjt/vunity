@@ -17,6 +17,7 @@ import link.vunity.vunityapp.tokens.UserTokenManager;
 
 @SpringBootTest
 public class UserTokenManagerIntTest {
+    UserTokenManager userTokenManager = new UserTokenManager("secret");
     SecurityContext securityContext = SecurityContextHolder.getContext();
 
     @Test
@@ -25,8 +26,8 @@ public class UserTokenManagerIntTest {
         ArrayList<SimpleGrantedAuthority> authorities = new ArrayList<SimpleGrantedAuthority>();
         authorities.add(authorization);
         User u = new User("test@example.com", "password", authorities);
-        String token = UserTokenManager.userToToken(u, 60);
-        UserTokenManager.decodeTokenAndGrantAuthority(token);
+        String token = userTokenManager.userToToken(u, 60);
+        userTokenManager.decodeTokenAndGrantAuthority(token);
         Principal p = securityContext.getAuthentication();
         assertEquals(p.getName(), u.getUsername());
     }

@@ -24,6 +24,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 public class AppAuthZFilter extends OncePerRequestFilter {
 
     private final ResponseCookieFactory responseCookieFactory;
+    private final UserTokenManager userTokenManager;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -46,7 +47,7 @@ public class AppAuthZFilter extends OncePerRequestFilter {
                 }
                 if(accessTokenCookie != null && accessTokenCookie.getValue() != null) {
                     try {
-                        UserTokenManager.decodeTokenAndGrantAuthority(accessTokenCookie.getValue());
+                        userTokenManager.decodeTokenAndGrantAuthority(accessTokenCookie.getValue());
                         filterChain.doFilter(request, response);
                     } catch (Exception e) {
                         response.setStatus(401);

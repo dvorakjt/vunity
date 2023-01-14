@@ -19,10 +19,11 @@ public class WebSocketAuthFilter {
 
     private final AppUserRepo appUserRepo;
     private final MeetingRepo meetingRepo;
+    private final UserTokenManager userTokenManager;
 
     public boolean isAuthorizedHost(Map<String, Object> payload) {
         String meetingAccessToken = payload.get("meetingAccessToken").toString();
-        DecodedToken dToken = UserTokenManager.decodeToken(meetingAccessToken);
+        DecodedToken dToken = userTokenManager.decodeToken(meetingAccessToken);
         String meetingId = dToken.getUsernameOrMeetingId();
         String[] claims = dToken.getClaims();
         Date expiration = dToken.getExpiration();
@@ -33,7 +34,7 @@ public class WebSocketAuthFilter {
 
     public boolean isAuthorizedUser(Map<String, Object> payload) {
         String meetingAccessToken = payload.get("meetingAccessToken").toString();
-        DecodedToken dToken = UserTokenManager.decodeToken(meetingAccessToken);
+        DecodedToken dToken = userTokenManager.decodeToken(meetingAccessToken);
         String meetingId = dToken.getUsernameOrMeetingId();
         Date expiration = dToken.getExpiration();
         Date now = new Date();
@@ -43,7 +44,7 @@ public class WebSocketAuthFilter {
 
     public String getMeetingIdFromToken(Map<String, Object> payload) {
         String meetingAccessToken = payload.get("meetingAccessToken").toString();
-        DecodedToken dToken = UserTokenManager.decodeToken(meetingAccessToken);
+        DecodedToken dToken = userTokenManager.decodeToken(meetingAccessToken);
         String meetingId = dToken.getUsernameOrMeetingId();
         return meetingId;
     }

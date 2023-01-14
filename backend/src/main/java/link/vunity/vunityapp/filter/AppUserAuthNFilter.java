@@ -26,16 +26,19 @@ public class AppUserAuthNFilter extends UsernamePasswordAuthenticationFilter {
 
     private final AuthenticationManager authenticationManager;
     private final ResponseCookieFactory responseCookieFactory;
-    private RecaptchaManager recaptchaManager;
+    private final UserTokenManager userTokenManager;
+    private final RecaptchaManager recaptchaManager;
 
     public AppUserAuthNFilter(
         AuthenticationManager authenticationManager,
         ResponseCookieFactory responseCookieFactory,
-        RecaptchaManager recaptchaManager
+        RecaptchaManager recaptchaManager,
+        UserTokenManager userTokenManager
     ) {
         this.authenticationManager = authenticationManager;
         this.responseCookieFactory = responseCookieFactory;
         this.recaptchaManager = recaptchaManager;
+        this.userTokenManager = userTokenManager;
     }
 
     @Override
@@ -58,7 +61,7 @@ public class AppUserAuthNFilter extends UsernamePasswordAuthenticationFilter {
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
         User user = (User)authResult.getPrincipal();
-        Map<String, String> tokens = UserTokenManager.userToTokenMap(user);
+        Map<String, String> tokens = userTokenManager.userToTokenMap(user);
         ResponseCookie accessTokenCookie = responseCookieFactory.createAccessTokenCookie(tokens.get("access_token"));
         ResponseCookie refreshTokenCookie = responseCookieFactory.createRefreshTokenCookie(tokens.get("refresh_token"));
         response.addHeader(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());

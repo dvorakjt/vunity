@@ -64,6 +64,7 @@ public class ApiController {
     private final PasswordEncoder passwordEncoder;
     private final RecaptchaManager recaptchaManager;
     private final ResponseCookieFactory responseCookieFactory;
+    private final UserTokenManager userTokenManager;
 
     @PostMapping(
         value ="/api/request_demo",
@@ -131,7 +132,7 @@ public class ApiController {
             if(refreshTokenCookie != null && refreshTokenCookie.getValue() != null) {
                 String refresh_token = refreshTokenCookie.getValue();
                 try {
-                    Map<String, String> tokens = UserTokenManager.refreshAccessToken(refresh_token, appUserService);
+                    Map<String, String> tokens = userTokenManager.refreshAccessToken(refresh_token, appUserService);
                     ResponseCookie newAccessTokenCookie = responseCookieFactory.createAccessTokenCookie(tokens.get("access_token"));
                     response.addHeader(HttpHeaders.SET_COOKIE, newAccessTokenCookie.toString());
                     response.setStatus(200);
@@ -394,7 +395,7 @@ public class ApiController {
         } else {
             User host = meetingService.loadHostByMeetingId(meetingId);
             //tokenize the host and send
-            Map<String,String> meetingToken = UserTokenManager.meetingUserToTokenMap(host);
+            Map<String,String> meetingToken = userTokenManager.meetingUserToTokenMap(host);
             return ResponseEntity.ok().body(meetingToken);
         }
     }

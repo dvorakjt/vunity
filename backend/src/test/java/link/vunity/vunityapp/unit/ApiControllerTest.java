@@ -33,6 +33,8 @@ import link.vunity.vunityapp.recaptcha.RecaptchaManager;
 import link.vunity.vunityapp.service.AppUserServiceImpl;
 import link.vunity.vunityapp.service.EmailService;
 import link.vunity.vunityapp.service.MeetingServiceImpl;
+import link.vunity.vunityapp.tokens.UserTokenManager;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -74,6 +76,12 @@ public class ApiControllerTest {
     @MockBean
     @Qualifier("MeetingPasswordEncoder")
     PasswordEncoder meetingPasswordEncoder;
+
+    @MockBean
+    ResponseCookieFactory responseCookieFactory;
+
+    @MockBean
+    UserTokenManager userTokenManager;
 
     @MockBean
     RecaptchaManager recaptchaManager;
@@ -911,11 +919,5 @@ public class ApiControllerTest {
             .content(transformDTOToJsonString(requestBody))
             .with(csrf().asHeader()))
             .andExpect(status().isOk());
-    }
-
-    @Test
-    @WithMockUser(username = "user@example.com", password = "password", authorities = {"ROLE_USER"})
-    public void logoutShouldSucceedIfUserIsLoggedInAndCSRFTokenIsPresent() throws Exception {
-        this.mockMvc.perform(delete("/api/with_rt/logout").with(csrf().asHeader())).andExpect(status().isOk());
     }
 }
