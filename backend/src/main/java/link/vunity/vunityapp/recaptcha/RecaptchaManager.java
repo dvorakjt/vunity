@@ -11,7 +11,7 @@ import org.springframework.web.client.RestTemplate;
 @Component
 public class RecaptchaManager {
 
-    @Value("${recaptchaSecret}")
+    @Value("${vunityapp.recaptchaSecret}")
     private String secret;
 
     public boolean verifyRecaptchaToken(String token) {

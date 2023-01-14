@@ -3,7 +3,13 @@ package link.vunity.vunityapp.security;
 import link.vunity.vunityapp.filter.AppAuthZFilter;
 import link.vunity.vunityapp.filter.AppUserAuthNFilter;
 import link.vunity.vunityapp.filter.GuestUserAuthNFilter;
+import link.vunity.vunityapp.filter.ResponseCookieFactory;
 import lombok.RequiredArgsConstructor;
+
+import java.net.http.HttpHeaders;
+
+import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,6 +22,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.CookieClearingLogoutHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
 import link.vunity.vunityapp.recaptcha.*;
@@ -34,6 +41,7 @@ public class SecurityConfig {
         @Qualifier("UserPasswordEncoder")
         private final PasswordEncoder delegatingPasswordEncoder;
         private final RecaptchaManager recaptchaManager;
+        private final ResponseCookieFactory responseCookieFactory;
 
         @Override
         protected void configure(AuthenticationManagerBuilder auth) throws Exception {
@@ -42,18 +50,24 @@ public class SecurityConfig {
 
         @Override
         protected void configure(HttpSecurity http) throws Exception {
-            AppUserAuthNFilter appUserAuthNFilter = new AppUserAuthNFilter(authenticationManagerBean(), recaptchaManager);
+            AppUserAuthNFilter appUserAuthNFilter = new AppUserAuthNFilter(authenticationManagerBean(), responseCookieFactory, recaptchaManager);
             appUserAuthNFilter.setFilterProcessesUrl("/api/users/login");
 
-            http.csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()).and().authorizeRequests()
+            http.csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+            .and().authorizeRequests()
             //http.csrf().disable().authorizeRequests()
             .regexMatchers("GET", "^/(?!(api)).*$").permitAll()
             .and().authorizeRequests()
             .antMatchers("/api/users/login", "/api/users/request_password_reset*", "/api/users/reset_password", "/api/token/refresh", "/api/csrf_token", "/api/request_demo").permitAll().and()
-            .antMatcher("/api/users/**").authorizeRequests().anyRequest().authenticated();
+            .antMatcher("/api/users/**").authorizeRequests().anyRequest().authenticated()
+            .and().logout(logout -> logout.logoutUrl("/api/users/logout")
+                .addLogoutHandler(new CookieClearingLogoutHandler(responseCookieFactory.ACCESS_TOKEN_COOKIE_NAME, responseCookieFactory.REFRESH_TOKEN_COOKIE_NAME))
+                .logoutSuccessHandler((request, response, authentication) -> {
+                    response.setStatus(HttpServletResponse.SC_OK);
+                }));
             
             http.addFilter(appUserAuthNFilter); //could set the login route to /api so that the frontend can make a post request
-            http.addFilterBefore(new AppAuthZFilter(), UsernamePasswordAuthenticationFilter.class);
+            http.addFilterBefore(new AppAuthZFilter(responseCookieFactory), UsernamePasswordAuthenticationFilter.class);
         }
         @Bean
         @Override
@@ -71,8 +85,8 @@ public class SecurityConfig {
 
         @Qualifier("MeetingPasswordEncoder")
         private final PasswordEncoder meetingPasswordEncoder;
-
         private final RecaptchaManager recaptchaManager;
+        private final ResponseCookieFactory responseCookieFactory;
 
         @Override
         protected void configure(AuthenticationManagerBuilder auth) throws Exception {
@@ -84,12 +98,12 @@ public class SecurityConfig {
             GuestUserAuthNFilter guestUserAuthNFilter = new GuestUserAuthNFilter(guestAuthManagerBean(), recaptchaManager);
             guestUserAuthNFilter.setFilterProcessesUrl("/api/meeting/join");
             http.antMatcher("/**").csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()).and().authorizeRequests()
+            //http.antMatcher("/**").csrf().disable().authorizeRequests()
             .regexMatchers("GET", "^/(?!(api)).*$").permitAll()
             .and().authorizeRequests()
-            //http.antMatcher("/**").csrf().disable().authorizeRequests()
             .antMatchers("/api/meeting/join", "/socket/**", "/api/token/refresh", "/api/csrf_token", "/api/request_demo").permitAll().anyRequest().authenticated();
             http.addFilter(guestUserAuthNFilter); //could set the login route to /api so that the frontend can make a post request
-            http.addFilterBefore(new AppAuthZFilter(), UsernamePasswordAuthenticationFilter.class);
+            http.addFilterBefore(new AppAuthZFilter(responseCookieFactory), UsernamePasswordAuthenticationFilter.class);
         }
         @Bean
         public AuthenticationManager guestAuthManagerBean() throws Exception {

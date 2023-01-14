@@ -1,6 +1,7 @@
 package link.vunity.vunityapp.encryption;
 
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -17,13 +18,14 @@ import java.util.Base64;
 public class MeetingPasswordEncoder implements PasswordEncoder {
 
     private static final String AES = "AES";
-    private static final String SECRET = "secret-key-12345";
 
+    private final String SECRET;
     private final Key key;
     private final Cipher cipher;
 
-    public MeetingPasswordEncoder() throws Exception {
-        key = new SecretKeySpec(SECRET.getBytes(), AES);
+    public MeetingPasswordEncoder(@Value("${vunityapp.meetingPasswordEncoderSecret}") String SECRET) throws Exception {
+        this.SECRET = SECRET;
+        key = new SecretKeySpec(this.SECRET.getBytes(), AES);
         cipher = Cipher.getInstance(AES);
     }
 

@@ -23,12 +23,18 @@ import java.util.Map;
 import link.vunity.vunityapp.DTO.UserAuthDTO;
 
 public class AppUserAuthNFilter extends UsernamePasswordAuthenticationFilter {
-    private final AuthenticationManager authenticationManager;
 
+    private final AuthenticationManager authenticationManager;
+    private final ResponseCookieFactory responseCookieFactory;
     private RecaptchaManager recaptchaManager;
 
-    public AppUserAuthNFilter(AuthenticationManager authenticationManager, RecaptchaManager recaptchaManager) {
+    public AppUserAuthNFilter(
+        AuthenticationManager authenticationManager,
+        ResponseCookieFactory responseCookieFactory,
+        RecaptchaManager recaptchaManager
+    ) {
         this.authenticationManager = authenticationManager;
+        this.responseCookieFactory = responseCookieFactory;
         this.recaptchaManager = recaptchaManager;
     }
 
@@ -52,12 +58,9 @@ public class AppUserAuthNFilter extends UsernamePasswordAuthenticationFilter {
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
         User user = (User)authResult.getPrincipal();
-        // response.setContentType(APPLICATION_JSON_VALUE);
         Map<String, String> tokens = UserTokenManager.userToTokenMap(user);
-        // new ObjectMapper().writeValue(response.getOutputStream(), tokens);
-        ResponseCookie accessTokenCookie = ResponseCookieFactory.createAccessTokenCookie(tokens.get("access_token"));
-        ResponseCookie refreshTokenCookie = ResponseCookieFactory.createRefreshTokenCookie(tokens.get("refresh_token"));
-        // response.addHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_CREDENTIALS, "true");
+        ResponseCookie accessTokenCookie = responseCookieFactory.createAccessTokenCookie(tokens.get("access_token"));
+        ResponseCookie refreshTokenCookie = responseCookieFactory.createRefreshTokenCookie(tokens.get("refresh_token"));
         response.addHeader(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
         response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
         response.setStatus(200);

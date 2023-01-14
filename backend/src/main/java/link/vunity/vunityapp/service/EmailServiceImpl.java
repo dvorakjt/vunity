@@ -21,8 +21,7 @@ import link.vunity.vunityapp.DTO.SimpleEmail;
 public class EmailServiceImpl implements EmailService {
  
     private final JavaMailSender javaMailSender;
- 
-    // @Value("${spring.mail.username}") 
+  
     private String sender;
 
     public EmailServiceImpl(JavaMailSender javaMailSender, @Value("${spring.mail.username}") String sender) {

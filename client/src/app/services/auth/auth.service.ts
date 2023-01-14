@@ -137,13 +137,14 @@ export class AuthService {
     logout() {
         //should make a call to the backend to logout and cause the current cookies to expire.
         return new Observable<any>((subscriber) => {
-            this.http.delete('/api/with_rt/logout').subscribe({
+            this.http.post('/api/users/logout', {}).subscribe({
                 next: () => {
                     subscriber.next();
                     subscriber.complete();
                     this.clearUserData();
                     this.isAuthenticated.next(false);
-                    this.router.navigate(["/login"]);
+                    location.reload();
+                    
                 },
                 error: (error) => {
                     subscriber.error(error);

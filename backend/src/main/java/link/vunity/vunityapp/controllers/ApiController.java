@@ -34,6 +34,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import link.vunity.vunityapp.tokens.UserTokenManager;
 import link.vunity.vunityapp.DTO.SimpleEmail;
+
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -61,6 +63,7 @@ public class ApiController {
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
     private final RecaptchaManager recaptchaManager;
+    private final ResponseCookieFactory responseCookieFactory;
 
     @PostMapping(
         value ="/api/request_demo",
@@ -123,13 +126,13 @@ public class ApiController {
         Cookie refreshTokenCookie = null;
         if(cookies != null) {
             for(Cookie cookie : cookies) {
-                if(cookie.getName().equals(ResponseCookieFactory.REFRESH_TOKEN_COOKIE_NAME)) refreshTokenCookie = cookie;
+                if(cookie.getName().equals(responseCookieFactory.REFRESH_TOKEN_COOKIE_NAME)) refreshTokenCookie = cookie;
             }
             if(refreshTokenCookie != null && refreshTokenCookie.getValue() != null) {
                 String refresh_token = refreshTokenCookie.getValue();
                 try {
                     Map<String, String> tokens = UserTokenManager.refreshAccessToken(refresh_token, appUserService);
-                    ResponseCookie newAccessTokenCookie = ResponseCookieFactory.createAccessTokenCookie(tokens.get("access_token"));
+                    ResponseCookie newAccessTokenCookie = responseCookieFactory.createAccessTokenCookie(tokens.get("access_token"));
                     response.addHeader(HttpHeaders.SET_COOKIE, newAccessTokenCookie.toString());
                     response.setStatus(200);
                 } catch(JWTVerificationException e) {
@@ -394,26 +397,6 @@ public class ApiController {
             Map<String,String> meetingToken = UserTokenManager.meetingUserToTokenMap(host);
             return ResponseEntity.ok().body(meetingToken);
         }
-    }
-
-    @DeleteMapping("/api/with_rt/logout")
-    public void logout(HttpServletRequest req, HttpServletResponse res) {
-        Cookie[] cookies = req.getCookies();
-        if(cookies != null) {
-            for(Cookie cookie : cookies) {
-                if(
-                    cookie.getName().equals(ResponseCookieFactory.ACCESS_TOKEN_COOKIE_NAME) ||
-                    cookie.getName().equals(ResponseCookieFactory.REFRESH_TOKEN_COOKIE_NAME) ||
-                    cookie.getName().equals("JSESSIONID")
-                ) {
-                    cookie.setValue("");
-                    cookie.setPath("/");
-                    cookie.setMaxAge(0);
-                }
-                res.addCookie(cookie);
-            }
-        }
-        res.setStatus(200);
     }
 
     @GetMapping("/api/csrf_token")

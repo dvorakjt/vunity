@@ -2,7 +2,11 @@ package link.vunity.vunityapp.filter;
 
 import link.vunity.vunityapp.tokens.UserTokenManager;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
@@ -16,7 +20,11 @@ import java.util.Map;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
+@RequiredArgsConstructor
 public class AppAuthZFilter extends OncePerRequestFilter {
+
+    private final ResponseCookieFactory responseCookieFactory;
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         if(request.getServletPath().equals("/api/users/login") || 
@@ -32,7 +40,7 @@ public class AppAuthZFilter extends OncePerRequestFilter {
             Cookie accessTokenCookie = null;
             if(cookies != null) {
                 for(Cookie cookie : cookies) {
-                    if(cookie.getName().equals(ResponseCookieFactory.ACCESS_TOKEN_COOKIE_NAME)) {
+                    if(cookie.getName().equals(responseCookieFactory.ACCESS_TOKEN_COOKIE_NAME)) {
                         accessTokenCookie = cookie;
                     }
                 }
