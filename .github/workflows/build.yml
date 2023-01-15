@@ -18,10 +18,10 @@ jobs:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
         cache-dependency-path: client/package-lock.json
-    - run: npm ci
-        working-directory: client
-    - run: npm run build
-        working-directory: client
+    - run: |
+        cd client
+        npm ci
+        npm run build
     - uses: actions/checkout@v3
     - name: Set up JDK 17
       uses: actions/setup-java@v3
@@ -30,5 +30,7 @@ jobs:
         distribution: 'temurin'
         cache: maven
     - name: Build with Maven
-      run: mvn package
-        working-directory: backend
+      run: |
+        cd backend
+        mvn package
+      
