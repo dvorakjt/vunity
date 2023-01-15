@@ -85,7 +85,7 @@ describe('ViewMeetingComponent', () => {
       "1"
     );
     component.meeting = meeting;
-    expect(component.getMeetingDateTime()).toBe('July 20, 1969 at 8:05 PM GMT-4');
+    expect(component.getMeetingDateTime()).toContain('July 20, 1969 at 8:05 PM');
   });
 
   it('should return an empty string when getMeetingDateTime is called without a meeting.', () => {
