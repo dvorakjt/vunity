@@ -7,18 +7,30 @@ import java.security.Principal;
 import java.util.ArrayList;
 
 import org.junit.Test;
+import org.mockito.MockitoAnnotations;
+import org.junit.Before;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 
+import link.vunity.vunityapp.service.EmailService;
 import link.vunity.vunityapp.tokens.UserTokenManager;
 
 @SpringBootTest
 public class UserTokenManagerIntTest {
     UserTokenManager userTokenManager = new UserTokenManager("secret");
     SecurityContext securityContext = SecurityContextHolder.getContext();
+
+    @MockBean
+	EmailService emailService;
+
+	@Before
+    public void initMocks() {
+        MockitoAnnotations.openMocks(this);
+    }
 
     @Test
     public void securityContextSetAuthenticationShouldBeCalled() throws Exception {

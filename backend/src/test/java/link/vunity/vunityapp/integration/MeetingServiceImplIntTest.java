@@ -12,10 +12,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.MockitoAnnotations;
+import org.junit.Before;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 import link.vunity.vunityapp.domain.Meeting;
+import link.vunity.vunityapp.service.EmailService;
 import link.vunity.vunityapp.service.MeetingServiceImpl;
 
 @SpringBootTest
@@ -23,6 +27,14 @@ public class MeetingServiceImplIntTest {
     
     @Autowired
     private MeetingServiceImpl meetingService;
+
+    @MockBean
+	EmailService emailService;
+
+	@Before
+    public void initMocks() {
+        MockitoAnnotations.openMocks(this);
+    }
 
     @Test
     public void meetingServiceShouldLoad() {

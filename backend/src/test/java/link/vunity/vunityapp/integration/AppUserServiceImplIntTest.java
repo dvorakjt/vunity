@@ -6,20 +6,29 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 import org.junit.Before;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import org.mockito.MockitoAnnotations;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 import link.vunity.vunityapp.domain.AppUser;
 import link.vunity.vunityapp.service.AppUserServiceImpl;
+import link.vunity.vunityapp.service.EmailService;
 
 @SpringBootTest
 public class AppUserServiceImplIntTest {
     
     @Autowired
     AppUserServiceImpl appUserService;
+
+    @MockBean
+	EmailService emailService;
+
+	@Before
+    public void initMocks() {
+        MockitoAnnotations.openMocks(this);
+    }
 
     public AppUser createAndSaveAppUser(String email) {
         AppUser u = new AppUser();
