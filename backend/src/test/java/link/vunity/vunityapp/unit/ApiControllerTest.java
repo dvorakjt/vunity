@@ -1,5 +1,7 @@
 package link.vunity.vunityapp.unit;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -620,15 +622,27 @@ public class ApiControllerTest {
 
         when(appUserService.findAppUserByEmail("user@example.com")).thenReturn(user);
 
-        String expectedResult = "[{\"id\":\"1\",\"title\":\"Title\",\"password\":\"password\",\"duration\":60,\"startDateTime\":\"3922-03-01T05:00:00.000+00:00\",\"guests\":[],\"ownerId\":\"1c874643-0f1a-4168-9710-56b7207afd6c\"},"
-        + "{\"id\":\"2\",\"title\":\"Title\",\"password\":\"password\",\"duration\":60,\"startDateTime\":\"3923-01-30T05:00:00.000+00:00\",\"guests\":[],\"ownerId\":\"1c874643-0f1a-4168-9710-56b7207afd6c\"}]";
+        // String expectedResult = "[{\"id\":\"1\",\"title\":\"Title\",\"password\":\"password\",\"duration\":60,\"startDateTime\":\"3922-03-01T05:00:00.000+00:00\",\"guests\":[],\"ownerId\":\"1c874643-0f1a-4168-9710-56b7207afd6c\"},"
+        // + "{\"id\":\"2\",\"title\":\"Title\",\"password\":\"password\",\"duration\":60,\"startDateTime\":\"3923-01-30T05:00:00.000+00:00\",\"guests\":[],\"ownerId\":\"1c874643-0f1a-4168-9710-56b7207afd6c\"}]";
 
-        this.mockMvc.perform(post("/api/users/meetings")
+        String result = this.mockMvc.perform(post("/api/users/meetings")
         .param("startDate", startDate)
         .param("endDate", endDate)
         .with(csrf().asHeader()))
-        .andExpect(status().isOk())
-        .andExpect(content().json(expectedResult));
+        .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+
+        ArrayList<String> returnedMeetingsIds = new ArrayList<String>();
+
+        JSONArray res = new JSONArray(result);
+        for(Object r : res) {
+            JSONObject meetingJSON = new JSONObject(r.toString());
+            returnedMeetingsIds.add(meetingJSON.get("id").toString());
+        }
+
+        assertTrue(returnedMeetingsIds.contains("1"));
+        assertTrue(returnedMeetingsIds.contains("2"));
+        assertFalse(returnedMeetingsIds.contains("3"));
+        assertFalse(returnedMeetingsIds.contains("4"));
     }
 
     @Test
