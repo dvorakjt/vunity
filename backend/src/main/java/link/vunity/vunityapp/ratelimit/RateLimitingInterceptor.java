@@ -3,17 +3,17 @@ package link.vunity.vunityapp.ratelimit;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import io.github.bucket4j.Bucket;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class RateLimitingInterceptor implements HandlerInterceptor {
 
-    @Autowired
-    RateLimitingCache rateLimitingCache;
+    private final RateLimitingCache rateLimitingCache;
     
     private static final String[] POSSIBLE_IP_ADDRESS_HEADERS = {
         "X-Forwarded-For",

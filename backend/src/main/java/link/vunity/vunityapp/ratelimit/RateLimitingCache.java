@@ -15,7 +15,7 @@ import io.github.bucket4j.Refill;
 @Component
 public class RateLimitingCache {
     //something like this, will have to decide on actual rate limits and size...
-    private Cache<String, Bucket> bucketsByIPAddress = CacheBuilder.newBuilder().maximumSize(10000).expireAfterAccess(Duration.ofMinutes(5)).build();
+    private Cache<String, Bucket> bucketsByIPAddress = CacheBuilder.newBuilder().maximumSize(10000).expireAfterWrite(Duration.ofHours(24)).build();
 
     public Bucket getBucket(String IP) throws ExecutionException {
         Bucket bucket = bucketsByIPAddress.get(IP, () -> initializeBucket());
@@ -23,9 +23,14 @@ public class RateLimitingCache {
     }
 
     private Bucket initializeBucket() {
-        Refill refill = Refill.intervally(1, Duration.ofMinutes(1));
-        Bandwidth bandwidth = Bandwidth.classic(1, refill);
-        Bucket bucket = Bucket.builder().addLimit(bandwidth).build();
+        Refill burstRefill = Refill.intervally(45, Duration.ofMinutes(1));
+        Refill slowRefill = Refill.intervally(5000, Duration.ofDays(1));
+        Bandwidth burstLimit = Bandwidth.classic(30, burstRefill);
+        Bandwidth slowLimit = Bandwidth.classic(5000, slowRefill);
+        Bucket bucket = Bucket.builder()
+            .addLimit(burstLimit)
+            .addLimit(slowLimit)
+            .build();
         return bucket;
     }
 }

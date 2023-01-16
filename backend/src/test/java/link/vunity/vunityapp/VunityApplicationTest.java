@@ -14,12 +14,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 
 import link.vunity.vunityapp.controllers.ApiController;
+import link.vunity.vunityapp.ratelimit.RateLimitingInterceptor;
 import link.vunity.vunityapp.service.EmailService;
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
@@ -41,7 +43,6 @@ class VunityApplicationTest {
     public void initMocks() {
         MockitoAnnotations.openMocks(this);
     }
-
 
 	@Test
 	public void contextLoads() {

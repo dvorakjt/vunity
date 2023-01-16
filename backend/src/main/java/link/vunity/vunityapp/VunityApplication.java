@@ -41,10 +41,11 @@ public class VunityApplication {
 		return new ConcurrentHashMap<String, LiveMeeting>();
 	}
 
-	@Bean
-	CommandLineRunner run(AppUserService appUserService, MeetingService meetingService) {
-		return args -> {
-			appUserService.saveUser(new AppUser(null, "Joe", "jdvorakdevelops@gmail.com", "1234", "", ""));
-		};
-	}
+	// For development
+	// @Bean
+	// CommandLineRunner run(AppUserService appUserService, MeetingService meetingService) {
+	// 	return args -> {
+	// 		appUserService.saveUser(new AppUser(null, "Joe", "jdvorakdevelops@gmail.com", "1234", "", ""));
+	// 	};
+	// }
 }

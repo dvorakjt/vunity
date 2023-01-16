@@ -13,12 +13,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Bean;
 import org.mockito.Mockito;
 import org.springframework.http.MediaType;
 import org.springframework.mail.MailSendException;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 
 import link.vunity.vunityapp.DTO.HostTokenDTO;
@@ -28,9 +31,11 @@ import link.vunity.vunityapp.DTO.PasswordResetDTO;
 import link.vunity.vunityapp.DTO.RequestDemoDTO;
 import link.vunity.vunityapp.DTO.SimpleEmail;
 import link.vunity.vunityapp.controllers.ApiController;
+import link.vunity.vunityapp.controllers.ApiWebMvcConfiguration;
 import link.vunity.vunityapp.domain.AppUser;
 import link.vunity.vunityapp.domain.Meeting;
 import link.vunity.vunityapp.filter.ResponseCookieFactory;
+import link.vunity.vunityapp.ratelimit.RateLimitingInterceptor;
 import link.vunity.vunityapp.recaptcha.RecaptchaManager;
 import link.vunity.vunityapp.service.AppUserServiceImpl;
 import link.vunity.vunityapp.service.EmailService;
@@ -41,7 +46,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.mysql.cj.xdevapi.JsonArray;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -56,7 +60,7 @@ import java.util.stream.Collectors;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.*;
 
 @WebMvcTest(ApiController.class)
-public class ApiControllerTest {
+public class ApiControllerT {
     @Autowired
 	private MockMvc mockMvc;
 
@@ -87,6 +91,9 @@ public class ApiControllerTest {
 
     @MockBean
     RecaptchaManager recaptchaManager;
+
+    @MockBean
+	RateLimitingInterceptor rateLimitingInterceptor;
 
     private String transformDTOToJsonString(Object DTO) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
