@@ -41,7 +41,7 @@ public class VunityApplication {
 		return new ConcurrentHashMap<String, LiveMeeting>();
 	}
 
-	// For development
+	//For development
 	// @Bean
 	// CommandLineRunner run(AppUserService appUserService, MeetingService meetingService) {
 	// 	return args -> {
