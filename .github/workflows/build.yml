@@ -8,7 +8,7 @@ on:
 
 env:
   AWS_REGION: us-west-2                 # set this to your preferred AWS region, e.g. us-west-1
-  ECR_REPOSITORY: test           # set this to your Amazon ECR repository name
+  ECR_REPOSITORY: vunity           # set this to your Amazon ECR repository name
   #ECS_SERVICE: MY_ECS_SERVICE                 # set this to your Amazon ECS service name
   #ECS_CLUSTER: MY_ECS_CLUSTER                 # set this to your Amazon ECS cluster name
   #ECS_TASK_DEFINITION: MY_ECS_TASK_DEFINITION # set this to the path to your Amazon ECS task definition
@@ -78,5 +78,3 @@ jobs:
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
         echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
-
-#new ecr
