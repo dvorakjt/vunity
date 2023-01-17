@@ -145,11 +145,6 @@
 				<version>4.4.1</version>     
 			</plugin>
 		</plugins>
-		<resources>
-			<resource>
-				<directory>src/main/resources/static</directory>
-			</resource>
-		</resources>
 	</build>
 
 </project>
