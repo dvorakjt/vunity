@@ -13,8 +13,7 @@ public interface MeetingRepo extends JpaRepository<Meeting, String> {
     Meeting findMeetingById(String meetingId);
     
     @Query(
-        value = "SELECT * FROM Meetings WHERE owner_id = ?1 AND start_date_time >= ?2 AND start_date_time < ?3",
-        nativeQuery = true
+        value = "SELECT m FROM Meeting m WHERE m.ownerId = ?1 AND m.startDateTime >= ?2 AND m.startDateTime < ?3"
     )
     List<Meeting> findAllByOwnerIdWithinRange(String ownerId, Date startDate, Date endDate);
 

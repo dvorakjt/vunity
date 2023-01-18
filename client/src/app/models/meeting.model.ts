@@ -20,4 +20,9 @@ export class Meeting {
         const startDT = DateTime.fromISO(this.startDateTime);
         return startDT.toFormat('MM/dd/yyyy');
     }
+
+    public static fromMeetingObjectWithDTInMillis(meetingObj:any) {
+        const meetingStartDTString = DateTime.fromMillis(meetingObj.startDateTime).toISO();
+        return new Meeting(meetingObj.id, meetingObj.title, meetingObj.password, meetingObj.duration, meetingStartDTString, meetingObj.guests, meetingObj.ownerId);
+    }
 }

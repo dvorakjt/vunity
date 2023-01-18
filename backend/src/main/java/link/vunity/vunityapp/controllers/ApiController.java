@@ -165,7 +165,7 @@ public class ApiController {
 
                 String messageBody = "Dear Vunity User,\n\nSomeone has requested a password reset link for your account. If this wasn't you, no action needs to be taken. " +
                 "If this was you, please go to the following link:\n\n" +
-                "http://localhost:4200/resetpassword/" + passwordResetURI + "\n\n" +
+                "http://vunity.link/resetpassword/" + passwordResetURI + "\n\n" +
                 "and enter the following password:\n\n" + passwordResetCode + "\n\n" + 
                 "Thank you.\n\nThe Vunity Team";
 
@@ -240,7 +240,7 @@ public class ApiController {
             meeting.getTitle() + "\n" +
             "Scheduled for " + DFormat.format(meeting.getStartDateTime()) + "\n\n" +
             "To join this meeting, visit:\n\n" + 
-            "http://localhost:4200/joinmeeting?id=" + meeting.getId() + "\n\n" +
+            "https://vunity.link/joinmeeting?id=" + meeting.getId() + "\n\n" +
             "And enter the password:\n\n" + 
             meetingDTO.getPassword() + "\n\n" +
             "Thank you,\n" +

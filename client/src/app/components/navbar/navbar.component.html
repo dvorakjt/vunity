@@ -41,8 +41,8 @@
                 <li *ngIf="activeMeetingService.meetingStatus == notInMeeting"><a routerLink="/joinmeeting"
                                 routerLinkActive="active" ariaCurrentWhenActive="page">Join a
                                 Meeting</a></li>
-                <li><span class="navbar-text navbar-highlightable-text" (click)="onLogout()"
-                                style="width: 100%; box-sizing: border-box;">Logout</span></li>
+                <li *ngIf="authService.activeUser"><span class="navbar-text navbar-highlightable-text"
+                                (click)="onLogout()" style="width: 100%; box-sizing: border-box;">Logout</span></li>
         </ul>
         <ul class="mobileMenu" *ngIf="menuOpen && showMobileMenu()" (click)="menuOpen = false">
                 <li><a routerLink="/" routerLinkActive="active" ariaCurrentWhenActive="page"
@@ -63,7 +63,7 @@
                 <li *ngIf="activeMeetingService.meetingStatus == notInMeeting"><a routerLink="/joinmeeting"
                                 routerLinkActive="active" ariaCurrentWhenActive="page">Join a
                                 Meeting</a></li>
-                <li><span class="navbar-text navbar-highlightable-text" style="width: 100%; box-sizing: border-box;"
-                                (click)="onLogout()">Logout</span></li>
+                <li *ngIf="authService.activeUser"><span class="navbar-text navbar-highlightable-text"
+                                style="width: 100%; box-sizing: border-box;" (click)="onLogout()">Logout</span></li>
         </ul>
 </nav>

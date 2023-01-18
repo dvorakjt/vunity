@@ -52,7 +52,7 @@ export class MeetingsService {
             else {
                 this.http.post(`/api/users/meeting?meetingId=${meetingId}`, {}).subscribe(({
                     next: (responseData) => {   
-                        const meeting = responseData as Meeting;
+                        const meeting = Meeting.fromMeetingObjectWithDTInMillis(responseData);
                         this.addMeetingToMeetingsById(meeting);
                         resolve(meeting);
                     },
@@ -76,7 +76,7 @@ export class MeetingsService {
             this.upcomingMeetings.laterThisWeek = [];
                 
             const upcomingMeetings = this.sortMeetings((responseData as any[]).map((data:any) => {
-              return new Meeting(data.id, data.title, data.password, data.duration, data.startDateTime, data.guests, data.ownerId);
+              return Meeting.fromMeetingObjectWithDTInMillis(data);
             }));
             const tomorrow = today.plus({days: 1});
             const theDayAfter = tomorrow.plus({days: 1});
@@ -126,7 +126,7 @@ export class MeetingsService {
             this.http.post(`/api/users/meetings?startDate=${startDateMillis}&endDate=${endDateMillis}`, {}).subscribe((responseData) => {
                 
                 const meetings = (responseData as any[]).map((data:any) => {
-                    return new Meeting(data.id, data.title, data.password, data.duration, data.startDateTime, data.guests, data.ownerId);
+                    return Meeting.fromMeetingObjectWithDTInMillis(data);
                 });
 
                 if(!this.meetingsByYearAndMonth[yearStr]) {
@@ -150,20 +150,11 @@ export class MeetingsService {
         //should add this locally to upcoming meetings, meetings by id, and meetings by month and year, if that month and year exists!
         this.http.post('/api/users/new_meeting', newMeetingDTO, {observe: 'response'}).subscribe({
             next: (responseData:any) => {
-                const meeting = responseData.body.meeting;
-                const newMeeting = new Meeting(
-                    meeting.id, 
-                    meeting.title, 
-                    newMeetingDTO.password, 
-                    meeting.duration, 
-                    meeting.startDateTime, 
-                    meeting.guests, 
-                    meeting.ownerId
-                );
+                const meeting = Meeting.fromMeetingObjectWithDTInMillis(responseData.body.meeting);
 
-                this.addMeetingToMeetingsById(newMeeting);
-                this.addMeetingToUpcomingMeetings(newMeeting);
-                this.addMeetingToMeetingsByYearAndMonth(newMeeting);
+                this.addMeetingToMeetingsById(meeting);
+                this.addMeetingToUpcomingMeetings(meeting);
+                this.addMeetingToMeetingsByYearAndMonth(meeting);
 
                 const message = responseData.status == 207 ?
                     `The meeting was created but we could not reach the following guests' email addresses: ${responseData.body.unreachableEmailAddresses.join(", ")}` :
