@@ -18,6 +18,11 @@ describe('ActiveMeetingService', () => {
 
     beforeEach(() => {
         service = new ActiveMeetingService((new AuthServiceStub() as any) as AuthService, new HttpClientStub() as HttpClient);
+        service.peerConnectionConfig = { iceServers: [
+            {
+              urls: "stun:relay.metered.ca:80",
+            },
+        ]};
     });
 
     it('should set authToken and call updateMeetingStatus when authenticateAsGuest succeeds.', () => {
