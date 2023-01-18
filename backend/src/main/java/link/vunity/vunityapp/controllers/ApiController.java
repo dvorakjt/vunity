@@ -19,6 +19,7 @@ import com.aventrix.jnanoid.jnanoid.*;
 
 import org.json.JSONObject;
 import org.passay.*;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -35,7 +36,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import link.vunity.vunityapp.tokens.UserTokenManager;
 import link.vunity.vunityapp.DTO.SimpleEmail;
 
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -55,7 +55,6 @@ import javax.servlet.http.HttpServletResponse;
 
 
 @Controller
-@RequiredArgsConstructor
 public class ApiController {
 
     private final AppUserService appUserService;
@@ -65,6 +64,32 @@ public class ApiController {
     private final RecaptchaManager recaptchaManager;
     private final ResponseCookieFactory responseCookieFactory;
     private final UserTokenManager userTokenManager;
+    private final String turnUsername;
+    private final String turnPassword;
+
+    public ApiController(
+        AppUserService appUserService,
+        MeetingService meetingService,
+        EmailService emailService,
+        PasswordEncoder passwordEncoder,
+        RecaptchaManager recaptchaManager,
+        ResponseCookieFactory responseCookieFactory,
+        UserTokenManager userTokenManager,
+        @Value("${vunityapp.turnUsername}")
+        String turnUsername,
+        @Value("${vunityapp.turnPassword}")
+        String turnPassword
+    ) {
+        this.appUserService = appUserService;
+        this.meetingService = meetingService;
+        this.emailService = emailService;
+        this.passwordEncoder = passwordEncoder;
+        this.recaptchaManager = recaptchaManager;
+        this.responseCookieFactory = responseCookieFactory;
+        this.userTokenManager = userTokenManager;
+        this.turnPassword = turnPassword;
+        this. turnUsername = turnUsername;
+    }
 
     @PostMapping(
         value ="/api/request_demo",
@@ -254,12 +279,28 @@ public class ApiController {
         }
         if(unreachableEmailAddresses.size() > 0) {
             JSONObject responseBody = new JSONObject();
-            responseBody.put("meeting", meeting);
+            JSONObject jsonMeeting = new JSONObject();
+            jsonMeeting.put("id", meeting.getId());
+            jsonMeeting.put("title", meeting.getTitle());
+            jsonMeeting.put("password", meetingDTO.getPassword());
+            jsonMeeting.put("duration", meeting.getDuration());
+            jsonMeeting.put("startDateTime", meeting.getStartDateTime());
+            jsonMeeting.put("guests", meeting.getGuests());
+            jsonMeeting.put("ownerId", meeting.getOwnerId());
+            responseBody.put("meeting", jsonMeeting);
             responseBody.put("unreachableEmailAddresses", unreachableEmailAddresses);
             return ResponseEntity.status(HttpStatus.MULTI_STATUS).body(responseBody.toMap());
         } else {
             JSONObject responseBody = new JSONObject();
-            responseBody.put("meeting", meeting);
+            JSONObject jsonMeeting = new JSONObject();
+            jsonMeeting.put("id", meeting.getId());
+            jsonMeeting.put("title", meeting.getTitle());
+            jsonMeeting.put("password", meetingDTO.getPassword());
+            jsonMeeting.put("duration", meeting.getDuration());
+            jsonMeeting.put("startDateTime", meeting.getStartDateTime());
+            jsonMeeting.put("guests", meeting.getGuests());
+            jsonMeeting.put("ownerId", meeting.getOwnerId());
+            responseBody.put("meeting", jsonMeeting);
             return ResponseEntity.ok().body(responseBody.toMap());
         }
     }
@@ -395,8 +436,10 @@ public class ApiController {
         } else {
             User host = meetingService.loadHostByMeetingId(meetingId);
             //tokenize the host and send
-            Map<String,String> meetingToken = userTokenManager.meetingUserToTokenMap(host);
-            return ResponseEntity.ok().body(meetingToken);
+            Map<String,String> responseData = userTokenManager.meetingUserToTokenMap(host);
+            responseData.put("turnUsername", turnUsername);
+            responseData.put("turnPassword", turnPassword);
+            return ResponseEntity.ok().body(responseData);
         }
     }
 

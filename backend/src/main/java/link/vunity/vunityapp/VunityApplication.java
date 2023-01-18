@@ -45,7 +45,7 @@ public class VunityApplication {
 	// @Bean
 	// CommandLineRunner run(AppUserService appUserService, MeetingService meetingService) {
 	// 	return args -> {
-	// 		appUserService.saveUser(new AppUser(null, "Joe", "jdvorakdevelops@gmail.com", "1234", "", ""));
+	// 		appUserService.saveUser(new AppUser(null, "yourname", "youremailhere", "1234", "", ""));
 	// 	};
 	// }
 }

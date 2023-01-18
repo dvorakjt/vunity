@@ -42,6 +42,8 @@ public class WebSocketDataValidator {
                   break;
                 case "stopSharingScreen" :
                   return true;
+                case "pong" :
+                  return true;
             }
         }
         return false;

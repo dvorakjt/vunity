@@ -3,13 +3,10 @@ package link.vunity.vunityapp.service;
 import link.vunity.vunityapp.domain.Meeting;
 import link.vunity.vunityapp.encryption.MeetingPasswordEncoder;
 import link.vunity.vunityapp.repo.MeetingRepo;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -25,15 +22,22 @@ import java.util.Date;
 @Slf4j
 @Service
 @Transactional
-@RequiredArgsConstructor
 @Qualifier("GuestUserDetailsService")
 public class MeetingServiceImpl implements MeetingService, UserDetailsService {
 
     private final MeetingRepo meetingRepo;
 
-    @Autowired
     @Qualifier("MeetingPasswordEncoder")
     private final PasswordEncoder meetingPasswordEncoder;
+
+    public MeetingServiceImpl(
+        MeetingRepo meetingRepo, 
+        @Qualifier("MeetingPasswordEncoder")
+        PasswordEncoder meetingPasswordEncoder
+    ) {
+        this.meetingRepo = meetingRepo;
+        this.meetingPasswordEncoder = meetingPasswordEncoder;
+    }
 
     @Override //Note: return type changed from UserDetails to User
     public User loadUserByUsername(String meetingId) throws UsernameNotFoundException {

@@ -1,14 +1,15 @@
 package link.vunity.vunityapp.security;
 
+import link.vunity.vunityapp.encryption.MeetingPasswordEncoder;
 import link.vunity.vunityapp.filter.AppAuthZFilter;
 import link.vunity.vunityapp.filter.AppUserAuthNFilter;
 import link.vunity.vunityapp.filter.GuestUserAuthNFilter;
 import link.vunity.vunityapp.filter.ResponseCookieFactory;
-import lombok.RequiredArgsConstructor;
 
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -32,7 +33,6 @@ public class SecurityConfig {
 
     @Order(1)
     @Configuration
-    @RequiredArgsConstructor
     public static class AppUserSecurityConfig extends WebSecurityConfigurerAdapter {
         @Qualifier("AppUserDetailsService")
         private final UserDetailsService appUserDetailsService;
@@ -42,6 +42,23 @@ public class SecurityConfig {
         private final RecaptchaManager recaptchaManager;
         private final ResponseCookieFactory responseCookieFactory;
         private final UserTokenManager userTokenManager;
+        
+
+        public AppUserSecurityConfig(
+            @Qualifier("AppUserDetailsService")
+            UserDetailsService appUserDetailsService,
+            @Qualifier("UserPasswordEncoder")
+            PasswordEncoder delegatingPasswordEncoder,
+            RecaptchaManager recaptchaManager,
+            ResponseCookieFactory responseCookieFactory,
+            UserTokenManager userTokenManager
+        ) {
+            this.appUserDetailsService = appUserDetailsService;
+            this.delegatingPasswordEncoder = delegatingPasswordEncoder;
+            this.recaptchaManager = recaptchaManager;
+            this.responseCookieFactory = responseCookieFactory;
+            this.userTokenManager = userTokenManager;
+        }
 
         @Override
         protected void configure(AuthenticationManagerBuilder auth) throws Exception {
@@ -78,7 +95,6 @@ public class SecurityConfig {
 
     @Order(2)
     @Configuration
-    @RequiredArgsConstructor
     public static class GuestUserSecurityConfig extends WebSecurityConfigurerAdapter {
         @Qualifier("GuestUserDetailsService")
         private final UserDetailsService guestUserDetailsService;
@@ -88,6 +104,28 @@ public class SecurityConfig {
         private final RecaptchaManager recaptchaManager;
         private final ResponseCookieFactory responseCookieFactory;
         private final UserTokenManager userTokenManager;
+        private final String turnUsername;
+        private final String turnPassword;
+
+        public GuestUserSecurityConfig(
+            @Qualifier("GuestUserDetailsService")UserDetailsService guestUserDetailsService,
+            @Qualifier("MeetingPasswordEncoder") MeetingPasswordEncoder meetingPasswordEncoder,
+            RecaptchaManager recaptchaManager,
+            ResponseCookieFactory responseCookieFactory,
+            UserTokenManager userTokenManager,
+            @Value("${vunityapp.turnUsername}")
+            String turnUsername,
+            @Value("${vunityapp.turnPassword")
+            String turnPassword
+        ) {
+                this.guestUserDetailsService = guestUserDetailsService;
+                this.meetingPasswordEncoder = meetingPasswordEncoder;
+                this.recaptchaManager = recaptchaManager;
+                this.responseCookieFactory = responseCookieFactory;
+                this.userTokenManager = userTokenManager;
+                this.turnUsername = turnUsername;
+                this.turnPassword = turnPassword;
+        }
 
         @Override
         protected void configure(AuthenticationManagerBuilder auth) throws Exception {
@@ -96,7 +134,7 @@ public class SecurityConfig {
 
         @Override
         protected void configure(HttpSecurity http) throws Exception {
-            GuestUserAuthNFilter guestUserAuthNFilter = new GuestUserAuthNFilter(guestAuthManagerBean(), userTokenManager, recaptchaManager);
+            GuestUserAuthNFilter guestUserAuthNFilter = new GuestUserAuthNFilter(guestAuthManagerBean(), userTokenManager, recaptchaManager, turnUsername, turnPassword);
             guestUserAuthNFilter.setFilterProcessesUrl("/api/meeting/join");
             http.antMatcher("/**").csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()).and().authorizeRequests()
             //http.antMatcher("/**").csrf().disable().authorizeRequests()

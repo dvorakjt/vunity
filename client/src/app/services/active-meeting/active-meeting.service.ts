@@ -8,7 +8,6 @@ import { LocalPeer } from 'src/app/models/local-peer.model';
 import { RemotePeerPartial } from 'src/app/models/remote-peer-partial.model';
 import { RemotePeer } from 'src/app/models/remote-peer.model';
 import { RemotePeerMap } from 'src/app/types/remote-peer-map.type';
-import { PEER_CONNECTION_CONFIG } from 'src/app/constants/peer-connection';
 import { DataChannelMessage } from 'src/app/types/data-channel-message.type';
 import { Peer } from 'src/app/models/peer.model';
 import { ScreenViewer } from 'src/app/models/screen-viewer.model';
@@ -50,6 +49,29 @@ export class ActiveMeetingService {
 
     public remotePeerJoinedOrLeft = new EventEmitter<void>();
 
+    public peerConnectionConfig = {
+        iceServers: [
+          {
+            urls: "stun:relay.metered.ca:80",
+          },
+          {
+            urls: "turn:relay.metered.ca:80",
+            username: '',
+            credential: ''
+          },
+          {
+            urls: "turn:relay.metered.ca:443",
+            username: '',
+            credential: ''
+          },
+          {
+            urls: "turn:relay.metered.ca:443?transport=tcp",
+            username: '',
+            credential: ''
+          },
+        ],
+    };
+
     constructor(public authService: AuthService, public http: HttpClient) {
     }
 
@@ -62,6 +84,11 @@ export class ActiveMeetingService {
             }).subscribe({
                 next: (responseData: any) => {
                     this.authToken = responseData.access_token;
+                    //add open relay turn credentials received from the server
+                    for(let i = 1; i < this.peerConnectionConfig.iceServers.length; i++) {
+                        this.peerConnectionConfig.iceServers[i].username = responseData.turnUsername;
+                        this.peerConnectionConfig.iceServers[i].credential = responseData.turnPassword;
+                    }
                     this.updateMeetingStatus(MeetingStatus.AwaitingUsernameInput);
                 },
                 error: (e) => {
@@ -78,6 +105,10 @@ export class ActiveMeetingService {
                     if(this.authService.activeUser) {
                         this.isHost = true;
                         this.authToken = responseData.access_token;
+                        for(let i = 1; i < this.peerConnectionConfig.iceServers.length; i++) {
+                            this.peerConnectionConfig.iceServers[i].username = responseData.turnUsername;
+                            this.peerConnectionConfig.iceServers[i].credential = responseData.turnPassword;
+                        }
                         this.createLocalPeer(this.authService.activeUser.name);
                         this.updateMeetingStatus(MeetingStatus.AwaitingMedia);
                         this.getLocalMedia();
@@ -251,7 +282,7 @@ export class ActiveMeetingService {
     public handleJoinOrOpenAsHost(data:any) {
         for (const participant of data.preexistingParticipants) {
             const {sessionId, username} = participant;
-            const remotePeerPartial = new RemotePeerPartial(sessionId, username, new RTCPeerConnection(PEER_CONNECTION_CONFIG));
+            const remotePeerPartial = new RemotePeerPartial(sessionId, username, new RTCPeerConnection(this.peerConnectionConfig));
             this.remotePeerPartials.push(remotePeerPartial);
         }
         //make sure that the meeting status is not NotInMeeting, it should have advance beyond this point.
@@ -278,7 +309,7 @@ export class ActiveMeetingService {
 
     public handleOffer(data:any) {
         if(this.localPeer && this.localPeer.stream) {
-            const connection = new RTCPeerConnection(PEER_CONNECTION_CONFIG);
+            const connection = new RTCPeerConnection(this.peerConnectionConfig);
             console.log(data.offer);
             const offer = new RTCSessionDescription(JSON.parse(data.offer));
             const initiatingPeerId = data.from;
@@ -389,7 +420,7 @@ export class ActiveMeetingService {
 
     public createScreenShareOffer(peerId:string) {
 
-        const viewer = new ScreenViewer(peerId, new RTCPeerConnection(PEER_CONNECTION_CONFIG));
+        const viewer = new ScreenViewer(peerId, new RTCPeerConnection(this.peerConnectionConfig));
         this.screenViewersById[peerId] = viewer;
 
         viewer.connection.onicecandidate = (event) => {
@@ -424,7 +455,7 @@ export class ActiveMeetingService {
     }
 
     public handleScreenShareOffer(data:any) {
-        const screenSharingPeer = new ScreenSharingPeer(data.from, data.username + "'s", new RTCPeerConnection(PEER_CONNECTION_CONFIG));
+        const screenSharingPeer = new ScreenSharingPeer(data.from, data.username + "'s", new RTCPeerConnection(this.peerConnectionConfig));
 
         const offer = new RTCSessionDescription(JSON.parse(data.offer));
 
@@ -559,6 +590,9 @@ export class ActiveMeetingService {
                         this.handlePeerDeparture(data.from);
                     } else if (data.event === 'closed') {
                         this.handleMeetingClosure();
+                    } else if (data.event === 'ping') {
+                        console.log('ping received');
+                        this.sendOverWebSocket({intent : 'pong'});
                     }
                 });
             }

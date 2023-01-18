@@ -4,6 +4,7 @@ import link.vunity.vunityapp.DTO.GuestAuthDTO;
 import link.vunity.vunityapp.recaptcha.RecaptchaManager;
 import link.vunity.vunityapp.tokens.UserTokenManager;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -21,14 +22,24 @@ import java.util.Map;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 public class GuestUserAuthNFilter extends UsernamePasswordAuthenticationFilter {
+    private final String turnUsername;
+    private final String turnPassword;
     private final AuthenticationManager authenticationManager;
     private final UserTokenManager userTokenManager;
     private RecaptchaManager recaptchaManager;
 
-    public GuestUserAuthNFilter(AuthenticationManager authenticationManager, UserTokenManager userTokenManager, RecaptchaManager recaptchaManager) {
+    public GuestUserAuthNFilter(
+        AuthenticationManager authenticationManager, 
+        UserTokenManager userTokenManager, 
+        RecaptchaManager recaptchaManager,
+        String turnUsername,
+        String turnPassword
+    ) {
         this.authenticationManager = authenticationManager;
         this.userTokenManager = userTokenManager;
         this.recaptchaManager = recaptchaManager;
+        this.turnUsername = turnUsername;
+        this.turnPassword = turnPassword;
     }
 
     @Override
@@ -51,7 +62,9 @@ public class GuestUserAuthNFilter extends UsernamePasswordAuthenticationFilter {
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
         User user = (User)authResult.getPrincipal();
         response.setContentType(APPLICATION_JSON_VALUE);
-        Map<String, String> tokens = userTokenManager.userToTokenMap(user);
-        new ObjectMapper().writeValue(response.getOutputStream(), tokens);
+        Map<String, String> responseData = userTokenManager.userToTokenMap(user);
+        responseData.put("turnUsername", turnUsername);
+        responseData.put("turnPassword", turnPassword);
+        new ObjectMapper().writeValue(response.getOutputStream(), responseData);
     }
 }

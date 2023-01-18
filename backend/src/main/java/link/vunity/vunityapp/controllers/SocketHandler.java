@@ -79,7 +79,7 @@ public class SocketHandler extends TextWebSocketHandler {
                 handleScreenViewerCandidate(session, payload, meetingId);
             } else if(intent.equals("stopSharingScreen")) {
                 handleStopSharingScreen(session, meetingId);
-            }
+            } else if(intent.equals("pong")) System.out.println("pong from " + session.getId());
         } else { //not an authorized guest
             session.close(CloseStatus.POLICY_VIOLATION);
         }
@@ -340,7 +340,10 @@ public class SocketHandler extends TextWebSocketHandler {
         handleStopSharingScreen(session, meetingId);
 
         LiveMeeting joinedMeeting = liveMeetings.get(meetingId);
-        
+
+        Participant participant = joinedMeeting.participantsById.get(session.getId());
+        if(participant != null) participant.cleanUp();
+
         joinedMeeting.participantsById.remove(session.getId());
         joinedMeeting.participants.removeIf(p -> p.getSession().getId() == session.getId());
 
@@ -364,6 +367,7 @@ public class SocketHandler extends TextWebSocketHandler {
         LiveMeeting joinedMeeting = liveMeetings.get(meetingId);
         String JSONString = jsonData.toString();
         for(Participant p : joinedMeeting.participants) {
+            p.cleanUp();
             WebSocketSession s = p.getSession();
             if(s.isOpen() && !s.getId().equals(session.getId())) s.sendMessage(new TextMessage(JSONString));
         }
