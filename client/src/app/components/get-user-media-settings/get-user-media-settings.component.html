@@ -1,6 +1,6 @@
 <div class="userMediaForm" style="width: fit-content;">
         <div class="videoContainer">
-                <app-video [peer]="activeMeetingService.localPeer" [videoSize]="videoSize" [muted]="true"></app-video>
+                <app-video [peer]="activeMeetingService.localPeer" [hideOutline]="true" [muted]="true"></app-video>
         </div>
         <label class="formLabel">Join with camera on?</label>
         <label class="formLabel"><input type="radio" id="yesVideo" name="cameraEnabled" value="yes"

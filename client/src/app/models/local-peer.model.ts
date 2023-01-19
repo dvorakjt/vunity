@@ -21,7 +21,7 @@ export class LocalPeer extends Peer {
 
     getMedia() {
         return new Promise<void>((resolve, reject) => {
-        navigator.mediaDevices.getUserMedia({audio: true, video: {width: 900, height: 675}})
+        navigator.mediaDevices.getUserMedia({audio: true, video: {width: 720, height: 1280}})
             .then((stream: MediaStream) => {
                 const videoTracks = stream.getVideoTracks();
                 this.mediaStreamSource = this.audioContext.createMediaStreamSource(stream);

@@ -11,9 +11,8 @@ import { Peer } from '../../models/peer.model';
 })
 export class VideoComponent implements OnInit {
   @Input() peer?:Peer;
-  @Input() videoSize = VideoSize.Thumbnail;
   @Input() muted:boolean = false;
-
+  @Input() hideOutline:boolean = false;
   isSpeaking = false;
 
   faMicrophone = faMicrophone;

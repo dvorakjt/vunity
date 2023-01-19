@@ -150,11 +150,6 @@ export class ActiveMeetingService {
 
     public getLocalMedia() {
         if(this.localPeer) {
-            screen.orientation.lock("landscape").then(() => {
-                console.log("screen locked into landscape mode.");
-            }).catch((e) => {
-                console.log(e);
-            });
             this.localPeer.getMedia().then(() => {
                 //the user may have cancelled their attempt to join the meeting, so only update the meeting status if 
                 //it is still AwaitingMedia
@@ -278,8 +273,6 @@ export class ActiveMeetingService {
         this.speakingPeer = undefined;
 
         this.messages = [];
-
-        screen.orientation.unlock();
 
         this.updateMeetingStatus(MeetingStatus.NotInMeeting);
     }

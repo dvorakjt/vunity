@@ -5,82 +5,24 @@
     height: 100%;
 }
 
-.videoContainerThumbnail {
-    width: 100%;
-    height: 100%;
+.videoContainer {
     min-height: 100%;
     max-height: 100%;
     min-width: 100%;
     max-width: 100%;
     position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
-.videoThumbnail {
+.video {
     width: 100%;
     height: 100%;
     object-fit: contain;
 }
 
-.videoBannerThumbnail {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: colors.$dark-green-0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: white;
-}
-
-// modal
-.videoContainerModal {
-    width: 400px;
-    height: fit-content;
-    position: relative;
-}
-
-.videoModal {
-    width: 400px;
-    height: auto;
-}
-
-.videoBannerModal {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: #121212;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: white;
-}
-
-// speaker
-.videoContainerSpeaker {
-    position: relative;
-    background-color: colors.$dark-green-0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    min-height: 100%;
-    max-height: 100%;
-    min-width: 100%;
-    max-width: 100%;
-    height: fit-content;
-}
-
-.videoSpeaker {
-    width: 100%;
-    height: auto;
-    object-fit: contain;
-}
-
-.videoBannerSpeaker {
+.videoBanner {
     position: absolute;
     top: 0;
     left: 0;
@@ -95,7 +37,7 @@
 
 .outline {
     box-sizing: border-box;
-    border: 3px solid colors.$brand-secondary-tint;
+    border: 3px solid colors.$brand-primary-tint;
     width: 100%;
     height: calc(100% - 1px);
     background-color: transparent;

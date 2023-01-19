@@ -1,23 +1,13 @@
-<div [ngClass]="{
-    videoContainerThumbnail : videoSize === sizes.Thumbnail,
-    videoContainerModal : videoSize === sizes.Modal,
-    videoContainerSpeaker : videoSize === sizes.Speaker
-}">
-    <video [srcObject]="peer?.stream" autoplay="true" [ngClass]="{
-            videoThumbnail : videoSize === sizes.Thumbnail,
-            videoModal : videoSize === sizes.Modal,
-            videoSpeaker : videoSize === sizes.Speaker
-        }" [muted]="muted"></video>
+<div class="videoContainer">
+    <video [srcObject]="peer?.stream" autoplay="true" class="video" [muted]="muted"></video>
     <div [ngClass]="{
-        videoBannerThumbnail : videoSize === sizes.Thumbnail,
-        videoBannerModal : videoSize === sizes.Modal,
-        videoBannerSpeaker : videoSize === sizes.Speaker,
+        videoBanner: true,
         hide : peer?.videoEnabled
     }">
         <h2>{{peer?.username}}</h2>
     </div>
     <fa-icon [icon]="peer?.audioEnabled ? faMicrophone : faMicrophoneSlash" class="microphone-icon"></fa-icon>
     <div class="outline" [ngClass]="{
-        hide : videoSize !== sizes.Thumbnail || !isSpeaking || !peer?.audioEnabled
+        hide : hideOutline || !isSpeaking || !peer?.audioEnabled
     }"></div>
 </div>
