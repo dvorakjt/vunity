@@ -1,6 +1,6 @@
 # Vunity
 
-Vunity is a video chat application built with Spring Boot & Angular in conjunction with the WebRTC API. Vunity allows users to host real-time video chat calls. Within a meeting, users can video chat in real time, talk over a text message channel, and share their screen. Outside of an active meeting, Vunity allows users to create, edit, and delete meetings, view upcoming meetings as well as a calendar of all scheduled meetings, invite guests.
+Vunity is a video chat application built with Spring Boot & Angular in conjunction with the WebRTC API. Vunity allows users to host real-time video chat calls. Within a meeting, users can video chat in real time, talk over a text message channel, and share their screen. Outside of an active meeting, Vunity allows users to create, edit, and delete meetings, view upcoming meetings, view a calendar of all scheduled meetings and invite guests to meetings.
 
 Please visit https://vunity.link for the currently deployed site.
 
@@ -22,8 +22,8 @@ While logged in, users can open their meetings as the host. Until a meeting is o
 Vunity utilizies a websocket connection for signaling in order to establish a peer-to-peer connection via the WebRTC API. STUN and TURN servers are provided by [Open Relay Project.](https://openrelayproject.org/)
 
 ## Meeting Features
-User's media streams are shared with each other via t
-he WebRTC API. Users can mute their microphones and toggle their camera. The peers' data channels are used to allow for real-time text-based chat. One user at a time can share their screen. [Hark](https://github.com/otalk/hark) is used to detect speech events and notify the user when their peers are speaking (by highlighting their thumbnail and setting the large, central peer camera view to that peer's media stream).
+User's media streams are shared with each other via the WebRTC API. Users can mute their microphones and toggle their camera. The peers' data channels are used to allow for real-time text-based chat. One user at a time can share their screen. [Hark](https://github.com/otalk/hark) is used to detect speech events and notify the user when their peers are speaking (by highlighting their thumbnail and setting the large, central peer camera view to that peer's media stream).
+
 ![Homepage](./assets/vunity-meeting.png)
 
 ## Authentication/Security
@@ -53,3 +53,10 @@ Current goals can be broken down into six categories:
  - Session storage/IndexedDB should be used to keep track of a user's meetings, etc, so that fewer calls need to be made to the server/db, keeping cloud fees at a minimum
  - The frontend and backend could be run in separate containers to allow for easier CI/CD and greater separation of concerns
  - CI/CD can be further automated
+
+### Adding Additional Features
+ - The app should be integrated with calendar applications such as Google Calendar
+ - The app should allow other means of authentication (sign up with Google, etc)
+ - Users should be able to send files during a meeting
+ - Users should be able to select their camera and microphone from meeting settings
+ - And many more
