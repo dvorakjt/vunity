@@ -42,10 +42,10 @@ public class VunityApplication {
 	}
 
 	//For development
-	// @Bean
-	// CommandLineRunner run(AppUserService appUserService, MeetingService meetingService) {
-	// 	return args -> {
-	// 		appUserService.saveUser(new AppUser(null, "yourname", "youremailhere", "yoursupersecretpassword123", "", ""));
-	// 	};
-	// }
+// 	@Bean
+// 	CommandLineRunner run(AppUserService appUserService, MeetingService meetingService) {
+// 		return args -> {
+// 			appUserService.saveUser(new AppUser(null, "yourname", "youremail", "yoursupersecretpassword123", "", ""));
+// 		};
+// 	}
 }
