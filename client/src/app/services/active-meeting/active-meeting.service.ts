@@ -139,13 +139,6 @@ export class ActiveMeetingService {
         });
         //speaking peer defaults to localPeer
         this.speakingPeer = this.localPeer;
-
-        // DO NOT RESET SPEAKING PEER TO LOCAL PEER AFTER OTHER PEERS HAVE JOINED!
-        // this.localPeer.speechEventEmitter.subscribe({
-        //     next: (isSpeaking) => {
-        //         if(isSpeaking) this.speakingPeer = this.localPeer;
-        //     }
-        // });
     }
 
     public getLocalMedia() {
@@ -278,14 +271,13 @@ export class ActiveMeetingService {
     }
 
     //Handle Signaling messages
-
     public handleJoinOrOpenAsHost(data:any) {
         for (const participant of data.preexistingParticipants) {
             const {sessionId, username} = participant;
             const remotePeerPartial = new RemotePeerPartial(sessionId, username, new RTCPeerConnection(this.peerConnectionConfig));
             this.remotePeerPartials.push(remotePeerPartial);
         }
-        //make sure that the meeting status is not NotInMeeting, it should have advance beyond this point.
+        //make sure that the meeting status is not NotInMeeting, it should have advanced beyond this point.
         //if it is NotInMeeting, that likely means that the user cancelled joining or opening it.
         if (data.isOpen && this.meetingStatus != MeetingStatus.NotInMeeting) {
             this.updateMeetingStatus(MeetingStatus.InMeeting);
@@ -362,7 +354,6 @@ export class ActiveMeetingService {
         });
     }
 
-    //resume writing tests here
     public handleAnswer(data:any) {
         const answer = new RTCSessionDescription(JSON.parse(data.answer));
         const remotePeerSessionId = data.from;
@@ -396,17 +387,6 @@ export class ActiveMeetingService {
                 this.screenViewersById = {};
                 this.isSharingScreen = false;
             });
-            // this.screenSharingStream.addEventListener('inactive', () => {
-            //     this.sendOverWebSocket({intent: 'stopSharingScreen'});
-            //     this.screenSharingPeer = undefined;
-            //     this.screenSharingStream = undefined;
-            //     for(const key in this.screenViewersById) {
-            //         const viewer = this.screenViewersById[key];
-            //         viewer.connection.close();
-            //     }
-            //     this.screenViewersById = {};
-            //     this.isSharingScreen = false;
-            // });
             this.screenSharingPeer = new LocalScreenSharingPeer('My');
             this.screenSharingPeer.stream = this.screenSharingStream;
             data.peerIds.forEach((peerId:string) => {
@@ -616,8 +596,6 @@ export class ActiveMeetingService {
             });
         } else this.handleError(new Error("No websocket connection exists or the connection is closing."));
     }
-
-    //send data over data channel
 
     public broadcastMessage(messageType:string, message:any) {
         console.log(this.meetingStatus);
